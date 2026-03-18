@@ -1,0 +1,1 @@
+export const MAX_ASSET_DEPOT = 36;
