@@ -1,5 +1,7 @@
 'use client';
 
+import { type AppResponse } from '@/store/api/apiSlice';
+
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -30,7 +32,7 @@ import {
     useBuyDataMutation,
     useSubCableMutation
 } from '@/store/api/vtuApi';
-import type { Wallet, VtuDataBundle, VtuCablePackage } from '@/types';
+import type { Wallet, VtuDataBundle, VtuCablePackage, BuyAirtimeRequest, BuyDataRequest, SubCableRequest } from '@/types';
 
 // --- Schemas ---
 const airtimeSchema = z.object({
@@ -64,6 +66,19 @@ const NETWORKS = [
     { id: 'airtel', name: 'Airtel', color: '#FF0000', icon: '/networks/airtel.png' },
     { id: '9mobile', name: '9Mobile', color: '#006633', icon: '/networks/9mobile.png' },
 ];
+
+const CABLE_PROVIDERS = [
+    { id: 'dstv', name: 'DSTV', color: '#0066A1' },
+    { id: 'gotv', name: 'GOtv', color: '#74B72E' },
+    { id: 'startimes', name: 'StarTimes', color: '#ED1C24' },
+    { id: 'showmax', name: 'Showmax', color: '#000000' },
+];
+
+const VTU_TABS = [
+    { id: 'airtime', name: 'Airtime', icon: Phone },
+    { id: 'data', name: 'Data Bundle', icon: Wifi },
+    { id: 'cable', name: 'Cable TV', icon: Tv },
+] as const;
 
 export default function VtuPage() {
     const [activeTab, setActiveTab] = useState<'airtime' | 'data' | 'cable'>('airtime');
@@ -119,14 +134,10 @@ export default function VtuPage() {
 
             {/* Tab Switcher */}
             <div className="flex p-1 bg-slate-100/50 rounded-2xl w-fit mx-auto md:mx-0 shadow-inner">
-                {[
-                    { id: 'airtime', name: 'Airtime', icon: Phone },
-                    { id: 'data', name: 'Data Bundle', icon: Wifi },
-                    { id: 'cable', name: 'Cable TV', icon: Tv },
-                ].map((tab) => (
+                {VTU_TABS.map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id)}
                         className={`
                             relative flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-300
                             ${activeTab === tab.id ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}
@@ -285,9 +296,52 @@ function NetworkSelector({ selected, onSelect }: NetworkSelectorProps) {
     );
 }
 
+function ProviderSelector({ providers, selected, onSelect }: { providers: string[], selected: string, onSelect: (id: string) => void }) {
+    return (
+        <div className="space-y-4">
+            <Label className="text-sm font-semibold text-slate-700">Select Provider</Label>
+            <div className="grid grid-cols-4 gap-3">
+                {providers.map((providerId) => {
+                    const meta = CABLE_PROVIDERS.find(p => p.id === providerId.toLowerCase()) || { 
+                        id: providerId, 
+                        name: providerId.toUpperCase(), 
+                        color: '#6366f1' 
+                    };
+                    return (
+                        <button
+                            key={providerId}
+                            type="button"
+                            onClick={() => onSelect(providerId)}
+                            className={`
+                                relative group p-2 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2
+                                ${selected === providerId
+                                    ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
+                                    : 'border-slate-100 bg-white hover:border-slate-200 hover:shadow-md'
+                                }
+                            `}
+                        >
+                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-slate-50 overflow-hidden flex items-center justify-center border border-slate-100 text-lg font-bold" style={{ color: meta.color }}>
+                                {meta.name[0]}
+                            </div>
+                            <span className={`text-[10px] md:text-xs font-bold ${selected === providerId ? 'text-primary' : 'text-slate-500'}`}>
+                                {meta.name}
+                            </span>
+                            {selected === providerId && (
+                                <div className="absolute top-1 right-1">
+                                    <CheckCircle2 className="w-4 h-4 text-primary fill-white" />
+                                </div>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 interface AirtimeFormProps {
     wallets: Wallet[];
-    onBuy: any; // Mutation function from RTK Query
+    onBuy: (data: BuyAirtimeRequest) => { unwrap: () => Promise<AppResponse<void>> };
     loading: boolean;
 }
 
@@ -315,14 +369,15 @@ function AirtimeForm({ wallets, onBuy, loading }: AirtimeFormProps) {
             } else {
                 toast.error(res.message || 'Failed to purchase airtime');
             }
-        } catch (err: any) {
-            toast.error(err.data?.message || 'Something went wrong');
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error.data?.message || 'Something went wrong');
         }
     };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <NetworkSelector selected={network} onSelect={(id) => setValue('network', id)} />
+            <NetworkSelector selected={network} onSelect={(id: string) => setValue('network', id)} />
             {errors.network && <p className="text-red-500 text-xs">{errors.network.message}</p>}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -356,16 +411,19 @@ function AirtimeForm({ wallets, onBuy, loading }: AirtimeFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label className="text-slate-700">Payment Wallet</Label>
-                    <Select items={wallets.filter(wallet => wallet?.type === 'direct').map(wallet => ({ label: wallet.type.replace('_', ' ') + ` (₦${wallet.amount.toLocaleString()})`, value: String(wallet.id) }))} onValueChange={(val) => setValue('wallet', val as string)}>
+                    <Select 
+                        value={watch('wallet')}
+                        onValueChange={(val) => setValue('wallet', val as string)}
+                    >
                         <SelectTrigger className="w-full! h-12! rounded-xl border-slate-200 focus:ring-blue-500/20">
                             <SelectValue placeholder="Select wallet" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
                                 <SelectLabel>Wallet</SelectLabel>
-                                {wallets.filter(wallet => wallet?.type === 'direct').map(wallet => ({ label: wallet.type.replace('_', ' ') + ` (₦${wallet.amount.toLocaleString()})`, value: String(wallet.id) })).map((item) => (
-                                    <SelectItem key={item.value} value={item.value}>
-                                        {item.label}
+                                {wallets.filter(wallet => wallet?.type === 'direct').map((wallet) => (
+                                    <SelectItem key={wallet.id} value={String(wallet.id)}>
+                                        {wallet.id === 0 ? 'Loading...' : `${wallet.type.replace('_', ' ')} (₦${wallet.amount.toLocaleString()})`}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -416,7 +474,7 @@ function AirtimeForm({ wallets, onBuy, loading }: AirtimeFormProps) {
 interface DataFormProps {
     dataBundles: Record<string, VtuDataBundle[]>;
     wallets: Wallet[];
-    onBuy: any;
+    onBuy: (data: BuyDataRequest) => { unwrap: () => Promise<AppResponse<void>> };
     loading: boolean;
 }
 
@@ -441,7 +499,13 @@ function DataForm({ dataBundles, wallets, onBuy, loading }: DataFormProps) {
     const selectedBundleId = watch('bundle');
 
     const availableBundles = useMemo(() => {
-        return dataBundles[selectedNetwork] || [];
+        if (!selectedNetwork) return [];
+        // Support flexible matching (case-insensitive, contains etc.)
+        const key = Object.keys(dataBundles).find(k => 
+            k.toLowerCase() === selectedNetwork.toLowerCase() || 
+            k.toLowerCase().startsWith(selectedNetwork.toLowerCase())
+        );
+        return key ? dataBundles[key] : [];
     }, [selectedNetwork, dataBundles]);
 
     const selectedBundle = useMemo(() => {
@@ -465,14 +529,15 @@ function DataForm({ dataBundles, wallets, onBuy, loading }: DataFormProps) {
             } else {
                 toast.error(res.message || 'Failed to purchase data');
             }
-        } catch (err: any) {
-            toast.error(err.data?.message || 'Something went wrong');
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error.data?.message || 'Something went wrong');
         }
     };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <NetworkSelector selected={selectedNetwork} onSelect={(id) => {
+            <NetworkSelector selected={selectedNetwork} onSelect={(id: string) => {
                 setValue('network', id);
                 setValue('bundle', '');
             }} />
@@ -482,7 +547,7 @@ function DataForm({ dataBundles, wallets, onBuy, loading }: DataFormProps) {
                 <div className="space-y-2">
                     <Label className="text-slate-700">Data Bundle</Label>
                     <Select 
-                        items={availableBundles.map((bundle: VtuDataBundle) => ({ label: `${bundle.data_plan} - ₦${(parseFloat(bundle.reseller_price) + 5).toLocaleString()}`, value: String(bundle.variation_id) }))} 
+                        value={selectedBundleId}
                         onValueChange={(val) => setValue('bundle', val as string)} 
                         disabled={!selectedNetwork}
                     >
@@ -518,16 +583,19 @@ function DataForm({ dataBundles, wallets, onBuy, loading }: DataFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label className="text-slate-700">Payment Wallet</Label>
-                    <Select items={wallets.filter(wallet => wallet?.type === 'direct').map(wallet => ({ label: wallet.type.replace('_', ' ') + ` (₦${wallet.amount.toLocaleString()})`, value: String(wallet.id) }))} onValueChange={(val) => setValue('wallet', val as string)}>
+                    <Select 
+                        value={watch('wallet')}
+                        onValueChange={(val) => setValue('wallet', val as string)}
+                    >
                         <SelectTrigger className="w-full! h-12! rounded-xl border-slate-200 focus:ring-blue-500/20">
                             <SelectValue placeholder="Select wallet" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                             <SelectGroup>
                                 <SelectLabel>Wallet</SelectLabel>
-                                {wallets.filter(wallet => wallet?.type === 'direct').map(wallet => ({ label: wallet.type.replace('_', ' ') + ` (₦${wallet.amount.toLocaleString()})`, value: String(wallet.id) })).map((item) => (
-                                    <SelectItem key={item.value} value={item.value}>
-                                        {item.label}
+                                {wallets.filter(wallet => wallet?.type === 'direct').map((wallet) => (
+                                    <SelectItem key={wallet.id} value={String(wallet.id)}>
+                                        {wallet.type.replace('_', ' ')} (₦{wallet.amount.toLocaleString()})
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -565,7 +633,7 @@ interface CableFormProps {
     providers: string[];
     packages: Record<string, VtuCablePackage[]>;
     wallets: Wallet[];
-    onSub: any;
+    onSub: (data: SubCableRequest) => { unwrap: () => Promise<AppResponse<void>> };
     loading: boolean;
 }
 
@@ -587,7 +655,12 @@ function CableForm({ providers, packages, wallets, onSub, loading }: CableFormPr
     const selectedPkgId = watch('package');
 
     const availablePkgs = useMemo(() => {
-        return packages[selectedProvider] || [];
+        if (!selectedProvider) return [];
+        const key = Object.keys(packages).find(k => 
+            k.toLowerCase() === selectedProvider.toLowerCase() || 
+            k.toLowerCase().includes(selectedProvider.toLowerCase())
+        );
+        return key ? packages[key] : [];
     }, [selectedProvider, packages]);
 
     const selectedPkg = useMemo(() => {
@@ -611,36 +684,28 @@ function CableForm({ providers, packages, wallets, onSub, loading }: CableFormPr
             } else {
                 toast.error(res.message || 'Failed to sub cable');
             }
-        } catch (err: any) {
-            toast.error(err.data?.message || 'Something went wrong');
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error.data?.message || 'Something went wrong');
         }
     };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Label className="text-slate-700">TV Provider</Label>
-                    <Select onValueChange={(val) => {
-                        setValue('provider', val as string);
-                        setValue('package', '');
-                    }}>
-                        <SelectTrigger className="w-full! h-12! rounded-xl border-slate-200 focus:ring-blue-500/20">
-                            <SelectValue placeholder="Select Provider" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                            {providers.map((p: string) => (
-                                <SelectItem key={p} value={p}>{p.toUpperCase()}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {errors.provider && <p className="text-red-500 text-xs">{errors.provider.message}</p>}
-                </div>
+            <ProviderSelector 
+                providers={providers} 
+                selected={selectedProvider} 
+                onSelect={(id: string) => {
+                    setValue('provider', id);
+                    setValue('package', '');
+                }} 
+            />
+            {errors.provider && <p className="text-red-500 text-xs">{errors.provider.message}</p>}
 
                 <div className="space-y-2">
                     <Label className="text-slate-700">Package</Label>
                     <Select 
-                        items={availablePkgs.map((pkg: VtuCablePackage) => ({ label: `${pkg.package_bouquet} - ₦${(parseFloat(pkg.price) + 5).toLocaleString()}`, value: String(pkg.variation_id) }))} 
+                        value={selectedPkgId}
                         onValueChange={(val) => setValue('package', val as string)} 
                         disabled={!selectedProvider}
                     >
@@ -660,7 +725,6 @@ function CableForm({ providers, packages, wallets, onSub, loading }: CableFormPr
                     </Select>
                     {errors.package && <p className="text-red-500 text-xs">{errors.package.message}</p>}
                 </div>
-            </div>
 
             <div className="space-y-2">
                 <Label htmlFor="decoder" className="text-slate-700">IUC / SmartCard Number</Label>
@@ -679,16 +743,19 @@ function CableForm({ providers, packages, wallets, onSub, loading }: CableFormPr
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label className="text-slate-700">Payment Wallet</Label>
-                    <Select items={wallets.filter(wallet => wallet?.type === 'direct').map(wallet => ({ label: wallet.type.replace('_', ' ') + ` (₦${wallet.amount.toLocaleString()})`, value: String(wallet.id) }))} onValueChange={(val) => setValue('wallet', val as string)}>
+                    <Select 
+                        value={watch('wallet')}
+                        onValueChange={(val) => setValue('wallet', val as string)}
+                    >
                         <SelectTrigger className="w-full! h-12! rounded-xl border-slate-200 focus:ring-blue-500/20">
                             <SelectValue placeholder="Select wallet" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                             <SelectGroup>
                                 <SelectLabel>Wallet</SelectLabel>
-                                {wallets.filter(wallet => wallet?.type === 'direct').map(wallet => ({ label: wallet.type.replace('_', ' ') + ` (₦${wallet.amount.toLocaleString()})`, value: String(wallet.id) })).map((item) => (
-                                    <SelectItem key={item.value} value={item.value}>
-                                        {item.label}
+                                {wallets.filter(wallet => wallet?.type === 'direct').map((wallet) => (
+                                    <SelectItem key={wallet.id} value={String(wallet.id)}>
+                                        {wallet.type.replace('_', ' ')} (₦{wallet.amount.toLocaleString()})
                                     </SelectItem>
                                 ))}
                             </SelectGroup>

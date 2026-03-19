@@ -49,6 +49,7 @@ export interface DataTableProps<TData, TValue> {
     url?: string
     searchKey?: string
     searchPlaceholder?: string
+    orderBy?: 'asc' | 'desc'
 }
 
 export function DataTable<TData, TValue>({
@@ -57,6 +58,7 @@ export function DataTable<TData, TValue>({
     url,
     searchKey,
     searchPlaceholder = "Search...",
+    orderBy,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -79,7 +81,7 @@ export function DataTable<TData, TValue>({
     }, [searchFilterValue]);
 
     const { data: fetchedData, isLoading, isFetching } = useQuery({
-        queryKey: ["dataTable", url, pagination.pageIndex, pagination.pageSize, searchFilter],
+        queryKey: ["dataTable", url, pagination.pageIndex, pagination.pageSize, searchFilter, orderBy],
         queryFn: async () => {
             if (!url) return null;
             const params: Record<string, string | number> = {
@@ -88,6 +90,9 @@ export function DataTable<TData, TValue>({
             };
             if (searchFilter) {
                 params.search = searchFilter;
+            }
+            if (orderBy) {
+                params.orderBy = orderBy;
             }
             const res = await api.get(url, { params });
             return res.data;
@@ -184,7 +189,7 @@ export function DataTable<TData, TValue>({
             </div>
 
             {/* Table Container */}
-            <div className="rounded-md border bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+            <div className="rounded-md border bg-white dark:bg-zinc-950 overflow-auto shadow-sm">
                 <Table>
                     <TableHeader className="bg-muted/50">
                         {table.getHeaderGroups().map((headerGroup) => (

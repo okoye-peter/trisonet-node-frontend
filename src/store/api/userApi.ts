@@ -28,8 +28,11 @@ export const userApi = apiSlice.injectEndpoints({
                 method: 'POST',
             }),
         }),
+        getUserByTransferId: builder.query<AppResponse<User>, string>({
+            query: (transferId) => `users/lookup/${transferId}`,
+        }),
     }),
 });
 
-export const { useGetUserQuery, useUpdateProfileMutation, useUpdatePasswordMutation, useSendOtpMutation } = userApi;
+export const { useGetUserQuery, useUpdateProfileMutation, useUpdatePasswordMutation, useSendOtpMutation, useGetUserByTransferIdQuery } = userApi;
 

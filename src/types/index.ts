@@ -63,6 +63,8 @@ export interface User {
     transferId: string | null;
     pimId: string | null;
     unblockingCode: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface UpdatePasswordRequest {
@@ -141,4 +143,160 @@ export interface BankAccountDetail {
     accountName: string;
     bankUUID: string;
     isValid: boolean;
+}
+export interface WardStats {
+    wardSlotRemaining: number | 'unlimited';
+    pricePerSlot: number;
+    unlimitedSlotPrice: number;
+}
+
+export interface Ward extends User {}
+
+export interface PaginatedResult<T> {
+    data: T[];
+    meta: {
+        totalItems: number;
+        itemsPerPage: number;
+        currentPage: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
+    };
+}
+
+export interface SchoolTerm {
+    id: string;
+    name: string;
+}
+
+export interface SchoolLevel {
+    id: string;
+    name: string;
+}
+
+export interface InfantSchoolFeeGroup {
+    id: string;
+    refNo: string;
+    bank: string;
+    accountNumber: string;
+    user: {
+        id: string;
+        name: string;
+        username: string;
+        schoolUser?: {
+            id: string;
+            name: string;
+        };
+    };
+}
+
+export interface InfantSchoolFee {
+    id: string;
+    userId: string;
+    amount: number;
+    status: 'PENDING' | 'PAID' | 'REJECTED';
+    accountNumber: string;
+    bankName: string;
+    schoolName: string;
+    schoolClass: string;
+    schoolTerm: string;
+    createdAt: string;
+    schoolTermRef?: SchoolTerm;
+    schoolLevel?: SchoolLevel;
+    infantSchoolFeeGroup?: InfantSchoolFeeGroup;
+    user: {
+        id: string;
+        name: string;
+        username: string;
+    };
+}
+
+export interface WalletTransfer {
+    id: string;
+    senderWalletId: string;
+    receiverWalletId: string;
+    amount: number;
+    reference: string | null;
+    createdAt: string;
+    updatedAt: string;
+    senderWallet?: Wallet & {
+        user: {
+            id: string;
+            name: string;
+            transferId: string | null;
+            pictureUrl: string | null;
+        }
+    };
+    receiverWallet?: Wallet & {
+        user: {
+            id: string;
+            name: string;
+            transferId: string | null;
+            pictureUrl: string | null;
+        }
+    };
+}
+
+export interface WithDrawal {
+    id: string;
+    userId: string | null;
+    amount: string;
+    bankName: string;
+    accountNumber: string;
+    isPaid: number;
+    createdAt: string;
+    updatedAt: string;
+    oldBalance: string | null;
+    newBalance: string | null;
+    gkwthPrice: number | null;
+    paystackRef: string | null;
+    userType: 'customer' | 'admin' | string;
+    userEmail: string | null;
+    requestedAt: string | null;
+    reference: string | null;
+}
+
+export interface WithdrawalRequest {
+    id: string;
+    amountRequested: number;
+    amountToTransfer: number;
+    walletId: string | null;
+    oldBalance: string;
+    newBalance: string;
+    userType: 'customer' | 'sponsor' | 'influencer' | 'patron' | null;
+    bankName: string;
+    bankCode: string | null;
+    accountNumber: string;
+    gkwthAmount: number | null;
+    gkwthValue: number | null;
+    userEmail: string;
+    status: 'pending' | 'being_processed';
+    reference: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type WithdrawalRequestStatus = 'pending' | 'being_processed';
+
+export type LoanStatus = 'pending' | 'granted' | 'rejected' | 'cancelled';
+
+export interface Loan {
+    id: string;
+    userId: string;
+    walletId: string | null;
+    status: LoanStatus;
+    cancellationReason: string | null;
+    quantityRequested: number;
+    quantityGranted: number;
+    quantityRepaid: number;
+    acceptedAt: string | null;
+    rejectedAt: string | null;
+    resolvedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
+    gkwthPrice: number | null;
+    isPaid: boolean;
+    wallet?: {
+        type: Wallet['type'];
+    };
 }
