@@ -427,7 +427,7 @@ export default function GkwthWalletPage() {
                                                 value={withdrawData.bank_code} 
                                                 onValueChange={(val) => {
                                                     const bank = banks.find(b => b.uuid === val);
-                                                    setWithdrawData(prev => ({ ...prev, bank_code: val, bank_name: bank?.name || '' }));
+                                                    setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '' }));
                                                 }}
                                             >
                                                 <SelectTrigger className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold text-zinc-900">

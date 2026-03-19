@@ -316,7 +316,7 @@ export default function WalletsPage() {
                                                     value={withdrawData.bank_code} 
                                                     onValueChange={(val) => {
                                                         const bank = banks.find(b => b.uuid === val);
-                                                        setWithdrawData(prev => ({ ...prev, bank_code: val, bank_name: bank?.name || '' }));
+                                                        setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '' }));
                                                     }}
                                                 >
                                                     <SelectTrigger className="h-14 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900">
