@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { cn } from '@/lib/utils';
-import { MessageCircle } from 'lucide-react';
+
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,7 +19,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             <Topbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-            <Sidebar isOpen={isSidebarOpen} />
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
 
             <main className={cn(
                 "pt-28 pb-8 transition-all duration-500 relative z-10",

@@ -40,7 +40,7 @@ const sidebarItems = [
         hasSubmenu: true,
         subItems: [
             { label: 'Transfers', href: '/wallets/transfers', icon: ArrowRightLeft },
-            { label: 'Transactions', href: '/withdrawals', icon: ScrollText },
+            { label: 'Transactions', href: '/transactions', icon: ScrollText },
             { label: 'Utility Bills', href: '/vtu', icon: Receipt },
             { label: 'Wallet', href: '/wallets', icon: Wallet },
             { label: 'Gkwth Business', href: '/wallets/gkwth', icon: Briefcase },
@@ -53,7 +53,8 @@ const sidebarItems = [
     { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },
 ];
 
-export function Sidebar({ isOpen }: { isOpen: boolean }) {
+export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => void }) {
+
     const pathname = usePathname();
     const [openMenus, setOpenMenus] = useState<string[]>([]);
 
@@ -147,8 +148,10 @@ export function Sidebar({ isOpen }: { isOpen: boolean }) {
                                                         const isSubActive = pathname === sub.href;
                                                         return (
                                                             <li key={sub.label}>
-                                                                <Link
+                                                                 <Link
                                                                     href={sub.href}
+                                                                    onClick={onClose}
+
                                                                     className={cn(
                                                                         "flex items-center gap-3 px-4 py-2.5 text-[12px] font-bold transition-all duration-200 rounded-lg mx-2",
                                                                         isSubActive
@@ -167,8 +170,10 @@ export function Sidebar({ isOpen }: { isOpen: boolean }) {
                                         </AnimatePresence>
                                     </>
                                 ) : (
-                                    <Link
+                                     <Link
                                         href={item.href}
+                                        onClick={onClose}
+
                                         className={cn(
                                             "group relative flex items-center justify-between rounded-xl p-3 text-sm font-semibold transition-all duration-300 overflow-hidden",
                                             isActive

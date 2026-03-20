@@ -62,8 +62,11 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
         if (!open) {
             setPaymentDetail(null);
             setIsLoading(false);
+            setType('limited');
+            setQuantity(1);
         }
     }, [open]);
+
 
     const handlePurchase = async () => {
         setIsLoading(true);
@@ -182,7 +185,8 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
                 ) : (
                     <div className="p-0 overflow-hidden rounded-xl">
                         <div className="bg-emerald-500 p-8 text-white text-center relative">
-                            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent" />
+                            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-white/20 to-transparent" />
+
                             <div className="relative z-10 flex flex-col items-center">
                                 <div className="h-16 w-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
                                     <CheckCircle2 size={32} />

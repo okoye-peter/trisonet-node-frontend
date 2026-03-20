@@ -186,9 +186,9 @@ export default function WardsPage() {
                     >
                         <Zap className="mr-2 h-4 w-4" /> Buy More Slots
                     </Button>
-                    <Button size="lg" className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xl shadow-zinc-200 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                    {/* <Button size="lg" className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xl shadow-zinc-200 transition-all hover:scale-[1.02] active:scale-[0.98]">
                         <Plus className="mr-2 h-4 w-4" /> Add New Ward
-                    </Button>
+                    </Button> */}
                 </div>
             </motion.div>
 

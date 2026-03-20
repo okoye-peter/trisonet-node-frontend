@@ -5,9 +5,18 @@ export const bankApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getBanks: builder.query<AppResponse<Bank[]>, void>({
             query: () => 'banks',
+            transformResponse: (response: AppResponse<{ success: boolean; data: { banks: Bank[] } }>) => {
+                if (response.data?.success && response.data?.data?.banks) {
+                    return {
+                        ...response,
+                        data: response.data.data.banks
+                    } as AppResponse<Bank[]>;
+                }
+                return response as unknown as AppResponse<Bank[]>;
+            },
             providesTags: ['Withdrawal'],
         }),
-        resolveAccount: builder.mutation<AppResponse<BankAccountDetail>, { bank_code: string; account_number: string }>({
+        resolveAccount: builder.mutation<AppResponse<BankAccountDetail>, { bankUUID: string; accountNumber: string }>({
             query: (body) => ({
                 url: 'banks/resolve',
                 method: 'POST',
@@ -16,6 +25,15 @@ export const bankApi = apiSlice.injectEndpoints({
         }),
         getUserBank: builder.query<AppResponse<Bank>, void>({
             query: () => 'banks/user',
+            transformResponse: (response: AppResponse<{ success: boolean; data: Bank }>) => {
+                if (response.data?.success && response.data?.data) {
+                    return {
+                        ...response,
+                        data: response.data.data
+                    } as AppResponse<Bank>;
+                }
+                return response as unknown as AppResponse<Bank>;
+            },
         }),
     }),
 });

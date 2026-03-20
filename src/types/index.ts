@@ -133,8 +133,8 @@ export interface SubCableRequest {
 export interface Bank {
     name: string;
     uuid: string;
-    interInstitutionCode: string;
-    sortCode: string;
+    interInstitutionCode: string | null;
+    sortCode: string | null;
     directDebitEnabled: boolean;
 }
 

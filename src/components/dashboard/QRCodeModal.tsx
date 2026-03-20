@@ -23,7 +23,13 @@ export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModal
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleClose = () => {
+        setCopied(false);
+        onClose();
+    };
+
     const handleDownload = () => {
+
         const svg = document.getElementById('referral-qrcode');
         if (!svg) return;
 
@@ -56,7 +62,8 @@ export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModal
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={handleClose}
+
                         className="fixed inset-0 z-50 bg-zinc-900/60 backdrop-blur-sm"
                     />
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
@@ -69,7 +76,8 @@ export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModal
                             {/* Header */}
                             <div className="relative p-6 pb-0">
                                 <button
-                                    onClick={onClose}
+                                    onClick={handleClose}
+
                                     className="absolute right-6 top-6 rounded-2xl bg-zinc-50 p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
                                 >
                                     <X size={20} />

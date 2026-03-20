@@ -8,7 +8,8 @@ import {
     RefreshCcw,
     AlertCircle,
     Activity,
-    Info
+    Info,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useGetWalletsQuery, useGetGkwthPricesQuery, usePurchaseGkwthMutation, useRequestAssetLoanMutation, useGetAssetLoansQuery } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
@@ -31,7 +33,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -102,23 +104,24 @@ export default function GkwthWalletPage() {
         }
     }, [user, activeTab, withdrawData.account_number]);
 
-    const handleResolveAccount = async () => {
-        if (withdrawData.account_number.length >= 10 && withdrawData.bank_code) {
+    const handleResolveAccount = useCallback(async (accountNumber?: string, bankUUID?: string) => {
+        const acc = accountNumber ?? withdrawData.account_number;
+        const bnk = bankUUID ?? withdrawData.bank_code;
+        
+        if (acc.length >= 10 && bnk) {
             try {
                 const res = await resolveAccount({
-                    bank_code: withdrawData.bank_code,
-                    account_number: withdrawData.account_number
+                    bankUUID: bnk,
+                    accountNumber: acc
                 }).unwrap();
                 if (res.data) {
                     setWithdrawData(prev => ({ ...prev, account_name: res.data!.accountName }));
-                    toast.success('Account resolved successfully');
                 }
-            } catch (err) {
-                const apiErr = err as { data?: { message?: string } };
-                toast.error(apiErr.data?.message || 'Failed to resolve account');
+            } catch {
+                setWithdrawData(prev => ({ ...prev, account_name: '' }));
             }
         }
-    };
+    }, [withdrawData.account_number, withdrawData.bank_code, resolveAccount, setWithdrawData]);
 
     const handleFund = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -186,7 +189,15 @@ export default function GkwthWalletPage() {
         toast.success(`${label} copied to clipboard`);
     };
 
+    const handlePaymentModalOpenChange = (open: boolean) => {
+        setIsPaymentModalOpen(open);
+        if (!open) {
+            setPaymentDetails(null);
+        }
+    };
+
     if (isWalletsLoading) return <LoadingScreen />;
+
 
     return (
         <div className="min-h-screen bg-zinc-50/50">
@@ -411,9 +422,9 @@ export default function GkwthWalletPage() {
 
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Wallet</Label>
-                                            <Select value="indirect">
-                                                <SelectTrigger className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold text-zinc-900">
-                                                    <SelectValue placeholder="Select Wallet" />
+                                            <Select defaultValue="indirect">
+                                                <SelectTrigger className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold text-zinc-900 w-full justify-between">
+                                                    <SelectValue>GKWTH Wallet ({indirectWallet?.amount.toLocaleString() || '0'})</SelectValue>
                                                 </SelectTrigger>
                                                 <SelectContent className="rounded-xl border-none shadow-2xl">
                                                     <SelectItem value="indirect" className="font-medium px-6">GKWTH Wallet ({indirectWallet?.amount.toLocaleString() || '0'})</SelectItem>
@@ -421,60 +432,74 @@ export default function GkwthWalletPage() {
                                             </Select>
                                         </div>
 
+
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Bank</Label>
-                                            <Select 
-                                                value={withdrawData.bank_code} 
-                                                onValueChange={(val) => {
-                                                    const bank = banks.find(b => b.uuid === val);
-                                                    setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '' }));
-                                                }}
-                                            >
-                                                <SelectTrigger className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold text-zinc-900">
-                                                    <SelectValue placeholder="Select Bank" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-xl border-none shadow-2xl">
-                                                    {banks.map(bank => (
-                                                        <SelectItem key={bank.uuid} value={bank.uuid} className="font-medium px-6">
-                                                            {bank.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <SearchableSelect 
+                                                 items={banks.map(bank => ({ label: bank.name, value: bank.uuid }))}
+                                                 value={withdrawData.bank_code} 
+                                                 onValueChange={(val: string) => {
+                                                     const bank = banks.find(b => b.uuid === val);
+                                                     setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '', account_name: '' }));
+                                                     if (withdrawData.account_number.length === 10 && val) {
+                                                         handleResolveAccount(withdrawData.account_number, val);
+                                                     }
+                                                 }}
+                                                 placeholder="Select Bank"
+                                                 triggerClassName="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold text-zinc-900"
+                                             />
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Account Number</Label>
-                                            <div className="flex gap-2">
-                                                <div className="relative flex-1">
-                                                    <Input 
-                                                        value={withdrawData.account_number}
-                                                        onChange={(e) => setWithdrawData(prev => ({ ...prev, account_number: e.target.value }))}
-                                                        placeholder="Enter account number"
-                                                        className="h-14 px-6 rounded-xl bg-zinc-50 border border-zinc-100 font-bold"
-                                                    />
-                                                    {isResolving && <RefreshCcw size={16} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
-                                                </div>
-                                                <Button 
-                                                    type="button"
-                                                    onClick={handleResolveAccount}
-                                                    disabled={isResolving || withdrawData.account_number.length < 10}
-                                                    className="h-14 px-8 rounded-xl bg-[rgb(79,70,229)] hover:bg-indigo-700 text-white font-bold"
-                                                >
-                                                    Resolve
-                                                </Button>
+                                            <div className="relative">
+                                                <Input 
+                                                    value={withdrawData.account_number}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setWithdrawData(prev => ({ ...prev, account_number: val }));
+                                                        if (val.length === 10 && withdrawData.bank_code) {
+                                                            handleResolveAccount(val, withdrawData.bank_code);
+                                                        } else if (val.length < 10) {
+                                                            setWithdrawData(prev => ({ ...prev, account_name: '' }));
+                                                        }
+                                                    }}
+                                                    placeholder="Enter account number"
+                                                    className="h-14 px-6 rounded-xl bg-zinc-50 border border-zinc-100 font-bold"
+                                                />
+                                                {isResolving && <Loader2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Account Name</Label>
-                                            <Input 
-                                                value={withdrawData.account_name}
-                                                readOnly
-                                                placeholder="Validated Account Name"
-                                                className="h-14 px-6 rounded-xl bg-zinc-100/50 border-none font-bold text-zinc-600"
-                                            />
+                                            <div className="relative">
+                                                <Input 
+                                                    value={withdrawData.account_name}
+                                                    readOnly
+                                                    placeholder={isResolving ? "Resolving..." : "Validated Account Name"}
+                                                    className={cn(
+                                                        "h-16 rounded-2xl border-none font-black transition-all duration-300",
+                                                        withdrawData.account_name 
+                                                            ? "bg-emerald-50 text-emerald-600" 
+                                                            : "bg-zinc-50 text-zinc-400 placeholder:text-zinc-300"
+                                                    )}
+                                                />
+                                                <AnimatePresence>
+                                                    {withdrawData.account_name && !isResolving && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, scale: 0.5 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            exit={{ opacity: 0, scale: 0.5 }}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
+                                                        >
+                                                            <CheckCircle2 size={20} />
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
                                         </div>
+
 
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Amount</Label>
@@ -685,7 +710,8 @@ export default function GkwthWalletPage() {
                     )}
                 </AnimatePresence>
                 {/* Payment Modal */}
-                <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                <Dialog open={isPaymentModalOpen} onOpenChange={handlePaymentModalOpenChange}>
+
                     <DialogContent className="sm:max-w-md bg-white rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
                         <div className="bg-indigo-600 p-8 text-white relative">
                             <div className="absolute top-0 right-0 p-8 opacity-10">

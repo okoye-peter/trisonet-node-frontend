@@ -35,6 +35,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTransferMutation, useGetWalletsQuery } from '@/store/api/walletApi';
 import { useGetUserByTransferIdQuery } from '@/store/api/userApi';
 import { useDebounce } from '@/hooks/use-debounce';
+import { cn } from '@/lib/utils';
 
 const transferSchema = z.object({
     receiverTransferId: z.string().min(3, 'Invalid account number'),
@@ -70,7 +71,11 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     });
 
     const receiverTransferId = form.watch('receiverTransferId');
+    const senderWalletId = form.watch('senderWalletId');
     const debouncedReceiverId = useDebounce(receiverTransferId, 500);
+
+    const selectedWallet = wallets.find((w) => w.id?.toString() === senderWalletId);
+    const isGkwth = selectedWallet?.type === 'indirect';
 
     const { data: receiverResponse, isFetching: isSearching } = useGetUserByTransferIdQuery(
         debouncedReceiverId,
@@ -170,26 +175,31 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount</Label>
                                             <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₦</span>
+                                                <span className={cn(
+                                                    "absolute top-1/2 -translate-y-1/2 text-zinc-400 font-bold",
+                                                    isGkwth ? "left-3 text-xs" : "left-4"
+                                                )}>
+                                                    {isGkwth ? 'gkwth' : '₦'}
+                                                </span>
                                                 <Input
                                                     type="number"
                                                     {...form.register('amount', { valueAsNumber: true })}
-                                                    className="h-14 rounded-xl border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 pl-8 pr-4 font-black text-xl text-zinc-900 dark:text-zinc-100"
+                                                    className={cn(
+                                                        "h-14 rounded-xl border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 pr-4 font-black text-xl text-zinc-900 dark:text-zinc-100",
+                                                        isGkwth ? "pl-16" : "pl-8"
+                                                    )}
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">From Wallet</Label>
                                             <Select
-                                                value={form.watch('senderWalletId')}
+                                                value={senderWalletId}
                                                 onValueChange={(val: string | null) => val && form.setValue('senderWalletId', val)}
                                             >
                                                 <SelectTrigger className="!h-14 w-full rounded-xl border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 pl-8 pr-4 font-black text-xl text-zinc-900 dark:text-zinc-100 focus:ring-indigo-500/10 transition-all">
                                                     <SelectValue placeholder="Select wallet">
                                                         {(() => {
-                                                            const selectedWallet = wallets.find(
-                                                                (w) => w.id?.toString() === form.watch('senderWalletId')
-                                                            );
                                                             if (!selectedWallet) return undefined;
                                                             return selectedWallet.type === 'indirect'
                                                                 ? `${selectedWallet.amount.toLocaleString()} gkwth`
@@ -260,7 +270,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                 <div className="text-center space-y-1">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Transferred</p>
                                     <h3 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
-                                        ₦{form.getValues('amount').toLocaleString()}
+                                        {isGkwth ? '' : '₦'}{form.getValues('amount').toLocaleString()}{isGkwth ? ' gkwth' : ''}
                                     </h3>
                                 </div>
 

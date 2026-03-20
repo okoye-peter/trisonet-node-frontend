@@ -9,14 +9,14 @@ import {
     ArrowUpRight,
     CheckCircle2,
     RefreshCcw,
-    Lock
+    Lock,
+    Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetWalletsQuery } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
@@ -24,11 +24,12 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { toast } from 'sonner';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 type TabType = 'overview' | 'fund' | 'withdraw';
 
@@ -51,7 +52,7 @@ export default function WalletsPage() {
     const [initiateWithdrawal, { isLoading: isWithdrawing }] = useInitiateWithdrawalMutation();
 
     const wallets = walletsResponse?.data || [];
-    const banks = banksResponse?.data || [];
+    const banks = useMemo(() => banksResponse?.data || [], [banksResponse?.data]);
     const directWallet = wallets.find(w => w.type === 'direct');
 
     const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -70,34 +71,58 @@ export default function WalletsPage() {
 
     useEffect(() => {
         if (user && activeTab === 'withdraw' && !withdrawData.account_number) {
+            const bankFromList = banks.find((b: { name: string; uuid: string }) => b.name === user.bank);
             const timer = setTimeout(() => {
                 setWithdrawData(prev => ({
                     ...prev,
                     account_number: user.accountNumber || '',
                     bank_name: user.bank || '',
+                    bank_code: bankFromList?.uuid || '',
                 }));
             }, 0);
             return () => clearTimeout(timer);
         }
-    }, [user, activeTab, withdrawData.account_number]);
+    }, [user, activeTab, withdrawData.account_number, banks]);
 
-    const handleResolveAccount = async () => {
-        if (withdrawData.account_number.length >= 10 && withdrawData.bank_code) {
+    const handleResolveAccount = useCallback(async (accountNumber?: string, bankUUID?: string) => {
+        const acc = accountNumber ?? withdrawData.account_number;
+        const bnk = bankUUID ?? withdrawData.bank_code;
+        
+        if (acc.length >= 10 && bnk) {
             try {
                 const res = await resolveAccount({
-                    bank_code: withdrawData.bank_code,
-                    account_number: withdrawData.account_number
+                    bankUUID: bnk,
+                    accountNumber: acc
                 }).unwrap();
-                if (res.data) {
+                if (res.data && res.data.isValid) {
                     setWithdrawData(prev => ({ ...prev, account_name: res.data!.accountName }));
-                    toast.success('Account resolved successfully');
+                } else {
+                    setWithdrawData(prev => ({ ...prev, account_name: '' }));
+                    if (res.data && !res.data.isValid) {
+                        toast.error('The account details could not be validated');
+                    }
                 }
-            } catch (err) {
+            } catch (err: unknown) {
+                setWithdrawData(prev => ({ ...prev, account_name: '' }));
                 const apiErr = err as { data?: { message?: string } };
                 toast.error(apiErr.data?.message || 'Failed to resolve account');
             }
         }
-    };
+    }, [withdrawData.account_number, withdrawData.bank_code, resolveAccount, setWithdrawData]);
+
+    // Auto-resolve when form is pre-filled or changed
+    useEffect(() => {
+        let isMounted = true;
+        
+        if (activeTab === 'withdraw' && withdrawData.account_number.length === 10 && withdrawData.bank_code && !withdrawData.account_name && !isResolving) {
+            const resolve = async () => {
+                if (isMounted) await handleResolveAccount();
+            };
+            resolve();
+        }
+
+        return () => { isMounted = false; };
+    }, [activeTab, withdrawData.account_number, withdrawData.bank_code, withdrawData.account_name, isResolving, handleResolveAccount]);
 
     const handleWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,7 +162,7 @@ export default function WalletsPage() {
                 >
                     <div className="absolute top-0 right-0 p-12 opacity-10 blur-3xl bg-indigo-500 w-96 h-96 rounded-full -mr-48 -mt-48 animate-pulse" />
                     <div className="absolute bottom-0 left-0 p-12 opacity-10 blur-3xl bg-emerald-500 w-96 h-96 rounded-full -ml-48 -mb-48 animate-pulse" />
-                    
+
                     <div className="relative z-10 flex flex-col items-center text-center space-y-4">
                         <span className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Total Direct Balance</span>
                         <div className="flex items-center gap-4">
@@ -266,18 +291,6 @@ export default function WalletsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="p-6 bg-zinc-50 rounded-2xl flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 flex items-center justify-center bg-white rounded-xl shadow-sm">
-                                                    <ShieldCheck size={20} className="text-indigo-600" />
-                                                </div>
-                                                <span className="text-sm font-bold text-zinc-600 uppercase tracking-tighter">Secured by Paystack</span>
-                                            </div>
-                                            <div className="text-right text-[10px] font-bold text-zinc-400 uppercase tracking-widest italic">
-                                                Charge: 1.5%
-                                            </div>
-                                        </div>
-
                                         <Button className="w-full h-20 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-black shadow-2xl shadow-indigo-100 transition-all">
                                             Generate Payment Reference
                                         </Button>
@@ -312,24 +325,19 @@ export default function WalletsPage() {
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Select Bank</Label>
-                                                <Select 
-                                                    value={withdrawData.bank_code} 
-                                                    onValueChange={(val) => {
-                                                        const bank = banks.find(b => b.uuid === val);
-                                                        setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '' }));
+                                                <SearchableSelect
+                                                    items={banks.map((bank: { name: string; uuid: string }) => ({ label: bank.name, value: bank.uuid }))}
+                                                    value={withdrawData.bank_code}
+                                                    onValueChange={(val: string) => {
+                                                        const bank = banks.find((b: { name: string; uuid: string }) => b.uuid === val);
+                                                        setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '', account_name: '' }));
+                                                        if (withdrawData.account_number.length >= 10 && val) {
+                                                            handleResolveAccount(withdrawData.account_number, val);
+                                                        }
                                                     }}
-                                                >
-                                                    <SelectTrigger className="h-14 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900">
-                                                        <SelectValue placeholder="Choose your bank" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-2xl border-none shadow-2xl">
-                                                        {banks.map(bank => (
-                                                            <SelectItem key={bank.uuid} value={bank.uuid} className="font-medium rounded-xl">
-                                                                {bank.name}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
+                                                    placeholder="Choose your bank"
+                                                    triggerClassName="h-14 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900"
+                                                />
                                             </div>
 
                                             <div className="space-y-2">
@@ -337,12 +345,19 @@ export default function WalletsPage() {
                                                 <div className="relative">
                                                     <Input 
                                                         value={withdrawData.account_number}
-                                                        onChange={(e) => setWithdrawData(prev => ({ ...prev, account_number: e.target.value }))}
-                                                        onBlur={handleResolveAccount}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setWithdrawData(prev => ({ ...prev, account_number: val }));
+                                                            if (val.length === 10 && withdrawData.bank_code) {
+                                                                handleResolveAccount(val, withdrawData.bank_code);
+                                                            } else if (val.length < 10) {
+                                                                setWithdrawData(prev => ({ ...prev, account_name: '' }));
+                                                            }
+                                                        }}
                                                         placeholder="8103078096"
                                                         className="h-14 rounded-2xl bg-zinc-50 border-none font-bold placeholder:text-zinc-300"
                                                     />
-                                                    {isResolving && <RefreshCcw size={16} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
+                                                    {isResolving && <Loader2 size={20} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
                                                 </div>
                                             </div>
                                         </div>
@@ -354,11 +369,25 @@ export default function WalletsPage() {
                                                     value={withdrawData.account_name}
                                                     readOnly
                                                     placeholder={isResolving ? "Resolving..." : "Validated Account Name"}
-                                                    className="h-16 rounded-2xl bg-emerald-50/30 border-none font-black text-emerald-900 placeholder:text-emerald-200"
+                                                    className={cn(
+                                                        "h-16 rounded-2xl border-none font-black transition-all duration-300",
+                                                        withdrawData.account_name 
+                                                            ? "bg-emerald-50 text-emerald-600" 
+                                                            : "bg-zinc-50 text-zinc-400 placeholder:text-zinc-300"
+                                                    )}
                                                 />
-                                                {withdrawData.account_name && (
-                                                    <CheckCircle2 size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 fill-emerald-50" />
-                                                )}
+                                                <AnimatePresence>
+                                                    {withdrawData.account_name && !isResolving && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, scale: 0.5 }}
+                                                            animate={{ opacity: 1, scale: 1 }}
+                                                            exit={{ opacity: 0, scale: 0.5 }}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
+                                                        >
+                                                            <CheckCircle2 size={20} />
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </div>
                                         </div>
 

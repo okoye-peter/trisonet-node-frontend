@@ -8,7 +8,6 @@ import {
     History,
     CheckCircle2,
     Clock,
-    XCircle,
     ArrowUpRight,
     Wallet,
     Copy,
@@ -105,9 +104,6 @@ interface SummaryResponse {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const API_BASE = 'http://localhost:5001/api'
-
 const fmt = (n: number | undefined | null) =>
     n == null ? '₦0.00' : `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
@@ -266,8 +262,16 @@ const ActivationCards = () => {
         fetchData()
     }, [fetchData])
 
+    // Reset modal state on close
+    useEffect(() => {
+        if (!isOpen) {
+            setQuantity(2)
+        }
+    }, [isOpen])
+
+
     const pricePerCard = summary?.price ?? 0
-    const totalAmount = quantity * pricePerCard
+    const totalAmount = quantity ? quantity * pricePerCard : 0
 
     const copyCode = (code: string) => {
         navigator.clipboard.writeText(code)
@@ -384,7 +388,7 @@ const ActivationCards = () => {
                                         type="number"
                                         min={2}
                                         value={quantity}
-                                        onChange={(e) => setQuantity(Math.max(2, parseInt(e.target.value) || 2))}
+                                        onChange={(e) => setQuantity(parseInt(e.target.value))}
                                         className="h-12 border-primary/20 focus-visible:ring-primary font-bold text-base"
                                     />
                                 </div>
@@ -448,7 +452,7 @@ const ActivationCards = () => {
                         <CardHeader className="pb-3">
                             <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Active Card
+                                Active Pim Code Card
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0 pb-6 px-6">

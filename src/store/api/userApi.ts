@@ -1,13 +1,18 @@
 import { apiSlice, type AppResponse } from './apiSlice';
 import type { User, UpdatePasswordRequest } from '@/types';
 
+export interface UpdateProfileRequest extends Partial<User> {
+    currentPassword?: string;
+    otp?: string;
+}
+
 export const userApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getUser: builder.query<AppResponse<User>, void>({
             query: () => 'users/me',
             providesTags: ['User'],
         }),
-        updateProfile: builder.mutation<AppResponse<User>, Partial<User>>({
+        updateProfile: builder.mutation<AppResponse<User>, UpdateProfileRequest>({
             query: (body) => ({
                 url: 'users/update',
                 method: 'PATCH',
