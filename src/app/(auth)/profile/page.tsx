@@ -155,12 +155,12 @@ function BankTab({ user }: BankTabProps) {
 
     const { data: banks, isLoading } = useQuery<Bank[]>({
         queryKey: ['banks'],
-        queryFn: () => api.get('/api/banks').then((res) => res.data?.data?.banks)
+        queryFn: () => api.get('/banks').then((res) => res.data?.data?.banks)
     })
 
     const { data: bankDetails, isLoading: isBankDetailsLoading } = useQuery<BankAccountDetail>({
         queryKey: ['user'],
-        queryFn: () => api.get('/api/users/me').then((res) => res.data?.data?.user),
+        queryFn: () => api.get('/users/me').then((res) => res.data?.data?.user),
         enabled: !!user?.bank && !!user?.accountNumber && !isLoading && !!banks && banks.length > 0
     })
 
