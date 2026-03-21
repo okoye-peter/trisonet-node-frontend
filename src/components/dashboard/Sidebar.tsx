@@ -44,7 +44,7 @@ const sidebarItems = [
             { label: 'Utility Bills', href: '/vtu', icon: Receipt },
             { label: 'Wallet', href: '/wallets', icon: Wallet },
             { label: 'Gkwth Business', href: '/wallets/gkwth', icon: Briefcase },
-            { label: 'Upfront Sales', href: '/dashboard/finance/upfront-sales', icon: TrendingUp },
+            { label: 'Upfront Sales', href: '/wallets/loans', icon: TrendingUp },
         ]
     },
     { icon: CheckCircle2, label: 'Winning Status', href: '/dashboard/status' },
@@ -67,7 +67,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                 }
             }
         });
-    }, [pathname]);
+    }, [pathname, openMenus]);
 
     const toggleMenu = (label: string) => {
         setOpenMenus(prev =>

@@ -312,13 +312,13 @@ export default function DashboardPage() {
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] transition-transform duration-1000 group-hover:scale-150" />
                     <Card className="border-none bg-transparent text-white p-8 h-full">
                         <CardContent className="p-0">
-                            <div className="flex items-center gap-3.5 mb-8  h-full">
+                            <div className="flex items-center gap-3.5 mb-8">
                                 <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
                                     <Clock size={20} className="text-white" />
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Global Countdown</span>
                             </div>
-                            <h2 className="text-5xl font-black tracking-tighter leading-none">
+                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter leading-none">
                                 <CountUp end={dashboardStats ? (dashboardStats?.region.max - (dashboardStats?.regionTotalUsers ?? 0)) : 0} duration={3} separator="," decimals={2} />
                             </h2>
                         </CardContent>

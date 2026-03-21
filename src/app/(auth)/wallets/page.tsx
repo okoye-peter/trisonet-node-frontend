@@ -23,8 +23,9 @@ import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -45,6 +46,7 @@ const walletConfig: Record<string, { label: string; icon: React.ElementType; col
 };
 
 export default function WalletsPage() {
+    const router = useRouter();
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: walletsResponse, isLoading: isWalletsLoading } = useGetWalletsQuery();
     const { data: banksResponse } = useGetBanksQuery();
@@ -66,23 +68,50 @@ export default function WalletsPage() {
         account_number: '',
         account_name: '',
         amount: '',
-        pin: ''
+        pin: '',
+        otp: ''
     });
 
+    // Check for bank details when switching to withdraw tab
     useEffect(() => {
-        if (user && activeTab === 'withdraw' && !withdrawData.account_number) {
-            const bankFromList = banks.find((b: { name: string; uuid: string }) => b.name === user.bank);
-            const timer = setTimeout(() => {
-                setWithdrawData(prev => ({
-                    ...prev,
-                    account_number: user.accountNumber || '',
-                    bank_name: user.bank || '',
-                    bank_code: bankFromList?.uuid || '',
-                }));
-            }, 0);
-            return () => clearTimeout(timer);
+        if (activeTab === 'withdraw' && user) {
+            if (!user.bank || !user.accountNumber) {
+                toast.error('Please set your bank details in your profile before withdrawing.');
+                const timer = setTimeout(() => {
+                    router.push('/profile');
+                }, 2000);
+                return () => clearTimeout(timer);
+            }
         }
-    }, [user, activeTab, withdrawData.account_number, banks]);
+    }, [activeTab, user, router]);
+
+    const isPrefilled = useRef(false);
+
+    // Prefill withdrawal data from user profile
+    useEffect(() => {
+        if (user && activeTab === 'withdraw' && user.bank && user.accountNumber && banks.length > 0 && !isPrefilled.current) {
+            const userBank = banks.find((b: { name: string; uuid: string }) => b.name === user.bank);
+            if (userBank) {
+                const timer = setTimeout(() => {
+                    setWithdrawData(prev => ({
+                        ...prev,
+                        account_number: user.accountNumber || '',
+                        bank_name: user.bank || '',
+                        bank_code: userBank.uuid || '',
+                    }));
+                }, 0);
+                isPrefilled.current = true;
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [user, activeTab, banks]);
+
+    // Reset prefilled state when tab changes
+    useEffect(() => {
+        if (activeTab !== 'withdraw') {
+            isPrefilled.current = false;
+        }
+    }, [activeTab]);
 
     const handleResolveAccount = useCallback(async (accountNumber?: string, bankUUID?: string) => {
         const acc = accountNumber ?? withdrawData.account_number;
@@ -110,23 +139,50 @@ export default function WalletsPage() {
         }
     }, [withdrawData.account_number, withdrawData.bank_code, resolveAccount, setWithdrawData]);
 
-    // Auto-resolve when form is pre-filled or changed
+    // Auto-resolve when prefilled
     useEffect(() => {
-        let isMounted = true;
-        
-        if (activeTab === 'withdraw' && withdrawData.account_number.length === 10 && withdrawData.bank_code && !withdrawData.account_name && !isResolving) {
-            const resolve = async () => {
-                if (isMounted) await handleResolveAccount();
-            };
-            resolve();
-        }
+        const shouldResolve = 
+            activeTab === 'withdraw' && 
+            withdrawData.account_number.length === 10 && 
+            withdrawData.bank_code && 
+            !withdrawData.account_name && 
+            !isResolving;
 
-        return () => { isMounted = false; };
+        if (shouldResolve) {
+            const timer = setTimeout(() => {
+                handleResolveAccount();
+            }, 0);
+            return () => clearTimeout(timer);
+        }
     }, [activeTab, withdrawData.account_number, withdrawData.bank_code, withdrawData.account_name, isResolving, handleResolveAccount]);
 
     const handleWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!directWallet) return;
+        
+        if (!directWallet) {
+            toast.error('Wallet not found. Please refresh and try again.');
+            return;
+        }
+
+        if (!withdrawData.amount || Number(withdrawData.amount) <= 0) {
+            toast.error('Please enter a valid amount to withdraw.');
+            return;
+        }
+
+        if (user?.role === 8 && !withdrawData.otp) {
+            toast.error('Please enter your withdrawal OTP.');
+            return;
+        }
+
+        if (user?.role !== 8 && !withdrawData.pin) {
+            toast.error('Please enter your transaction PIN.');
+            return;
+        }
+
+        if (!withdrawData.account_name) {
+            toast.error('Please wait for account resolution or enter valid details.');
+            return;
+        }
         
         try {
             await initiateWithdrawal({
@@ -136,7 +192,10 @@ export default function WalletsPage() {
                 account_name: withdrawData.account_name,
                 account_number: withdrawData.account_number,
                 wallet: directWallet.id!.toString(),
-                withdrawal_pin: withdrawData.pin
+                ...(user?.role === 8 
+                    ? { withdrawal_otp: withdrawData.otp } 
+                    : { withdrawal_pin: withdrawData.pin }
+                )
             }).unwrap();
             
             toast.success('Withdrawal request initiated successfully');
@@ -322,45 +381,68 @@ export default function WalletsPage() {
                                     </div>
 
                                     <form onSubmit={handleWithdraw} className="space-y-8">
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Select Bank</Label>
-                                                <SearchableSelect
-                                                    items={banks.map((bank: { name: string; uuid: string }) => ({ label: bank.name, value: bank.uuid }))}
-                                                    value={withdrawData.bank_code}
-                                                    onValueChange={(val: string) => {
-                                                        const bank = banks.find((b: { name: string; uuid: string }) => b.uuid === val);
-                                                        setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '', account_name: '' }));
-                                                        if (withdrawData.account_number.length >= 10 && val) {
-                                                            handleResolveAccount(withdrawData.account_number, val);
-                                                        }
-                                                    }}
-                                                    placeholder="Choose your bank"
-                                                    triggerClassName="h-14 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Number</Label>
-                                                <div className="relative">
-                                                    <Input 
-                                                        value={withdrawData.account_number}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            setWithdrawData(prev => ({ ...prev, account_number: val }));
-                                                            if (val.length === 10 && withdrawData.bank_code) {
-                                                                handleResolveAccount(val, withdrawData.bank_code);
-                                                            } else if (val.length < 10) {
-                                                                setWithdrawData(prev => ({ ...prev, account_name: '' }));
-                                                            }
-                                                        }}
-                                                        placeholder="8103078096"
-                                                        className="h-14 rounded-2xl bg-zinc-50 border-none font-bold placeholder:text-zinc-300"
-                                                    />
-                                                    {isResolving && <Loader2 size={20} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
+                                        {user?.bank && user?.accountNumber ? (
+                                            <div className="p-6 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Withdrawal Bank</p>
+                                                        <p className="text-xl font-black text-zinc-900">{user.bank}</p>
+                                                    </div>
+                                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                                        <CheckCircle2 size={24} />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Name</p>
+                                                        <p className="text-xl font-black text-zinc-900">{withdrawData.account_name || (isResolving ? 'Resolving...' : '---')}</p>
+                                                    </div>
+                                                    <Link href="/profile" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
+                                                        Change Details
+                                                    </Link>
                                                 </div>
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div className="grid md:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Select Bank</Label>
+                                                    <SearchableSelect
+                                                        items={banks.map((bank: { name: string; uuid: string }) => ({ label: bank.name, value: bank.uuid }))}
+                                                        value={withdrawData.bank_code}
+                                                        onValueChange={(val: string) => {
+                                                            const bank = banks.find((b: { name: string; uuid: string }) => b.uuid === val);
+                                                            setWithdrawData(prev => ({ ...prev, bank_code: val || '', bank_name: bank?.name || '', account_name: '' }));
+                                                            if (withdrawData.account_number.length >= 10 && val) {
+                                                                handleResolveAccount(withdrawData.account_number, val);
+                                                            }
+                                                        }}
+                                                        placeholder="Choose your bank"
+                                                        triggerClassName="h-14 rounded-2xl bg-zinc-50 border-none font-bold text-zinc-900"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Number</Label>
+                                                    <div className="relative">
+                                                        <Input 
+                                                            value={withdrawData.account_number}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setWithdrawData(prev => ({ ...prev, account_number: val }));
+                                                                if (val.length === 10 && withdrawData.bank_code) {
+                                                                    handleResolveAccount(val, withdrawData.bank_code);
+                                                                } else if (val.length < 10) {
+                                                                    setWithdrawData(prev => ({ ...prev, account_name: '' }));
+                                                                }
+                                                            }}
+                                                            placeholder="8103078096"
+                                                            className="h-14 rounded-2xl bg-zinc-50 border-none font-bold placeholder:text-zinc-300"
+                                                        />
+                                                        {isResolving && <Loader2 size={20} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         <div className="space-y-2">
                                             <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Name</Label>
@@ -406,14 +488,19 @@ export default function WalletsPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Transaction PIN</Label>
+                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">
+                                                    {user?.role === 8 ? 'Withdrawal OTP' : 'Transaction PIN'}
+                                                </Label>
                                                 <div className="relative">
                                                     <Input 
-                                                        value={withdrawData.pin}
-                                                        onChange={(e) => setWithdrawData(prev => ({ ...prev, pin: e.target.value }))}
-                                                        type="password"
-                                                        maxLength={4}
-                                                        placeholder="****"
+                                                        value={user?.role === 8 ? withdrawData.otp : withdrawData.pin}
+                                                        onChange={(e) => setWithdrawData(prev => ({ 
+                                                            ...prev, 
+                                                            [user?.role === 8 ? 'otp' : 'pin']: e.target.value 
+                                                        }))}
+                                                        type={user?.role === 8 ? 'text' : 'password'}
+                                                        maxLength={user?.role === 8 ? 6 : 4}
+                                                        placeholder={user?.role === 8 ? "000000" : "****"}
                                                         className="h-20 text-center text-3xl tracking-widest font-black rounded-2xl bg-zinc-50 border-none placeholder:text-zinc-200"
                                                     />
                                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-300" />
@@ -422,7 +509,8 @@ export default function WalletsPage() {
                                         </div>
 
                                         <Button 
-                                            disabled={isWithdrawing || !withdrawData.account_name}
+                                            type="submit"
+                                            disabled={isWithdrawing}
                                             className="w-full h-20 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xl font-black shadow-2xl shadow-emerald-100 transition-all disabled:opacity-50"
                                         >
                                             {isWithdrawing ? "Processing..." : "Withdraw Funds"}

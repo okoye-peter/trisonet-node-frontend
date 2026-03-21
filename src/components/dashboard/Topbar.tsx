@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, Bell, Search, ChevronDown, User, LogOut, Settings } from 'lucide-react';
+import { Menu, Search, ChevronDown, User, LogOut, Settings } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/features/authSlice';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const { user } = useAppSelector((state) => state.auth);
@@ -67,10 +68,9 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                         />
                     </div>
 
-                    <button className="relative rounded-xl p-2.5 text-zinc-400 transition-all hover:bg-zinc-100/80 hover:text-zinc-600 active:scale-95">
-                        <Bell size={20} />
-                        <span className="absolute right-3 top-3 h-2 w-2 rounded-full border-2 border-white bg-indigo-500 ring-4 ring-indigo-500/10 animate-pulse"></span>
-                    </button>
+                    <div className="relative">
+                        <NotificationCenter />
+                    </div>
 
                     <div className="relative" ref={dropdownRef}>
                         <button
