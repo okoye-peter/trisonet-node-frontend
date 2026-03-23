@@ -21,7 +21,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useGetWalletsQuery, useInitiateWalletFundingMutation, useLazyCheckFundingStatusQuery } from '@/store/api/walletApi';
+import { 
+    walletApi, 
+    useGetWalletsQuery, 
+    useInitiateDirectWalletFundingMutation, 
+    useLazyCheckFundingStatusQuery 
+} from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -31,16 +36,28 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+interface PagaOptions {
+    amount: number;
+    email?: string;
+    phoneNumber?: string;
+    publicKey: string;
+    referenceNumber: string;
+    onSuccess?: (response: unknown) => void;
+    onError?: (error: unknown) => void;
+    onClose?: () => void;
+    [key: string]: unknown;
+}
+
 declare global {
     interface Window {
         PagaCheckout: {
-            setOptions: (options: any) => void;
+            setOptions: (options: PagaOptions) => void;
             openCheckout: () => void;
         };
     }
@@ -65,6 +82,7 @@ const walletConfig: Record<string, { label: string; icon: React.ElementType; col
 
 export default function WalletsPage() {
     const router = useRouter();
+    const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: walletsResponse, isLoading: isWalletsLoading, refetch: refetchWallets } = useGetWalletsQuery();
     const { data: banksResponse } = useGetBanksQuery();
@@ -78,7 +96,7 @@ export default function WalletsPage() {
     const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
-    const [initiateWalletFunding, { isLoading: isInitiatingFunding }] = useInitiateWalletFundingMutation();
+    const [initiateWalletFunding, { isLoading: isInitiatingFunding }] = useInitiateDirectWalletFundingMutation();
     const [checkStatus] = useLazyCheckFundingStatusQuery();
 
     // Funding Modal States
@@ -152,6 +170,7 @@ export default function WalletsPage() {
                     setShowPollingModal(false);
                     setShowSuccessModal(true);
                     refetchWallets();
+                    dispatch(walletApi.util.invalidateTags(['Wallet']));
                     return;
                 }
             } catch (err) {
@@ -169,7 +188,7 @@ export default function WalletsPage() {
         }
 
         return () => clearTimeout(timer);
-    }, [showPollingModal, fundingData, pollingStartTime, pollingInterval, checkStatus, refetchWallets]);
+    }, [showPollingModal, fundingData, pollingStartTime, pollingInterval, checkStatus, refetchWallets, dispatch]);
 
     // Form States
     const [fundAmount, setFundAmount] = useState('');

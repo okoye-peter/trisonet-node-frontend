@@ -55,7 +55,7 @@ export const walletApi = apiSlice.injectEndpoints({
                 body,
             }),
         }),
-        initiateWalletFunding: builder.mutation<AppResponse<{ 
+        initiateDirectWalletFunding: builder.mutation<AppResponse<{ 
             reference: string; 
             amount: number; 
             publicKey: string; 
@@ -69,11 +69,10 @@ export const walletApi = apiSlice.injectEndpoints({
             }
         }>, { amount: number }>({
             query: (body) => ({
-                url: 'payment/wallet/initiate-funding',
+                url: 'payment/wallet/direct/funding',
                 method: 'POST',
                 body,
             }),
-            invalidatesTags: ['Wallet'],
         }),
         checkFundingStatus: builder.query<AppResponse<{ status: 'success' | 'pending' | 'failed' }>, string>({
             query: (reference) => `payment/wallet/check-status/${reference}`,
@@ -90,7 +89,7 @@ export const {
     useRequestAssetLoanMutation,
     useGetAssetLoansQuery,
     useGenerateWardSlotVirtualAccountMutation,
-    useInitiateWalletFundingMutation,
+    useInitiateDirectWalletFundingMutation,
     useLazyCheckFundingStatusQuery,
     useCheckFundingStatusQuery
 } = walletApi;
