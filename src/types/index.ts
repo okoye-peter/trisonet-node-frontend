@@ -150,7 +150,7 @@ export interface WardStats {
     unlimitedSlotPrice: number;
 }
 
-export interface Ward extends User {}
+export interface Ward extends User { }
 
 export interface PaginatedResult<T> {
     data: T[];

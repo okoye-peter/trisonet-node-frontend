@@ -270,7 +270,7 @@ function BankTab({ user }: BankTabProps) {
     return (
         <div className="space-y-8">
             <div className="grid gap-6 sm:grid-cols-2">
-                <div className="space-y-2.5 sm:col-span-2">
+                <div className="space-y-2.5">
                     <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Bank Name</Label>
                     <SearchableSelect
                         items={banks?.map((bank) => ({ label: bank.name, value: bank.uuid })) ?? []}
@@ -337,6 +337,18 @@ function BankTab({ user }: BankTabProps) {
                                 </motion.div>
                             )}
                         </AnimatePresence>
+                    </div>
+                </div>
+                <div className="space-y-2.5">
+                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Current Password</Label>
+                    <div className="relative">
+                        <Input
+                            type="password"
+                            className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                            value={bankData.currentPassword}
+                            placeholder="Enter your current password"
+                            onChange={(e) => setBankData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                        />
                     </div>
                 </div>
             </div>
