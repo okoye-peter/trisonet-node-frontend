@@ -9,17 +9,21 @@ import {
     CheckCircle2,
     RefreshCcw,
     Lock,
-    Loader2
+    Loader2,
+    Copy,
+    Clock,
+    CheckCircle,
+    AlertCircle,
+    MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useGetWalletsQuery, useInitiateWalletFundingMutation } from '@/store/api/walletApi';
+import { useGetWalletsQuery, useInitiateWalletFundingMutation, useLazyCheckFundingStatusQuery } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
-import { decrypt } from '@/lib/crypto';
 import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -31,10 +35,14 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 declare global {
     interface Window {
-        PagaCheckout: any;
+        PagaCheckout: {
+            setOptions: (options: any) => void;
+            openCheckout: () => void;
+        };
     }
 }
 
@@ -58,7 +66,7 @@ const walletConfig: Record<string, { label: string; icon: React.ElementType; col
 export default function WalletsPage() {
     const router = useRouter();
     const user = useSelector((state: RootState) => state.auth.user);
-    const { data: walletsResponse, isLoading: isWalletsLoading } = useGetWalletsQuery();
+    const { data: walletsResponse, isLoading: isWalletsLoading, refetch: refetchWallets } = useGetWalletsQuery();
     const { data: banksResponse } = useGetBanksQuery();
     const [resolveAccount, { isLoading: isResolving }] = useResolveAccountMutation();
     const [initiateWithdrawal, { isLoading: isWithdrawing }] = useInitiateWithdrawalMutation();
@@ -71,6 +79,28 @@ export default function WalletsPage() {
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
     const [initiateWalletFunding, { isLoading: isInitiatingFunding }] = useInitiateWalletFundingMutation();
+    const [checkStatus] = useLazyCheckFundingStatusQuery();
+
+    // Funding Modal States
+    const [fundingData, setFundingData] = useState<{
+        reference: string;
+        amount: number;
+        publicKey: string;
+        email: string;
+        phone: string;
+        account_detail: {
+            account_name: string;
+            bank_name: string;
+            account_number: string;
+            expiry_date: string;
+        };
+    } | null>(null);
+    const [showBankModal, setShowBankModal] = useState(false);
+    const [showPollingModal, setShowPollingModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showPendingModal, setShowPendingModal] = useState(false);
+    const [pollingInterval, setPollingInterval] = useState(2000); // Start with 2s
+    const [pollingStartTime, setPollingStartTime] = useState<number | null>(null);
 
     const handleFundWallet = async () => {
         if (!fundAmount || Number(fundAmount) < 500) {
@@ -86,28 +116,60 @@ export default function WalletsPage() {
                 return;
             }
 
-            const decryptedPublicKey = await decrypt(res.data.publicKey);
-            
-            if (window.PagaCheckout) {
-                window.PagaCheckout.setOptions({
-                    publicKey: decryptedPublicKey,
-                    amount: res.data.amount,
-                    currency: "NGN",
-                    phoneNumber: res.data.phone,
-                    email: res.data.email,
-                    callback_url: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payment/webhook/paga`,
-                    payment_reference: res.data.reference,
-                    funding_sources: 'CARD'
-                });
-                window.PagaCheckout.openCheckout();
-            } else {
-                toast.error('Payment gateway is not ready. Please refresh.');
-            }
+            setFundingData(res.data);
+            setShowBankModal(true);
         } catch (err: unknown) {
             const apiErr = err as { data?: { message?: string } };
             toast.error(apiErr.data?.message || 'Failed to initiate funding');
         }
     };
+
+    const startPolling = () => {
+        setShowBankModal(false);
+        setShowPollingModal(true);
+        setPollingStartTime(Date.now());
+        setPollingInterval(2000);
+    };
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        
+        const poll = async () => {
+            if (!showPollingModal || !fundingData?.reference || !pollingStartTime) return;
+
+            const timeElapsed = Date.now() - pollingStartTime;
+            const maxDuration = 90000; // 1 minute 30 seconds
+
+            if (timeElapsed >= maxDuration) {
+                setShowPollingModal(false);
+                setShowPendingModal(true);
+                return;
+            }
+
+            try {
+                const res = await checkStatus(fundingData.reference).unwrap();
+                if (res.data?.status === 'success') {
+                    setShowPollingModal(false);
+                    setShowSuccessModal(true);
+                    refetchWallets();
+                    return;
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+
+            // Exponential backoff
+            const nextInterval = Math.min(pollingInterval * 1.5, 10000); // Cap at 10s
+            setPollingInterval(nextInterval);
+            timer = setTimeout(poll, nextInterval);
+        };
+
+        if (showPollingModal) {
+            timer = setTimeout(poll, pollingInterval);
+        }
+
+        return () => clearTimeout(timer);
+    }, [showPollingModal, fundingData, pollingStartTime, pollingInterval, checkStatus, refetchWallets]);
 
     // Form States
     const [fundAmount, setFundAmount] = useState('');
@@ -618,6 +680,193 @@ export default function WalletsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Bank Details Modal */}
+            <Dialog open={showBankModal} onOpenChange={setShowBankModal}>
+                <DialogContent className="max-w-md rounded-[2.5rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
+                    <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 opacity-10">
+                            <Plus size={120} />
+                        </div>
+                        <DialogHeader className="relative z-10">
+                            <DialogTitle className="text-2xl font-black">Transfer Details</DialogTitle>
+                            <DialogDescription className="text-indigo-100 font-medium">
+                                Please make a transfer of exactly ₦{fundingData?.amount?.toLocaleString()} to the account below.
+                            </DialogDescription>
+                        </DialogHeader>
+                    </div>
+                    
+                    <div className="p-8 space-y-6">
+                        <div className="space-y-4">
+                            <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
+                                <div>
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Bank Name</p>
+                                    <p className="text-lg font-black text-zinc-900">{fundingData?.account_detail?.bank_name}</p>
+                                </div>
+                                <div className="p-2 bg-white rounded-lg shadow-xs group-hover:scale-110 transition-transform">
+                                    <Plus className="text-indigo-600" size={20} />
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
+                                <div>
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Number</p>
+                                    <p className="text-lg font-black text-zinc-900 tracking-wider">{fundingData?.account_detail?.account_number}</p>
+                                </div>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => {
+                                        if (fundingData?.account_detail?.account_number) {
+                                            navigator.clipboard.writeText(fundingData.account_detail.account_number);
+                                            toast.success('Account number copied!');
+                                        }
+                                    }}
+                                    className="bg-white hover:bg-indigo-50 text-indigo-600 rounded-xl shadow-xs"
+                                >
+                                    <Copy size={18} />
+                                </Button>
+                            </div>
+
+                            <div className="p-4 bg-zinc-50 rounded-2xl group hover:bg-zinc-100 transition-colors">
+                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Name</p>
+                                <p className="text-lg font-black text-zinc-900">{fundingData?.account_detail?.account_name}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl text-amber-700">
+                            <Clock size={20} className="shrink-0" />
+                            <p className="text-xs font-bold leading-relaxed italic">
+                                This account expires at {fundingData?.account_detail?.expiry_date}. Please complete the transfer before then.
+                            </p>
+                        </div>
+
+                        <Button 
+                            onClick={startPolling}
+                            className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all"
+                        >
+                            I&apos;ve Made The Transfer
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Polling/Processing Modal */}
+            <Dialog open={showPollingModal} onOpenChange={() => {}}>
+                <DialogContent className="max-w-sm rounded-[2.5rem] border-none p-12 text-center bg-white shadow-2xl overflow-hidden relative">
+                    <div className="absolute top-0 inset-x-0 h-2 bg-zinc-100 overflow-hidden">
+                        <motion.div 
+                            className="h-full bg-indigo-600"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "100%" }}
+                            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                        />
+                    </div>
+                    <div className="space-y-6">
+                        <div className="relative inline-block">
+                            <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-25" />
+                            <div className="relative h-20 w-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
+                                <Loader2 className="animate-spin" size={40} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-black text-zinc-900 italic">Verifying Payment</h2>
+                            <p className="text-sm text-zinc-500 font-medium">
+                                We&apos;re checking your transfer details. This usually takes less than a minute.
+                            </p>
+                        </div>
+                        <div className="flex justify-center gap-1.5 pt-4">
+                            {[0, 1, 2].map((i) => (
+                                <motion.div
+                                    key={i}
+                                    className="h-2 w-2 bg-indigo-600 rounded-full"
+                                    animate={{ opacity: [0.2, 1, 0.2] }}
+                                    transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Success Modal */}
+            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <DialogContent className="max-w-sm rounded-[3rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
+                    <div className="bg-emerald-500 p-12 text-center text-white relative">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50" />
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
+                            className="relative h-24 w-24 bg-white text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-2xl mb-6"
+                        >
+                            <CheckCircle size={56} />
+                        </motion.div>
+                        <h2 className="text-3xl font-black tracking-tighter mb-2 italic">Success!</h2>
+                        <p className="text-emerald-50 font-medium italic">Wallet Funded Successfully</p>
+                    </div>
+                    <div className="p-8 space-y-6 text-center">
+                        <div className="space-y-1">
+                            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Amount Credited</p>
+                            <p className="text-4xl font-black text-zinc-900 tracking-tighter">₦{fundingData?.amount?.toLocaleString()}</p>
+                        </div>
+                        <Button 
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                setActiveTab('overview');
+                            }}
+                            className="w-full h-16 rounded-[1.5rem] bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-xl shadow-emerald-100 transition-all font-inter"
+                        >
+                            Back to Overview
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Pending/Timeout Modal */}
+            <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
+                <DialogContent className="max-w-md rounded-[2.5rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
+                    <div className="bg-amber-500 p-12 text-center text-white relative">
+                        <div className="relative h-20 w-20 bg-white/20 text-white rounded-full flex items-center justify-center mx-auto mb-6">
+                            <AlertCircle size={48} />
+                        </div>
+                        <h2 className="text-2xl font-black italic">Still Processing</h2>
+                        <p className="text-amber-50 font-medium italic">We haven&apos;t confirmed your payment yet.</p>
+                    </div>
+                    <div className="p-8 space-y-8">
+                        <div className="space-y-4">
+                            <div className="flex gap-4 p-4 bg-zinc-50 rounded-2xl items-start">
+                                <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                                    <Clock size={20} />
+                                </div>
+                                <div>
+                                    <p className="font-black text-zinc-900 text-sm italic">Don&apos;t worry!</p>
+                                    <p className="text-xs text-zinc-500 font-medium">Your request is still in our queue and will be processed shortly.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 p-4 bg-zinc-50 rounded-2xl items-start">
+                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                    <MessageCircle size={20} />
+                                </div>
+                                <div>
+                                    <p className="font-black text-zinc-900 text-sm italic">Need help?</p>
+                                    <p className="text-xs text-zinc-500 font-medium">If your funds don&apos;t appear in 30 minutes, please contact support for assistance.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <Button 
+                                variant="outline"
+                                onClick={() => setShowPendingModal(false)}
+                                className="w-full h-16 rounded-2xl border-zinc-200 font-black text-zinc-600 hover:bg-zinc-50 transition-all font-inter"
+                            >
+                                Close
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
