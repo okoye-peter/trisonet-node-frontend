@@ -34,7 +34,9 @@ const Stats = () => {
     const [isMounted, setIsMounted] = React.useState(false);
 
     React.useEffect(() => {
-        setIsMounted(true);
+        React.startTransition(() => {
+            setIsMounted(true);
+        });
     }, []);
 
     const { data: response, isLoading, isError } = useQuery({
@@ -100,7 +102,7 @@ const Stats = () => {
                         <Trophy className="h-8 w-8 text-primary" />
                     </motion.div>
                     <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent">
-                        Referral Competition
+                        Top 5 Sellers in Competition
                     </h1>
                     <p className="text-muted-foreground text-lg">
                         Real-time standings of our top community contributors
@@ -120,7 +122,7 @@ const Stats = () => {
                                     <BarChart3 className="h-5 w-5 text-primary" />
                                     <CardTitle>Performance Visualization</CardTitle>
                                 </div>
-                                <CardDescription>Visual breakdown of referral distribution among the top 5</CardDescription>
+                                <CardDescription>Visual breakdown of top 5 sellers distribution</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6">
                                 <div className="h-[300px] w-full">

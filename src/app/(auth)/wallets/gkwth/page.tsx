@@ -3,7 +3,6 @@
 import { 
     TrendingUp, 
     ArrowRightLeft,
-    DollarSign,
     ShieldCheck,
     RefreshCcw,
     Loader2
@@ -39,6 +38,10 @@ import { toast } from 'sonner';
 
 type TabType = 'overview' | 'fund' | 'sell';
 
+const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
+    <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
+);
+
 export default function GkwthWalletPage() {
     const router = useRouter();
     const user = useSelector((state: RootState) => state.auth.user);
@@ -54,8 +57,8 @@ export default function GkwthWalletPage() {
     const indirectWallet = wallets.find(w => w.type === 'indirect');
     const prices = pricesResponse?.data;
 
-    const sellPrice = Number(prices?.gkwthPurchasePrice) || 0;
-    const fundPrice = Number(prices?.gkwthSalePrice) || 0;
+    const purchasePrice = Number(prices?.gkwthPurchasePrice) || 0;
+    const salePrice = Number(prices?.gkwthSalePrice) || 0;
 
     const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
@@ -380,7 +383,7 @@ export default function GkwthWalletPage() {
 
                                 <Card className="border-zinc-100 bg-white rounded-[3rem] p-10 flex flex-col justify-center items-center text-center group transition-all hover:shadow-2xl">
                                     <div className="h-20 w-20 rounded-3xl bg-emerald-50 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
-                                        <DollarSign className="text-emerald-600" size={40} />
+                                        <NairaIcon className="text-emerald-600" size={40} />
                                     </div>
                                     <h3 className="text-2xl font-black text-zinc-900 mb-4">Direct Wallet</h3>
                                     <p className="text-zinc-500 font-medium mb-10 max-w-[280px] italic leading-relaxed">
@@ -409,7 +412,7 @@ export default function GkwthWalletPage() {
                                 <CardContent className="p-8 space-y-8">
                                     <div className="space-y-1">
                                         <h2 className="text-3xl font-black text-zinc-900">Fund GKWTH</h2>
-                                        <p className="text-lg text-zinc-400 font-bold">Unit Price: <span className="text-zinc-600">₦{sellPrice.toLocaleString()}.00</span></p>
+                                        <p className="text-lg text-zinc-400 font-bold">Unit Price: <span className="text-zinc-600">₦{salePrice.toLocaleString()}.00</span></p>
                                     </div>
 
                                     <form onSubmit={handleFund} className="space-y-6">
@@ -431,7 +434,7 @@ export default function GkwthWalletPage() {
                                             <div className="relative">
                                                 <div className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold text-zinc-400">₦</div>
                                                 <Input 
-                                                    value={fundQuantity ? (Number(fundQuantity) * sellPrice).toLocaleString() : '0'}
+                                                    value={fundQuantity ? (Number(fundQuantity) * salePrice).toLocaleString() : '0'}
                                                     readOnly
                                                     className="h-14 pl-12 text-xl font-bold rounded-xl bg-zinc-100/50 border-none cursor-not-allowed"
                                                 />
@@ -463,7 +466,7 @@ export default function GkwthWalletPage() {
                                 <CardContent className="p-8 space-y-8">
                                     <div className="space-y-1">
                                         <h2 className="text-3xl font-black text-zinc-900">Sell GKWTH</h2>
-                                        <p className="text-lg text-zinc-400 font-bold">Unit Price: <span className="text-zinc-600">₦{fundPrice.toLocaleString()}</span></p>
+                                        <p className="text-lg text-zinc-400 font-bold">Unit Price: <span className="text-zinc-600">₦{purchasePrice.toLocaleString()}</span></p>
                                     </div>
 
                                     <form onSubmit={handleWithdraw} className="space-y-6">
@@ -583,14 +586,26 @@ export default function GkwthWalletPage() {
 
 
                                         <div className="space-y-2">
-                                            <Label className="text-sm font-bold text-zinc-500 ml-1">Amount</Label>
+                                            <Label className="text-sm font-bold text-zinc-500 ml-1">GKWTH Quantity</Label>
                                             <Input 
                                                 value={withdrawData.amount}
                                                 onChange={(e) => setWithdrawData(prev => ({ ...prev, amount: e.target.value }))}
-                                                placeholder="Enter amount"
+                                                placeholder="Enter quantity"
                                                 className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 type="number"
                                             />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-bold text-zinc-500 ml-1">Price</Label>
+                                            <div className="relative">
+                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold text-zinc-400">₦</div>
+                                                <Input 
+                                                    value={withdrawData.amount ? (Number(withdrawData.amount) * purchasePrice).toLocaleString() : '0'}
+                                                    readOnly
+                                                    className="h-14 pl-12 text-xl font-bold rounded-xl bg-zinc-100/50 border-none cursor-not-allowed"
+                                                />
+                                            </div>
                                         </div>
 
                                         <div className="space-y-2">
@@ -630,7 +645,7 @@ export default function GkwthWalletPage() {
                     <DialogContent className="sm:max-w-md bg-white rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
                         <div className="bg-indigo-600 p-8 text-white relative">
                             <div className="absolute top-0 right-0 p-8 opacity-10">
-                                <DollarSign size={80} />
+                                <NairaIcon size={80} />
                             </div>
                             <DialogHeader>
                                 <DialogTitle className="text-2xl font-black flex items-center gap-2">

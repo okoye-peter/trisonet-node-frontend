@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -30,8 +30,8 @@ import {
     AlertCircle
 } from 'lucide-react';
 import type { WardStats } from '@/types';
-import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { useGenerateWardSlotVirtualAccountMutation } from '@/store/api/walletApi';
 
 interface SlotPurchaseModalProps {
     open: boolean;
@@ -48,9 +48,9 @@ interface PaymentDetail {
 }
 
 export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseModalProps) {
+    const [generateVirtualAccount, { isLoading: isGenerating }] = useGenerateWardSlotVirtualAccountMutation();
     const [type, setType] = useState<'limited' | 'unlimited'>('limited');
     const [quantity, setQuantity] = useState<number>(1);
-    const [isLoading, setIsLoading] = useState(false);
     const [paymentDetail, setPaymentDetail] = useState<PaymentDetail | null>(null);
 
     const pricePerSlot = stats?.pricePerSlot || 0;
@@ -58,30 +58,31 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
 
     const total = type === 'limited' ? quantity * pricePerSlot : unlimitedPrice;
 
-    useEffect(() => {
-        if (!open) {
+    const handleOpenChange = (newOpen: boolean) => {
+        if (!newOpen) {
             setPaymentDetail(null);
-            setIsLoading(false);
             setType('limited');
             setQuantity(1);
         }
-    }, [open]);
+        onOpenChange(newOpen);
+    };
 
 
     const handlePurchase = async () => {
-        setIsLoading(true);
         try {
-            const res = await api.post('/users/purchase-slot', {
+            console.log('Generating virtual account...', 'handlePurchase');
+            const res = await generateVirtualAccount({
                 type,
                 quantity: type === 'limited' ? quantity : undefined
-            });
-            setPaymentDetail(res.data.data.account_detail);
-            toast.success('Virtual account generated successfully!');
+            }).unwrap();
+            if (res.data) {
+                setPaymentDetail(res.data.account_detail);
+                toast.success('Virtual account generated successfully!');
+            }
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'Failed to generate virtual account';
+            const err = error as { data?: { message?: string }; message?: string };
+            const message = err?.data?.message || err.message || 'Failed to generate virtual account';
             toast.error(message);
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -91,7 +92,7 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-[500px] border-none shadow-2xl overflow-hidden p-0">
                 {!paymentDetail ? (
                     <div className="p-6 space-y-8">
@@ -174,10 +175,10 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
                         <DialogFooter className="pt-2">
                             <Button 
                                 onClick={handlePurchase}
-                                disabled={isLoading}
+                                disabled={isGenerating}
                                 className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
                             >
-                                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+                                {isGenerating ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
                                 Generate Payment Account
                             </Button>
                         </DialogFooter>
@@ -223,7 +224,7 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
                             <div className="flex flex-col gap-3 pt-4">
                                 <Button 
                                     className="h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all active:scale-95"
-                                    onClick={() => onOpenChange(false)}
+                                    onClick={() => handleOpenChange(false)}
                                 >
                                     I Have Made the Payment
                                 </Button>

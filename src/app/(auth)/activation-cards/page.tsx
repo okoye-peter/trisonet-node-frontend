@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, startTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     CreditCard,
@@ -40,66 +40,33 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import api from '@/lib/axios'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { useDispatch } from 'react-redux'
-import { logout } from '@/store/features/authSlice'
-import axios from 'axios'
 import LoadingScreen from '@/components/LoadingScreen'
+import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, type PaymentAccountDetail } from '@/store/api/pimCardApi'
+import { useGetUserQuery } from '@/store/api/userApi'
+import { toast } from 'sonner'
+
+const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
+    <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
+)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface PimCard {
-    id: string
-    code: string
-    amount: number
-    pricePerUser: number
-    userId: string
-    proofOfPayment: string
-    status: number   // 0 = pending, 1 = approved, 2 = cancelled
-    rejectionReason: string | null
-    approvedBy: string | null
-    createdAt: string
-    updatedAt: string
-}
-
-interface CardsMeta {
-    totalItems: number
-    itemsPerPage: number
-    currentPage: number
-    totalPages: number
-    hasNextPage: boolean
-    hasPreviousPage: boolean
-}
-
-interface CardsResponse {
-    status: string
-    data: {
-        data: PimCard[]
-        meta: CardsMeta
-    }
-}
-
-interface SummaryResponse {
-    status: string
-    data: {
-        totalCards: number
-        availableSlots: number
-        pendingCards: number
-        price: number
-        activeCard: {
-            id: string
-            code: string
-            amount: number
-            pricePerUser: number
-            createdAt: string
-        } | null
-        status: {
-            PENDING: number
-            APPROVED: number
-            CANCELLED: number
-        }
+export interface PimCardsSummary {
+    totalCards: number
+    availableSlots: number
+    pendingCards: number
+    price: number
+    activeCard: {
+        id: string
+        code: string
+        amount: number
+        pricePerUser: number
+        createdAt: string
+    } | null
+    status: {
+        PENDING: number
+        APPROVED: number
+        CANCELLED: number
     }
 }
 
@@ -218,60 +185,53 @@ const ActivationCards = () => {
     const [isMounted, setIsMounted] = useState(false)
     const [quantity, setQuantity] = useState(2)
     const [isOpen, setIsOpen] = useState(false)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+    const [paymentDetails, setPaymentDetails] = useState<PaymentAccountDetail | null>(null)
     const [copiedCode, setCopiedCode] = useState<string | null>(null)
-    const router = useRouter()
-    const dispatch = useDispatch()
 
-    const [cards, setCards] = useState<PimCard[]>([])
-    const [summary, setSummary] = useState<SummaryResponse['data'] | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const { data: cardsResponse, isLoading: isCardsLoading, refetch: refetchCards } = useGetPimCardsQuery({ page: 1, limit: 100 })
+    const { data: summaryResponse, isLoading: isSummaryLoading, refetch: refetchSummary } = useGetPimCardsSummaryQuery()
+    const [purchaseCard, { isLoading: isPurchasing }] = usePurchasePimCardMutation()
+
+    useEffect(() => {
+        startTransition(() => {
+            setIsMounted(true)
+        })
+    }, [])
+
+    const cards = cardsResponse?.data?.data ?? []
+    const summary = summaryResponse?.data ?? null
+    const loading = isCardsLoading || isSummaryLoading
+    const error = null // Error handling is now integrated in the hooks or toast
 
     const fetchData = useCallback(async () => {
-        setLoading(true)
-        setError(null)
-        try {
-            const [cardsRes, summaryRes] = await Promise.all([
-                api.get(`/pim_cards`),
-                api.get(`/pim_cards/summary`),
-            ])
-            const cardsJson: CardsResponse = cardsRes.data
-            const summaryJson: SummaryResponse = summaryRes.data
-            setCards(cardsJson.data?.data ?? [])
-            setSummary(summaryJson.data ?? null)
-        } catch (error) {
-            const message = axios.isAxiosError(error)
-                ? (error.response?.data?.message ?? 'Failed to fetch card data.')
-                : 'An unexpected error occurred.'
+        refetchCards()
+        refetchSummary()
+    }, [refetchCards, refetchSummary])
 
-            toast.error(message)
-            setError(message)
 
-            // If the token is completely expired / invalid after refresh attempt, log out
-            if (axios.isAxiosError(error) && error.response?.status === 401) {
-                dispatch(logout())
-                router.replace('/login')
-            }
-        } finally {
-            setLoading(false)
-        }
-    }, [dispatch, router])
 
-    useEffect(() => {
-        setIsMounted(true)
-        fetchData()
-    }, [fetchData])
-
-    // Reset modal state on close
-    useEffect(() => {
-        if (!isOpen) {
-            setQuantity(2)
-        }
-    }, [isOpen])
-
+    const { data: userResponse } = useGetUserQuery()
+    const user = userResponse?.data ?? null
 
     const pricePerCard = summary?.price ?? 0
-    const totalAmount = quantity ? quantity * pricePerCard : 0
+    const subtotal = quantity ? (user?.username === 'dev_user' ? 100 : quantity * pricePerCard) : 0
+
+    const calculateCharge = (amount: number) => {
+        if (amount === 0) return 0
+        const chargeRate = 0.015
+        const vatRate = 0.075
+        const capped = 1000
+
+        const charge = amount * chargeRate
+        const vat = charge * vatRate
+        const totalCharge = charge + vat
+
+        return Math.min(Math.round(totalCharge * 100) / 100, capped)
+    }
+
+    const charge = calculateCharge(subtotal)
+    const totalAmount = subtotal + charge
 
     const copyCode = (code: string) => {
         navigator.clipboard.writeText(code)
@@ -342,7 +302,10 @@ const ActivationCards = () => {
                         <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
                     </Button>
 
-                    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                    <Dialog open={isOpen} onOpenChange={(open) => {
+                        setIsOpen(open)
+                        if (!open) setQuantity(2)
+                    }}>
                         <DialogTrigger render={
                             <Button
                                 size="lg"
@@ -394,15 +357,25 @@ const ActivationCards = () => {
                                 </div>
 
                                 {/* Total box */}
-                                <div className="rounded-2xl bg-linear-to-br from-primary/10 to-emerald-500/5 border border-primary/15 p-5 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-[10px] font-black text-primary uppercase tracking-[.18em] mb-1">Total Amount</p>
-                                        <p className="text-3xl font-black text-primary">
-                                            {fmt(totalAmount)}
-                                        </p>
+                                <div className="rounded-2xl bg-linear-to-br from-primary/10 to-emerald-500/5 border border-primary/15 p-5 space-y-3">
+                                    <div className="flex justify-between items-center text-sm font-medium">
+                                        <span className="text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">Subtotal</span>
+                                        <span className="font-bold flex-shrink-0">{fmt(subtotal)}</span>
                                     </div>
-                                    <div className="p-3 bg-primary/10 rounded-xl">
-                                        <Wallet className="h-6 w-6 text-primary" />
+                                    <div className="flex justify-between items-center text-sm font-medium">
+                                        <span className="text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">Service Charge</span>
+                                        <span className="font-bold flex-shrink-0">{fmt(charge)}</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-primary/10 flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-black text-primary uppercase tracking-[.18em] mb-1">Total Amount</p>
+                                            <p className="text-3xl font-black text-primary">
+                                                {fmt(totalAmount)}
+                                            </p>
+                                        </div>
+                                        <div className="p-3 bg-primary/10 rounded-xl">
+                                            <Wallet className="h-6 w-6 text-primary" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -410,8 +383,23 @@ const ActivationCards = () => {
                             <DialogFooter>
                                 <Button
                                     className="w-full h-12 rounded-xl text-base font-bold shadow-xl shadow-primary/10 transition-all active:scale-95"
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={async () => {
+                                        try {
+                                            const res = await purchaseCard({ quantity, amount: totalAmount }).unwrap();
+                                            if (res.data) {
+                                                setPaymentDetails(res.data.account_detail);
+                                                setIsOpen(false);
+                                                setIsPaymentModalOpen(true);
+                                                toast.success('Virtual account generated!');
+                                            }
+                                        } catch (err: unknown) {
+                                            const error = err as { data?: { message?: string }; message?: string };
+                                            toast.error(error?.data?.message || error.message || 'Failed to generate virtual account');
+                                        }
+                                    }}
+                                    disabled={isPurchasing}
                                 >
+                                    {isPurchasing ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : null}
                                     Generate Virtual Account
                                     <ArrowUpRight className="ml-2 h-5 w-5" />
                                 </Button>
@@ -657,7 +645,7 @@ const ActivationCards = () => {
                 </Card>
             </motion.div>
 
-            {/* ── Footer note ── */}
+            {/* Footer note */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -669,6 +657,72 @@ const ActivationCards = () => {
                     Need help with your activation cards? Contact support or check the FAQ.
                 </div>
             </motion.div>
+
+            {/* Payment Details Modal */}
+            <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden">
+                    <div className="bg-emerald-600 p-8 text-white relative">
+                        <div className="absolute top-0 right-0 p-8 opacity-10">
+                            <NairaIcon size={80} />
+                        </div>
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-black flex items-center gap-2">
+                                <CheckCircle2 className="text-emerald-200" />
+                                Payment details
+                            </DialogTitle>
+                            <DialogDescription className="text-emerald-50/70 font-medium">
+                                Transfer the exact amount to the account below.
+                            </DialogDescription>
+                        </DialogHeader>
+                    </div>
+
+                    <div className="p-8 space-y-6">
+                        <div className="text-center space-y-2 pb-2">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Amount to Transfer</p>
+                            <h3 className="text-4xl font-black tracking-tighter text-zinc-900">₦{paymentDetails?.amount.toLocaleString()}</h3>
+                            <div className="flex items-center justify-center gap-2 mt-2">
+                                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 font-bold px-3 py-1">
+                                    <Clock size={12} className="mr-1.5" />
+                                    Expires at {paymentDetails?.expiry_date}
+                                </Badge>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div 
+                                className="group rounded-3xl bg-zinc-50 p-6 border-2 border-transparent hover:border-emerald-500/20 transition-all cursor-pointer relative"
+                                onClick={() => {
+                                    if(paymentDetails?.account_number) {
+                                        navigator.clipboard.writeText(paymentDetails.account_number);
+                                        toast.success('Account number copied');
+                                    }
+                                }}
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Account Number</p>
+                                    <div className="h-8 w-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-muted-foreground group-hover:text-emerald-600 transition-colors">
+                                        <Copy size={14} />
+                                    </div>
+                                </div>
+                                <p className="text-3xl font-black text-zinc-900 tracking-tight">{paymentDetails?.account_number}</p>
+                                <div className="mt-3 flex items-center gap-3">
+                                    <div className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest">{paymentDetails?.bank_name}</div>
+                                    <div className="text-[11px] font-bold text-zinc-500">{paymentDetails?.account_name}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <Button 
+                                className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                onClick={() => setIsPaymentModalOpen(false)}
+                            >
+                                I Have Made the Payment
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

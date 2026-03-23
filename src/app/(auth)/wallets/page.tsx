@@ -4,7 +4,6 @@ import {
     TrendingUp, 
     ArrowRightLeft,
     Plus,
-    DollarSign,
     ShieldCheck,
     ArrowUpRight,
     CheckCircle2,
@@ -17,9 +16,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useGetWalletsQuery } from '@/store/api/walletApi';
+import { useGetWalletsQuery, useInitiateWalletFundingMutation } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
+import { decrypt } from '@/lib/crypto';
 import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -32,12 +32,22 @@ import { RootState } from '@/store/store';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 
+declare global {
+    interface Window {
+        PagaCheckout: any;
+    }
+}
+
 type TabType = 'overview' | 'fund' | 'withdraw';
+
+const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
+    <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
+);
 
 const walletConfig: Record<string, { label: string; icon: React.ElementType; color: string; bg: string; border: string; gradient: string }> = {
     direct: { 
         label: 'Direct Wallet', 
-        icon: DollarSign, 
+        icon: NairaIcon, 
         color: 'text-emerald-600', 
         bg: 'bg-emerald-50', 
         border: 'border-emerald-100',
@@ -59,6 +69,39 @@ export default function WalletsPage() {
 
     const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+
+    const [initiateWalletFunding, { isLoading: isInitiatingFunding }] = useInitiateWalletFundingMutation();
+
+    const handleFundWallet = async () => {
+        if (!fundAmount || Number(fundAmount) < 500) {
+            toast.error('Minimum funding amount is ₦500');
+            return;
+        }
+
+        try {
+            const res = await initiateWalletFunding({ amount: Number(fundAmount) }).unwrap();
+            const decryptedPublicKey = await decrypt(res.data.publicKey);
+            
+            if (window.PagaCheckout) {
+                window.PagaCheckout.setOptions({
+                    publicKey: decryptedPublicKey,
+                    amount: res.data.amount,
+                    currency: "NGN",
+                    phoneNumber: res.data.phone,
+                    email: res.data.email,
+                    callback_url: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/payment/webhook/paga`,
+                    payment_reference: res.data.reference,
+                    funding_sources: 'CARD'
+                });
+                window.PagaCheckout.openCheckout();
+            } else {
+                toast.error('Payment gateway is not ready. Please refresh.');
+            }
+        } catch (err: unknown) {
+            const apiErr = err as { data?: { message?: string } };
+            toast.error(apiErr.data?.message || 'Failed to initiate funding');
+        }
+    };
 
     // Form States
     const [fundAmount, setFundAmount] = useState('');
@@ -168,6 +211,7 @@ export default function WalletsPage() {
             toast.error('Please enter a valid amount to withdraw.');
             return;
         }
+        
 
         if (user?.role === 8 && !withdrawData.otp) {
             toast.error('Please enter your withdrawal OTP.');
@@ -280,7 +324,7 @@ export default function WalletsPage() {
                                             <CardContent className="p-8 bg-white rounded-[2.3rem]">
                                                 <div className="flex items-center justify-between mb-8">
                                                     <div className={cn("rounded-2xl p-4 shadow-sm", walletConfig.direct.bg, walletConfig.direct.color)}>
-                                                        <DollarSign size={24} strokeWidth={2.5} />
+                                                        <NairaIcon size={24} />
                                                     </div>
                                                     <Badge variant="outline" className={cn("text-[8px] font-black uppercase tracking-widest border-2", walletConfig.direct.border, walletConfig.direct.color)}>
                                                         Primary
@@ -350,8 +394,19 @@ export default function WalletsPage() {
                                             </div>
                                         </div>
 
-                                        <Button className="w-full h-20 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-black shadow-2xl shadow-indigo-100 transition-all">
-                                            Generate Payment Reference
+                                        <Button 
+                                            onClick={handleFundWallet}
+                                            disabled={isInitiatingFunding}
+                                            className="w-full h-20 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-black shadow-2xl shadow-indigo-100 transition-all font-inter disabled:opacity-50"
+                                        >
+                                            {isInitiatingFunding ? (
+                                                <div className="flex items-center gap-2">
+                                                    <Loader2 className="animate-spin" />
+                                                    Processing...
+                                                </div>
+                                            ) : (
+                                                "Fund Wallet"
+                                            )}
                                         </Button>
                                     </div>
                                 </CardContent>
