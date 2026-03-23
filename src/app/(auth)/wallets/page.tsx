@@ -80,6 +80,12 @@ export default function WalletsPage() {
 
         try {
             const res = await initiateWalletFunding({ amount: Number(fundAmount) }).unwrap();
+            
+            if (!res.data) {
+                toast.error('Failed to initiate funding: No data returned');
+                return;
+            }
+
             const decryptedPublicKey = await decrypt(res.data.publicKey);
             
             if (window.PagaCheckout) {
