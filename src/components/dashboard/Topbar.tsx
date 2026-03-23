@@ -112,14 +112,16 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                                         </div>
                                         My Profile
                                     </Link>
-                                    <button
+                                    <Link
+                                        href="/settings"
+                                        onClick={() => setIsDropdownOpen(false)}
                                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100/80 hover:text-zinc-900"
                                     >
                                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-50 text-zinc-500">
                                             <Settings size={18} />
                                         </div>
                                         Settings
-                                    </button>
+                                    </Link>
                                     <div className="my-1 h-px bg-zinc-100" />
                                     <button
                                         onClick={handleLogout}

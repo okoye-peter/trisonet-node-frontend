@@ -11,14 +11,20 @@ import { Label } from '@/components/ui/label';
 import { useAppSelector } from '@/store/hooks';
 import type { BankAccountDetail, User as UserType } from '@/types';
 import { toast } from "sonner"
-import { useUpdateProfileMutation, useUpdatePasswordMutation, useSendOtpMutation, UpdateProfileRequest } from '@/store/api/userApi'
+import { 
+    useUpdateProfileMutation, 
+    useUpdateBankDetailsMutation,
+    useUpdatePasswordMutation, 
+    useSendWithdrawalPinOtpMutation, 
+    useResetWithdrawalPinMutation
+} from '@/store/api/userApi'
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 
 
-type TabType = 'personal' | 'bank' | 'password';
+type TabType = 'personal' | 'bank' | 'password' | 'pin';
 
 interface PersonalInfoTabProps {
     user: UserType | null;
@@ -147,13 +153,11 @@ function BankTab({ user }: BankTabProps) {
         bankUUID: '',
         accountNumber: user?.accountNumber ?? '',
         accountName: user?.name ?? '',
-        otp: '',
         currentPassword: ''
     });
 
-    const [sendOtp, { isLoading: isSendingOtp }] = useSendOtpMutation();
     const [resolveAccount, { isLoading: isResolving }] = useResolveAccountMutation();
-    const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+    const [updateBankDetails, { isLoading: isUpdating }] = useUpdateBankDetailsMutation();
 
     const { data: banksResponse, isLoading: isBanksLoading } = useGetBanksQuery();
     const banks = banksResponse?.data || [];
@@ -198,45 +202,33 @@ function BankTab({ user }: BankTabProps) {
             return;
         }
 
-        if (!bankData.currentPassword || !bankData.otp) {
+        if (!bankData.currentPassword) {
             toast.error("Validation failed", {
-                description: "Password and OTP are required to update bank details",
+                description: "Password is required to update bank details",
             });
             return;
         }
 
         try {
-            const updateData: UpdateProfileRequest = {
+            const updateData = {
                 bank: bankData.bank,
                 accountNumber: bankData.accountNumber,
                 currentPassword: bankData.currentPassword,
-                otp: bankData.otp
             };
             
-            await updateProfile(updateData).unwrap();
+            await updateBankDetails(updateData).unwrap();
             
             toast.success("Bank details updated successfully");
             setIsEditing(false);
             setBankData(prev => ({ ...prev, otp: '', currentPassword: '' }));
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
             toast.error("Update failed", {
-                description: error?.data?.message || "Could not update bank details",
+                description: rtkError?.data?.message || "Could not update bank details",
             });
         }
     };
 
-    const handleSendOtp = async () => {
-        try {
-            await sendOtp().unwrap();
-            toast.success("OTP sent successfully", {
-                description: "Checks your email for the 6-digit verification code",
-            });
-        } catch {
-            toast.error("Failed to send OTP", {
-                description: "Please try again later",
-            });
-        }
-    };
 
     if (user?.bank && user?.accountNumber && !isEditing) {
         return (
@@ -265,13 +257,14 @@ function BankTab({ user }: BankTabProps) {
                     </div>
                 </div>
 
-                <div className="flex gap-4">
-                    <Button
-                        onClick={() => setIsEditing(true)}
-                        className="h-14 px-8 rounded-2xl bg-zinc-100 hover:bg-zinc-200 text-zinc-900 font-black uppercase tracking-widest text-xs transition-all active:scale-95"
-                    >
-                        Reset Bank Details
-                    </Button>
+                <div className="flex flex-col gap-4">
+                    <div className="p-6 rounded-2xl bg-amber-50 border border-amber-100 flex items-start gap-4">
+                        <Shield className="text-amber-600 mt-1 shrink-0" size={18} />
+                        <div>
+                            <p className="text-xs font-black uppercase tracking-widest text-amber-900 mb-1">Bank Security Note</p>
+                            <p className="text-xs text-amber-700 font-medium leading-relaxed leading-relaxed">For your security, bank details cannot be changed once they have been linked to your account. Please contact support if you need to update your withdrawal information.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -349,7 +342,7 @@ function BankTab({ user }: BankTabProps) {
                         </AnimatePresence>
                     </div>
                 </div>
-                <div className="space-y-2.5">
+                <div className="space-y-2.5 sm:col-span-2">
                     <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Current Password</Label>
                     <Input
                         type="password"
@@ -358,27 +351,6 @@ function BankTab({ user }: BankTabProps) {
                         value={bankData.currentPassword}
                         onChange={(e) => setBankData(prev => ({ ...prev, currentPassword: e.target.value }))}
                     />
-                </div>
-                <div className="space-y-2.5">
-                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Verification Code (OTP)</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
-                            placeholder="123456"
-                            maxLength={6}
-                            value={bankData.otp}
-                            onChange={(e) => setBankData(prev => ({ ...prev, otp: e.target.value }))}
-                        />
-                        <Button 
-                            type="button"
-                            variant="outline"
-                            className="h-14 px-6 rounded-[1.2rem] border-zinc-100 font-black uppercase tracking-widest text-[10px] whitespace-nowrap"
-                            onClick={handleSendOtp}
-                            disabled={isSendingOtp}
-                        >
-                            {isSendingOtp ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send OTP'}
-                        </Button>
-                    </div>
                 </div>
             </div>
             <div className="flex gap-4">
@@ -490,6 +462,142 @@ function PasswordTab() {
         </div>
     );
 }
+ 
+function TransactionPinTab() {
+    const [pinData, setPinData] = useState({
+        otp: '',
+        newPin: '',
+        confirmPin: ''
+    });
+    const [isOtpSent, setIsOtpSent] = useState(false);
+ 
+    const [sendOtp, { isLoading: isSendingOtp }] = useSendWithdrawalPinOtpMutation();
+    const [resetPin, { isLoading: isResettingPin }] = useResetWithdrawalPinMutation();
+ 
+    const handleSendOtp = async () => {
+        try {
+            await sendOtp().unwrap();
+            setIsOtpSent(true);
+            toast.success("Verification code sent", {
+                description: "Please check your phone for the reset code."
+            });
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
+            toast.error("Failed to send OTP", {
+                description: rtkError?.data?.message || "Something went wrong"
+            });
+        }
+    };
+ 
+    const handleResetPin = async () => {
+        if (!pinData.otp || !pinData.newPin || !pinData.confirmPin) {
+            toast.error("Validation failed", { description: "All fields are required" });
+            return;
+        }
+ 
+        if (pinData.newPin !== pinData.confirmPin) {
+            toast.error("Validation failed", { description: "PINs do not match" });
+            return;
+        }
+ 
+        if (pinData.newPin.length < 4) {
+            toast.error("Validation failed", { description: "PIN must be at least 4 digits" });
+            return;
+        }
+ 
+        try {
+            await resetPin({
+                otp: pinData.otp,
+                newPin: pinData.newPin
+            }).unwrap();
+            toast.success("Transaction PIN reset successfully");
+            setPinData({ otp: '', newPin: '', confirmPin: '' });
+            setIsOtpSent(false);
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
+            toast.error("Reset failed", {
+                description: rtkError?.data?.message || "Could not reset transaction PIN"
+            });
+        }
+    };
+ 
+    return (
+        <div className="space-y-8">
+            <div className="space-y-6">
+                {!isOtpSent ? (
+                    <div className="p-8 rounded-[2rem] bg-linear-to-br from-zinc-50 to-white border border-zinc-100 shadow-sm space-y-4">
+                        <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <Shield size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black text-zinc-900">Reset Transaction PIN</h3>
+                            <p className="text-sm text-zinc-500 font-medium">To protect your account, we need to verify your identity before you can change your withdrawal PIN.</p>
+                        </div>
+                        <Button
+                            className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95 w-full sm:w-auto"
+                            onClick={handleSendOtp}
+                            disabled={isSendingOtp}
+                        >
+                            {isSendingOtp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Send Verification Code'}
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="space-y-2.5">
+                            <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Verification Code</Label>
+                            <Input
+                                className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                                placeholder="Enter OTP"
+                                value={pinData.otp}
+                                onChange={(e) => setPinData(prev => ({ ...prev, otp: e.target.value }))}
+                            />
+                        </div>
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="space-y-2.5">
+                                <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">New PIN</Label>
+                                <Input
+                                    type="password"
+                                    className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                                    placeholder="••••"
+                                    maxLength={6}
+                                    value={pinData.newPin}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, newPin: e.target.value }))}
+                                />
+                            </div>
+                            <div className="space-y-2.5">
+                                <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Confirm PIN</Label>
+                                <Input
+                                    type="password"
+                                    className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                                    placeholder="••••"
+                                    maxLength={6}
+                                    value={pinData.confirmPin}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, confirmPin: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-4">
+                            <Button
+                                className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                onClick={handleResetPin}
+                                disabled={isResettingPin}
+                            >
+                                {isResettingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Reset PIN'}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-xs transition-all"
+                                onClick={() => setIsOtpSent(false)}
+                            >
+                                Back
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
 
 
@@ -512,13 +620,14 @@ export default function ProfilePage() {
 
     const itemVariants: Variants = {
         hidden: { opacity: 0, y: 20 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as any } }
+        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
     };
 
     const tabs = [
         { id: 'personal', label: 'Personal Info', icon: User },
         { id: 'bank', label: 'Bank', icon: Landmark },
         { id: 'password', label: 'Password', icon: Lock },
+        { id: 'pin', label: 'Transaction PIN', icon: Shield },
     ];
 
     return (
@@ -615,6 +724,8 @@ export default function ProfilePage() {
                                     {activeTab === 'bank' && <BankTab user={user} key={user?.id ?? 'loading-bank'} />}
 
                                     {activeTab === 'password' && <PasswordTab />}
+ 
+                                    {activeTab === 'pin' && <TransactionPinTab />}
 
                                 </CardContent>
                             </Card>

@@ -300,3 +300,14 @@ export interface Loan {
         type: Wallet['type'];
     };
 }
+
+export interface UpdateProfileRequest {
+    name?: string;
+    phone?: string;
+}
+
+export interface UpdateBankRequest {
+    bank: string;
+    accountNumber: string;
+    currentPassword: string;
+}
