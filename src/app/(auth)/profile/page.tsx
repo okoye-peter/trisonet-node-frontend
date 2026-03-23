@@ -227,43 +227,97 @@ function BankTab({ user }: BankTabProps) {
     };
 
 
-    if (user?.bank && user?.accountNumber && !isEditing) {
+    if (user?.bank && user?.accountNumber) {
         return (
-            <div className="space-y-8">
-                <div className="p-8 rounded-[2rem] bg-linear-to-br from-zinc-900 to-zinc-800 text-white shadow-2xl shadow-zinc-200 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-10 transition-transform group-hover:scale-110 duration-500">
-                        <Landmark size={120} />
-                    </div>
-                    <div className="relative z-10 space-y-6">
-                        <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1">Current Bank</p>
-                            <h3 className="text-2xl font-black">{user.bank}</h3>
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-8"
+            >
+                <div className="relative group perspective-1000">
+                    <motion.div 
+                        whileHover={{ rotateY: 5, rotateX: -5, scale: 1.02 }}
+                        className="p-10 rounded-[2.5rem] bg-linear-to-br from-zinc-900 via-zinc-800 to-black text-white shadow-2xl shadow-indigo-500/10 relative overflow-hidden transition-all duration-500"
+                    >
+                        {/* Decorative Elements */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl -ml-24 -mb-24" />
+                        
+                        <div className="absolute top-8 right-8 opacity-20 transition-transform group-hover:scale-110 group-hover:rotate-12 duration-700">
+                            <Landmark size={80} strokeWidth={1.5} />
                         </div>
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1">Account Number</p>
-                                <p className="text-xl font-mono font-bold tracking-widest">
-                                    {user.accountNumber.replace(/(\d{3})(\d{4})(\d{3})/, '$1 **** $3')}
-                                </p>
+
+                        <div className="relative z-10 space-y-10">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">Connected Bank</p>
+                                    <h3 className="text-3xl font-black tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+                                        {user.bank}
+                                    </h3>
+                                </div>
+                                <div className="h-12 w-16 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 backdrop-blur-sm">
+                                    <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-purple-500 opacity-50" />
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-1">Account Name</p>
-                                <p className="font-bold text-sm uppercase">{bankDetails?.accountName ?? '...'}</p>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">Account Number</p>
+                                    <div className="flex items-center gap-4">
+                                        <p className="text-3xl font-mono font-bold tracking-[0.2em]">
+                                            {user.accountNumber.replace(/(\d{3})(\d{4})(\d{3})/, '**** **** $3')}
+                                        </p>
+                                        <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1">
+                                                <CheckCircle2 size={10} /> Active
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-white/5 flex justify-between items-center">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-1">Account Holder</p>
+                                        <p className="font-bold text-lg tracking-wide uppercase text-zinc-200">
+                                            {bankDetails?.accountName || user.name}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-1">Status</p>
+                                        <p className="font-black text-xs uppercase tracking-widest text-indigo-400">Verified Account</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                    <div className="p-6 rounded-2xl bg-amber-50 border border-amber-100 flex items-start gap-4">
-                        <Shield className="text-amber-600 mt-1 shrink-0" size={18} />
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="p-6 rounded-[1.5rem] bg-indigo-50/50 border border-indigo-100/50 flex items-start gap-4 backdrop-blur-sm"
+                    >
+                        <Shield className="text-indigo-600 mt-1 shrink-0" size={18} />
                         <div>
-                            <p className="text-xs font-black uppercase tracking-widest text-amber-900 mb-1">Bank Security Note</p>
-                            <p className="text-xs text-amber-700 font-medium leading-relaxed leading-relaxed">For your security, bank details cannot be changed once they have been linked to your account. Please contact support if you need to update your withdrawal information.</p>
+                            <p className="text-xs font-black uppercase tracking-widest text-indigo-900 mb-1.5">Security Protocol</p>
+                            <p className="text-xs text-indigo-700 font-medium leading-relaxed">
+                                For your protection, bank details are encrypted and locked once verified. 
+                                Changes require official documentation and support verification.
+                            </p>
                         </div>
-                    </div>
+                    </motion.div>
+                    
+                    <Button 
+                        variant="ghost" 
+                        disabled
+                        className="h-10 text-[10px] font-black uppercase tracking-widest text-zinc-400"
+                    >
+                        To update details, please contact trisonet support
+                    </Button>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
