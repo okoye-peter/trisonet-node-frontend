@@ -710,12 +710,38 @@ export default function WalletsPage() {
                         <DialogHeader className="relative z-10">
                             <DialogTitle className="text-2xl font-black">Transfer Details</DialogTitle>
                             <DialogDescription className="text-indigo-100 font-medium">
-                                Please make a transfer of exactly ₦{fundingData?.amount?.toLocaleString()} to the account below.
+                                Follow the instructions below to fund your wallet.
                             </DialogDescription>
                         </DialogHeader>
                     </div>
                     
                     <div className="p-8 space-y-6">
+                        {/* Noticeable Amount Card */}
+                        <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[2rem] p-6 text-center space-y-2 shadow-sm">
+                            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Amount to Transfer</p>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-3xl font-black text-indigo-600">₦</span>
+                                <h1 className="text-5xl md:text-6xl font-black text-zinc-900 tracking-tighter">
+                                    {fundingData?.amount?.toLocaleString()}
+                                </h1>
+                            </div>
+                            <div className="flex justify-center pt-1">
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => {
+                                        if (fundingData?.amount) {
+                                            navigator.clipboard.writeText(fundingData.amount.toString());
+                                            toast.success('Amount copied!');
+                                        }
+                                    }}
+                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-100 rounded-full bg-white/50 border border-indigo-100/50"
+                                >
+                                    <Copy size={12} className="mr-2" /> Copy Amount
+                                </Button>
+                            </div>
+                        </div>
+
                         <div className="space-y-4">
                             <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
                                 <div>

@@ -5,7 +5,16 @@ import {
     ArrowRightLeft,
     ShieldCheck,
     RefreshCcw,
-    Loader2
+    Loader2,
+    Plus,
+    Clock,
+    CheckCircle,
+    CheckCircle2,
+    AlertCircle,
+    MessageCircle,
+    Lock,
+    Copy,
+    ArrowUpRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { useGetWalletsQuery, useGetGkwthPricesQuery, usePurchaseGkwthMutation } from '@/store/api/walletApi';
+import { useGetWalletsQuery, useGetGkwthPricesQuery, usePurchaseGkwthMutation, useLazyCheckFundingStatusQuery, walletApi } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
 import {
@@ -24,7 +33,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy, Clock, CheckCircle2 } from 'lucide-react';
 import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -32,7 +40,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { toast } from 'sonner';
 
@@ -44,13 +52,15 @@ const NairaIcon = ({ size = 24, className }: { size?: number, className?: string
 
 export default function GkwthWalletPage() {
     const router = useRouter();
+    const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
-    const { data: walletsResponse, isLoading: isWalletsLoading } = useGetWalletsQuery();
+    const { data: walletsResponse, isLoading: isWalletsLoading, refetch: refetchWallets } = useGetWalletsQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const { data: banksResponse } = useGetBanksQuery();
     const [resolveAccount, { isLoading: isResolving }] = useResolveAccountMutation();
     const [initiateWithdrawal, { isLoading: isWithdrawing }] = useInitiateWithdrawalMutation();
     const [purchaseGkwth, { isLoading: isPurchasing }] = usePurchaseGkwthMutation();
+    const [checkStatus] = useLazyCheckFundingStatusQuery();
     
     const wallets = walletsResponse?.data || [];
     const banks = useMemo(() => banksResponse?.data || [], [banksResponse]);
@@ -62,7 +72,6 @@ export default function GkwthWalletPage() {
 
     const [activeTab, setActiveTab] = useState<TabType>('overview');
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState<{
         account_name: string;
         bank_name: string;
@@ -71,6 +80,13 @@ export default function GkwthWalletPage() {
         expiry_date: string;
         reference: string;
     } | null>(null);
+
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [showPollingModal, setShowPollingModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showPendingModal, setShowPendingModal] = useState(false);
+    const [pollingInterval, setPollingInterval] = useState(2000);
+    const [pollingStartTime, setPollingStartTime] = useState<number | null>(null);
 
     // Form States
     const [fundQuantity, setFundQuantity] = useState('');
@@ -172,11 +188,58 @@ export default function GkwthWalletPage() {
             return () => clearTimeout(timer);
         }
     }, [withdrawData.account_number, withdrawData.bank_code, withdrawData.account_name, handleResolveAccount, isResolving]);
+    const startPolling = () => {
+        setIsPaymentModalOpen(false);
+        setShowPollingModal(true);
+        setPollingStartTime(Date.now());
+        setPollingInterval(2000);
+    };
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        
+        const poll = async () => {
+            if (!showPollingModal || !paymentDetails?.reference || !pollingStartTime) return;
+
+            const timeElapsed = Date.now() - pollingStartTime;
+            const maxDuration = 90000; // 1 minute 30 seconds
+
+            if (timeElapsed >= maxDuration) {
+                setShowPollingModal(false);
+                setShowPendingModal(true);
+                return;
+            }
+
+            try {
+                const res = await checkStatus(paymentDetails.reference).unwrap();
+                if (res.data?.status === 'success') {
+                    setShowPollingModal(false);
+                    setShowSuccessModal(true);
+                    refetchWallets();
+                    dispatch(walletApi.util.invalidateTags(['Wallet']));
+                    return;
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+
+            // Exponential backoff
+            const nextInterval = Math.min(pollingInterval * 1.5, 10000);
+            setPollingInterval(nextInterval);
+            timer = setTimeout(poll, nextInterval);
+        };
+
+        if (showPollingModal) {
+            timer = setTimeout(poll, pollingInterval);
+        }
+
+        return () => clearTimeout(timer);
+    }, [showPollingModal, paymentDetails, pollingStartTime, pollingInterval, checkStatus, refetchWallets, dispatch]);
 
     const handleFund = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!fundQuantity || Number(fundQuantity) < 0.5) {
-            toast.error('Minimum purchase quantity is 0.5 GKWTH');
+        if (!fundQuantity || Number(fundQuantity) < 1) {
+            toast.error('Minimum purchase quantity is 1 GKWTH');
             return;
         }
 
@@ -410,10 +473,16 @@ export default function GkwthWalletPage() {
                         >
                             <Card className="border-none bg-white rounded-[3rem] p-4 shadow-2xl ring-1 ring-zinc-100">
                                 <CardContent className="p-8 space-y-8">
-                                    <div className="space-y-1">
-                                        <h2 className="text-3xl font-black text-zinc-900">Fund GKWTH</h2>
-                                        <p className="text-lg text-zinc-400 font-bold">Unit Price: <span className="text-zinc-600">₦{salePrice.toLocaleString()}.00</span></p>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                                            <Plus size={24} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-black text-zinc-900">Fund GKWTH</h2>
+                                            <p className="text-sm text-zinc-500 font-medium italic">Buy GKWTH assets instantly.</p>
+                                        </div>
                                     </div>
+                                    <p className="text-lg text-zinc-400 font-bold mb-4">Unit Price: <span className="text-zinc-600">₦{salePrice.toLocaleString()}.00</span></p>
 
                                     <form onSubmit={handleFund} className="space-y-6">
                                         <div className="space-y-2">
@@ -464,9 +533,14 @@ export default function GkwthWalletPage() {
                         >
                             <Card className="border-none bg-white rounded-[3rem] p-4 shadow-2xl ring-1 ring-zinc-100">
                                 <CardContent className="p-8 space-y-8">
-                                    <div className="space-y-1">
-                                        <h2 className="text-3xl font-black text-zinc-900">Sell GKWTH</h2>
-                                        <p className="text-lg text-zinc-400 font-bold">Unit Price: <span className="text-zinc-600">₦{purchasePrice.toLocaleString()}</span></p>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                                            <ArrowUpRight size={24} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-black text-zinc-900">Sell GKWTH</h2>
+                                            <p className="text-sm text-zinc-500 font-medium italic">Instant sale to your linked bank account.</p>
+                                        </div>
                                     </div>
 
                                     <form onSubmit={handleWithdraw} className="space-y-6">
@@ -612,17 +686,20 @@ export default function GkwthWalletPage() {
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">
                                                 {user?.role === 8 ? 'Withdrawal OTP' : 'Withdrawal PIN'}
                                             </Label>
-                                            <Input 
-                                                value={user?.role === 8 ? withdrawData.otp : withdrawData.pin}
-                                                onChange={(e) => setWithdrawData(prev => ({ 
-                                                    ...prev, 
-                                                    [user?.role === 8 ? 'otp' : 'pin']: e.target.value 
-                                                }))}
-                                                type={user?.role === 8 ? 'text' : 'password'}
-                                                maxLength={user?.role === 8 ? 6 : 4}
-                                                placeholder={user?.role === 8 ? "000000" : "****"}
-                                                className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold"
-                                            />
+                                            <div className="relative">
+                                                <Input 
+                                                    value={user?.role === 8 ? withdrawData.otp : withdrawData.pin}
+                                                    onChange={(e) => setWithdrawData(prev => ({ 
+                                                        ...prev, 
+                                                        [user?.role === 8 ? 'otp' : 'pin']: e.target.value 
+                                                    }))}
+                                                    type={user?.role === 8 ? 'text' : 'password'}
+                                                    maxLength={user?.role === 8 ? 6 : 4}
+                                                    placeholder={user?.role === 8 ? "000000" : "****"}
+                                                    className="h-14 px-12 rounded-xl bg-white border border-zinc-200 font-bold"
+                                                />
+                                                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" />
+                                            </div>
                                         </div>
 
                                         <Button 
@@ -641,77 +718,190 @@ export default function GkwthWalletPage() {
                 </AnimatePresence>
                 {/* Payment Modal */}
                 <Dialog open={isPaymentModalOpen} onOpenChange={handlePaymentModalOpenChange}>
-
-                    <DialogContent className="sm:max-w-md bg-white rounded-[2rem] border-none shadow-2xl p-0 overflow-hidden">
-                        <div className="bg-indigo-600 p-8 text-white relative">
+                    <DialogContent className="max-w-md rounded-[2.5rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
+                        <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-8 opacity-10">
-                                <NairaIcon size={80} />
+                                <Plus size={120} />
                             </div>
-                            <DialogHeader>
-                                <DialogTitle className="text-2xl font-black flex items-center gap-2">
-                                    <CheckCircle2 className="text-indigo-200" />
-                                    Fund Your Wallet
-                                </DialogTitle>
+                            <DialogHeader className="relative z-10">
+                                <DialogTitle className="text-2xl font-black">Transfer Details</DialogTitle>
                                 <DialogDescription className="text-indigo-100 font-medium">
-                                    Transfer the exact amount below to the virtual account to complete your purchase.
+                                    Follow the instructions below to fund your GKWTH wallet.
                                 </DialogDescription>
                             </DialogHeader>
                         </div>
                         
                         <div className="p-8 space-y-6">
-                            <div className="space-y-4">
-                                <div className="p-6 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between group">
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Account Number</p>
-                                        <p className="text-2xl font-black text-zinc-900 tracking-tight">{paymentDetails?.account_number}</p>
-                                    </div>
+                            {/* Noticeable Amount Card */}
+                            <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[2rem] p-6 text-center space-y-2 shadow-sm">
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Amount to Transfer</p>
+                                <div className="flex items-center justify-center gap-2">
+                                    <span className="text-3xl font-black text-indigo-600">₦</span>
+                                    <h1 className="text-5xl md:text-6xl font-black text-zinc-900 tracking-tighter">
+                                        {paymentDetails?.amount?.toLocaleString()}
+                                    </h1>
+                                </div>
+                                <div className="flex justify-center pt-1">
                                     <Button 
                                         variant="ghost" 
-                                        size="icon" 
-                                        onClick={() => copyToClipboard(paymentDetails?.account_number || '', 'Account Number')}
-                                        className="h-12 w-12 rounded-xl hover:bg-white hover:shadow-md transition-all"
+                                        size="sm"
+                                        onClick={() => {
+                                            if (paymentDetails?.amount) {
+                                                navigator.clipboard.writeText(paymentDetails.amount.toString());
+                                                toast.success('Amount copied!');
+                                            }
+                                        }}
+                                        className="h-8 px-4 text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-100 rounded-full bg-white/50 border border-indigo-100/50"
                                     >
-                                        <Copy size={20} className="text-indigo-600" />
+                                        <Copy size={12} className="mr-2" /> Copy Amount
                                     </Button>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Bank Name</p>
-                                        <p className="font-black text-zinc-900">{paymentDetails?.bank_name}</p>
-                                    </div>
-                                    <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Account Name</p>
-                                        <p className="font-black text-zinc-900">{paymentDetails?.account_name}</p>
-                                    </div>
-                                </div>
-
-                                <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Total Amount</p>
-                                        <p className="text-2xl font-black text-indigo-700">₦{paymentDetails?.amount.toLocaleString()}</p>
-                                    </div>
-                                    <Badge className="bg-white text-indigo-600 border-indigo-200 font-bold px-3 py-1">Exact Amount</Badge>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                                <Clock className="text-amber-500 shrink-0" size={20} />
-                                <p className="text-sm font-bold text-amber-700">
-                                    This account expires at <span className="underline">{paymentDetails?.expiry_date} today</span>. Please complete the transfer before then.
+                            <div className="space-y-4">
+                                <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
+                                    <div>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Bank Name</p>
+                                        <p className="text-lg font-black text-zinc-900">{paymentDetails?.bank_name}</p>
+                                    </div>
+                                    <div className="p-2 bg-white rounded-lg shadow-xs group-hover:scale-110 transition-transform">
+                                        <Plus className="text-indigo-600" size={20} />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
+                                    <div>
+                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Number</p>
+                                        <p className="text-lg font-black text-zinc-900 tracking-wider">{paymentDetails?.account_number}</p>
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => copyToClipboard(paymentDetails?.account_number || '', 'Account Number')}
+                                        className="bg-white hover:bg-indigo-50 text-indigo-600 rounded-xl shadow-xs"
+                                    >
+                                        <Copy size={18} />
+                                    </Button>
+                                </div>
+
+                                <div className="p-4 bg-zinc-50 rounded-2xl group hover:bg-zinc-100 transition-colors">
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Name</p>
+                                    <p className="text-lg font-black text-zinc-900">{paymentDetails?.account_name}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl text-amber-700">
+                                <Clock size={20} className="shrink-0" />
+                                <p className="text-xs font-bold leading-relaxed italic">
+                                    This account expires at {paymentDetails?.expiry_date}. Please complete the transfer before then.
                                 </p>
                             </div>
 
                             <Button 
-                                onClick={() => setIsPaymentModalOpen(false)}
-                                className="w-full h-14 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-black shadow-lg"
+                                onClick={startPolling}
+                                className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all"
                             >
-                                Done
+                                I&apos;ve Made The Transfer
                             </Button>
                         </div>
                     </DialogContent>
                 </Dialog>
             </div>
+
+            {/* Polling/Processing Modal (Replicated from wallets/page.tsx) */}
+            <Dialog open={showPollingModal} onOpenChange={() => {}}>
+                <DialogContent className="max-w-sm rounded-[2.5rem] border-none p-12 text-center bg-white shadow-2xl overflow-hidden relative">
+                    <div className="absolute top-0 inset-x-0 h-2 bg-zinc-100 overflow-hidden">
+                        <motion.div 
+                            className="h-full bg-indigo-600"
+                            initial={{ x: "-100%" }}
+                            animate={{ x: "100%" }}
+                            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                        />
+                    </div>
+                    <div className="space-y-6">
+                        <div className="relative inline-block">
+                            <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-25" />
+                            <div className="relative h-20 w-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
+                                <Loader2 className="animate-spin" size={40} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-black text-zinc-900 italic">Verifying Payment</h2>
+                            <p className="text-sm text-zinc-500 font-medium">
+                                We&apos;re checking your transfer details. This usually takes less than a minute.
+                            </p>
+                        </div>
+                        <div className="flex justify-center gap-1.5 pt-4">
+                            {[0, 1, 2].map((i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0.3 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.2 }}
+                                    className="w-2 h-2 rounded-full bg-indigo-600"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Success Modal */}
+            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <DialogContent className="max-w-sm rounded-[2.5rem] border-none p-12 text-center bg-white shadow-2xl">
+                    <div className="space-y-6">
+                        <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                            <CheckCircle size={40} />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black text-zinc-900">Success!</h2>
+                            <p className="text-sm text-zinc-500 font-medium italic">
+                                Your payment has been confirmed and your GKWTH wallet has been funded.
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={() => setShowSuccessModal(false)}
+                            className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-100 transition-all"
+                        >
+                            Back To Wallet
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Pending/Manual Modal */}
+            <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
+                <DialogContent className="max-w-md rounded-[2.5rem] border-none p-12 text-center bg-white shadow-2xl">
+                    <div className="space-y-6">
+                        <div className="h-20 w-20 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                            <AlertCircle size={40} />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className="text-2xl font-black text-zinc-900">Payment Processing</h2>
+                            <p className="text-sm text-zinc-500 font-medium leading-relaxed italic">
+                                Your transfer is taking a bit longer to verify. Don&apos;t worry, your funds are safe! 
+                                If your wallet isn&apos;t updated within 30 minutes, please contact support.
+                            </p>
+                        </div>
+                        <div className="p-4 bg-zinc-50 rounded-2xl flex items-center gap-3 text-left">
+                            <div className="p-2 bg-white rounded-xl shadow-sm">
+                                <MessageCircle size={20} className="text-indigo-600" />
+                            </div>
+                            <div className="text-xs">
+                                <p className="font-black text-zinc-900">Need Help?</p>
+                                <p className="text-zinc-500 font-medium">Chat with our support team</p>
+                            </div>
+                        </div>
+                        <Button 
+                            onClick={() => setShowPendingModal(false)}
+                            className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black shadow-lg transition-all"
+                        >
+                            Got It
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
