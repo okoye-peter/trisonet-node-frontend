@@ -47,7 +47,7 @@ const sidebarItems = [
             { label: 'Upfront Sales', href: '/wallets/loans', icon: TrendingUp },
         ]
     },
-    { icon: CheckCircle2, label: 'Winning Status', href: '/dashboard/status' },
+    { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
     { icon: FileText, label: 'TrisoBrief', href: '/dashboard/brief' },
     { icon: Globe, label: 'Gist Zone', href: '/dashboard/gist' },
     { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },

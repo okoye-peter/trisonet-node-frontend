@@ -311,3 +311,18 @@ export interface UpdateBankRequest {
     accountNumber: string;
     currentPassword: string;
 }
+export interface Prize {
+    id: string;
+    name: string;
+    url: string | null;
+    type: 'awards' | string;
+    position: number;
+    location: string | null;
+    createdAt?: string;
+}
+
+export interface UserAwards {
+    rank: number;
+    user: User;
+    prizes: Prize[];
+}

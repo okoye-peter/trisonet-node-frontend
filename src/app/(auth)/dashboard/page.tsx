@@ -9,7 +9,6 @@ import {
     Wallet,
     Database,
     Clock,
-    Share2,
     Copy,
     QrCode,
     ExternalLink,
@@ -118,9 +117,13 @@ const partnerColumns: ColumnDef<Partner>[] = [
         cell: () => {
             return (
                 <div className="text-right">
-                    <button className="p-2 rounded-xl text-zinc-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all">
+                    <Button 
+                        variant="ghost" 
+                        size="icon-sm"
+                        className="p-2 rounded-xl text-zinc-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                    >
                         <ChevronRight size={18} />
-                    </button>
+                    </Button>
                 </div>
             );
         },
@@ -191,7 +194,7 @@ export default function DashboardPage() {
         {
             label: 'Wallet',
             value: dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'direct')?.amount ?? 0.00,
-            prefix: '$',
+            prefix: '₦',
             icon: Wallet,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
@@ -249,10 +252,14 @@ export default function DashboardPage() {
                         <Star className="mr-2 h-4 w-4 fill-amber-400 text-amber-400" /> Click Here to Buy PIM
                         <ArrowUpRight className="ml-2 h-4 w-4 opacity-50" />
                     </Button>
-                    <button className="group relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-zinc-100 shadow-sm transition-all hover:border-indigo-100 hover:shadow-indigo-50">
+                    <Button 
+                        variant="link"
+                        size="icon-lg"
+                        className="group relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-zinc-100 shadow-sm transition-all hover:border-indigo-100 hover:shadow-indigo-50"
+                    >
                         <Award className="h-6 w-6 text-zinc-400 group-hover:text-indigo-600 transition-colors" />
                         <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white ring-4 ring-red-500/10" />
-                    </button>
+                    </Button>
                 </div>
             </motion.div>
 
@@ -267,9 +274,13 @@ export default function DashboardPage() {
                                     <stat.icon size={28} strokeWidth={2.5} />
                                 </div>
                                 {stat.hasAction && (
-                                    <button className="p-2 rounded-xl bg-zinc-50 text-zinc-400 transition-all hover:bg-zinc-100 hover:text-zinc-900 group/btn">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon-sm"
+                                        className="p-2 rounded-xl bg-zinc-50 text-zinc-400 transition-all hover:bg-zinc-100 hover:text-zinc-900 group/btn"
+                                    >
                                         <ExternalLink size={14} className="group-hover/btn:scale-110 transition-transform" />
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                             <div className="mt-8">
@@ -341,29 +352,30 @@ export default function DashboardPage() {
                                         <QrCode size={20} />
                                     </div>
                                     <div className="flex gap-2">
-                                        <button className="p-2.5 rounded-xl bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-indigo-600 transition-all"><Share2 size={16} /></button>
                                     </div>
                                 </div>
                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-3">{item.title}</p>
                                 <div className="flex items-center justify-between p-4 rounded-3xl bg-zinc-50/80 border border-zinc-100 group-hover:border-indigo-100 transition-colors">
                                     <span className="text-xl font-black text-zinc-900 tracking-tight">{item.code}</span>
-                                    <button
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => copyToClipboard(item.code || '', item.type)}
                                         className="flex items-center gap-2 rounded-2xl bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-900 shadow-sm border border-zinc-100 hover:bg-zinc-900 hover:text-white transition-all transform active:scale-95"
                                     >
                                         <Copy size={12} /> Copy
-                                    </button>
+                                    </Button>
                                 </div>
-                                    <button
+                                    <Button
                                         onClick={() => setQrCodeConfig({
                                             isOpen: true,
                                             url: window.location.origin + (item.type === 'adult' ? '/register?ref=' : 'infants/register?ref=') + item.code,
                                             title: item.title
                                         })}
-                                        className="mt-6 w-full py-4 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98]"
+                                        className="mt-6 w-full h-12 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98]"
                                     >
                                         Generate QR Code
-                                    </button>
+                                    </Button>
                             </CardContent>
                         </Card>
                     </motion.div>
