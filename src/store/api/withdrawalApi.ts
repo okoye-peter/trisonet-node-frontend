@@ -14,7 +14,7 @@ export const withdrawalApi = apiSlice.injectEndpoints({
             withdrawal_otp?: string;
         }>({
             query: (body) => ({
-                url: 'withdrawal',
+                url: 'withdrawal/initiate',
                 method: 'POST',
                 body,
             }),

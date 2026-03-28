@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { useGetWalletsQuery, useGetGkwthPricesQuery, usePurchaseGkwthMutation, useLazyCheckFundingStatusQuery, walletApi } from '@/store/api/walletApi';
+import { useGetWalletsQuery, useGetGkwthPricesQuery, useInitiateIndirectGkwthFundingMutation, useLazyCheckFundingStatusQuery, walletApi } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
 import {
@@ -59,7 +59,7 @@ export default function GkwthWalletPage() {
     const { data: banksResponse } = useGetBanksQuery();
     const [resolveAccount, { isLoading: isResolving }] = useResolveAccountMutation();
     const [initiateWithdrawal, { isLoading: isWithdrawing }] = useInitiateWithdrawalMutation();
-    const [purchaseGkwth, { isLoading: isPurchasing }] = usePurchaseGkwthMutation();
+    const [initiateGkwthFunding, { isLoading: isPurchasing }] = useInitiateIndirectGkwthFundingMutation();
     const [checkStatus] = useLazyCheckFundingStatusQuery();
     
     const wallets = walletsResponse?.data || [];
@@ -238,15 +238,24 @@ export default function GkwthWalletPage() {
 
     const handleFund = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!fundQuantity || Number(fundQuantity) < 1) {
-            toast.error('Minimum purchase quantity is 1 GKWTH');
+        const quantity = Number(fundQuantity);
+        
+        if (!fundQuantity || quantity < 0.5) {
+            toast.error('Minimum purchase quantity is 0.5 GKWTH');
             return;
         }
 
         try {
-            const res = await purchaseGkwth({ quantity: Number(fundQuantity) }).unwrap();
+            const res = await initiateGkwthFunding({ gkwthAmount: quantity }).unwrap();
+            
+            // The new endpoint might return account_detail nested or direct, 
+            // but based on my earlier check it returns { reference, amount, account_detail: { ... } }
             if (res.data?.account_detail) {
-                setPaymentDetails(res.data.account_detail);
+                setPaymentDetails({
+                    ...res.data.account_detail,
+                    amount: res.data.amount, // amount is outside account_detail in this response
+                    reference: res.data.reference
+                });
                 setIsPaymentModalOpen(true);
                 toast.success('Virtual account generated successfully');
             }
@@ -511,6 +520,7 @@ export default function GkwthWalletPage() {
                                         </div>
 
                                         <Button 
+                                            type='submit'
                                             disabled={isPurchasing}
                                             className="w-full h-16 rounded-2xl bg-[rgb(79,70,229)] hover:bg-indigo-700 text-white font-black shadow-xl transition-all mt-4"
                                         >

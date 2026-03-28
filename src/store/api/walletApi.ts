@@ -77,6 +77,22 @@ export const walletApi = apiSlice.injectEndpoints({
         checkFundingStatus: builder.query<AppResponse<{ status: 'success' | 'pending' | 'failed' }>, string>({
             query: (reference) => `payment/wallet/check-status/${reference}`,
         }),
+        initiateIndirectGkwthFunding: builder.mutation<AppResponse<{ 
+            reference: string; 
+            amount: number; 
+            account_detail: {
+                account_name: string;
+                bank_name: string;
+                account_number: string;
+                expiry_date: string;
+            }
+        }>, { gkwthAmount: number }>({
+            query: (body) => ({
+                url: 'payment/wallet/indirect/funding',
+                method: 'POST',
+                body,
+            }),
+        }),
     }),
 });
 
@@ -91,5 +107,6 @@ export const {
     useGenerateWardSlotVirtualAccountMutation,
     useInitiateDirectWalletFundingMutation,
     useLazyCheckFundingStatusQuery,
-    useCheckFundingStatusQuery
+    useCheckFundingStatusQuery,
+    useInitiateIndirectGkwthFundingMutation
 } = walletApi;
