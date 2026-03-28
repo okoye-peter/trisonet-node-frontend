@@ -237,7 +237,7 @@ function BankTab({ user }: BankTabProps) {
                 <div className="relative group perspective-1000">
                     <motion.div 
                         whileHover={{ rotateY: 5, rotateX: -5, scale: 1.02 }}
-                        className="p-10 rounded-[2.5rem] bg-linear-to-br from-zinc-900 via-zinc-800 to-black text-white shadow-2xl shadow-indigo-500/10 relative overflow-hidden transition-all duration-500"
+                        className="p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] bg-linear-to-br from-zinc-900 via-zinc-800 to-black text-white shadow-2xl shadow-indigo-500/10 relative overflow-hidden transition-all duration-500"
                     >
                         {/* Decorative Elements */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
@@ -251,7 +251,7 @@ function BankTab({ user }: BankTabProps) {
                             <div className="flex justify-between items-start">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">Connected Bank</p>
-                                    <h3 className="text-3xl font-black tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+                                    <h3 className="text-xl md:text-3xl font-black tracking-tight bg-linear-to-r from-white to-zinc-400 bg-clip-text text-transparent truncate max-w-[200px] md:max-w-none">
                                         {user.bank}
                                     </h3>
                                 </div>
@@ -263,8 +263,8 @@ function BankTab({ user }: BankTabProps) {
                             <div className="space-y-6">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-2">Account Number</p>
-                                    <div className="flex items-center gap-4">
-                                        <p className="text-3xl font-mono font-bold tracking-[0.2em]">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <p className="text-lg md:text-3xl font-mono font-bold tracking-tight md:tracking-[0.2em]">
                                             {user.accountNumber.replace(/(\d{3})(\d{4})(\d{3})/, '**** **** $3')}
                                         </p>
                                         <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
@@ -275,14 +275,14 @@ function BankTab({ user }: BankTabProps) {
                                     </div>
                                 </div>
 
-                                <div className="pt-6 border-t border-white/5 flex justify-between items-center">
-                                    <div>
+                                <div className="pt-6 border-t border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="min-w-0">
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-1">Account Holder</p>
-                                        <p className="font-bold text-lg tracking-wide uppercase text-zinc-200">
+                                        <p className="font-bold text-sm md:text-lg tracking-wide uppercase text-zinc-200 truncate max-w-[150px] md:max-w-none">
                                             {bankDetails?.accountName || user.name}
                                         </p>
                                     </div>
-                                    <div className="text-right">
+                                    <div className="text-left md:text-right">
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-1">Status</p>
                                         <p className="font-black text-xs uppercase tracking-widest text-indigo-400">Verified Account</p>
                                     </div>
@@ -541,7 +541,7 @@ export default function ProfilePage() {
                             transition={{ duration: 0.3 }}
                         >
                             <Card className="border-none bg-white shadow-sm rounded-[2rem] overflow-hidden">
-                                <CardContent className="p-10">
+                                <CardContent className="p-4 sm:p-10">
                                     {activeTab === 'personal' && (
                                         <PersonalInfoTab
                                             user={user}
