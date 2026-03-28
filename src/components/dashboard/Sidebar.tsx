@@ -27,7 +27,7 @@ import { useState, useEffect } from 'react';
 
 const sidebarItems = [
     { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
-    { icon: Mail, label: 'Inbox', href: '/dashboard/inbox', badge: 0 },
+    // { icon: Mail, label: 'Inbox', href: '/dashboard/inbox', badge: 0 },
     { icon: Trophy, label: 'Winning Range', href: '/competitions/stats' },
     { icon: User, label: 'Profile', href: '/profile' },
     { icon: CreditCard, label: 'PIM Credit Cards', href: '/activation-cards' },
@@ -48,9 +48,9 @@ const sidebarItems = [
         ]
     },
     { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
-    { icon: FileText, label: 'TrisoBrief', href: '/dashboard/brief' },
-    { icon: Globe, label: 'Gist Zone', href: '/dashboard/gist' },
-    { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },
+    // { icon: FileText, label: 'TrisoBrief', href: '/dashboard/brief' },
+    // { icon: Globe, label: 'Gist Zone', href: '/dashboard/gist' },
+    // { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },
 ];
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => void }) {
