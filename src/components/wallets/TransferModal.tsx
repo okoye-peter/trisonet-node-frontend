@@ -111,7 +111,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl overflow-hidden p-0 bg-white dark:bg-zinc-950">
+            <DialogContent className="max-w-[calc(100%-2rem)] md:max-w-[500px] rounded-3xl md:rounded-[2rem] border-none shadow-2xl overflow-y-auto p-0 bg-white dark:bg-zinc-950">
                 <AnimatePresence mode="wait">
                     {!isSuccess ? (
                         <motion.div
@@ -119,16 +119,16 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="p-6 space-y-6"
+                            className="p-5 md:p-6 space-y-6"
                         >
                             <DialogHeader>
-                                <DialogTitle className="text-3xl font-black tracking-tighter flex items-center gap-3">
+                                <DialogTitle className="text-2xl md:text-3xl font-black tracking-tighter flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                                         <ArrowRightLeft size={20} strokeWidth={2.5} />
                                     </div>
                                     Transfer Funds
                                 </DialogTitle>
-                                <DialogDescription className="font-medium text-zinc-500">
+                                <DialogDescription className="font-medium text-zinc-500 text-xs md:text-sm">
                                     Send money instantly to other Trisonet users using their account number.
                                 </DialogDescription>
                             </DialogHeader>
@@ -252,7 +252,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                             animate={{ opacity: 1, scale: 1 }}
                             className="bg-white dark:bg-zinc-950"
                         >
-                            <div className="bg-emerald-500 p-10 text-white text-center relative overflow-hidden">
+                            <div className="bg-emerald-500 p-8 md:p-10 text-white text-center relative overflow-hidden">
                                 <motion.div
                                     initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring' }}
                                     className="relative z-10 flex flex-col items-center"
@@ -260,16 +260,16 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                     <div className="h-20 w-20 rounded-full bg-white/20 flex items-center justify-center mb-6">
                                         <CheckCircle2 size={40} />
                                     </div>
-                                    <h2 className="text-3xl font-black tracking-tighter">Transfer Successful!</h2>
+                                    <h2 className="text-2xl md:text-3xl font-black tracking-tighter">Transfer Successful!</h2>
                                     <p className="text-emerald-100 font-medium mt-1">Funds have been moved instantly.</p>
                                 </motion.div>
                                 <div className="absolute -bottom-10 -right-10 h-40 w-40 bg-white/10 rounded-full blur-3xl" />
                             </div>
 
-                            <div className="p-8 space-y-8">
+                            <div className="p-6 md:p-8 space-y-8">
                                 <div className="text-center space-y-1">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Transferred</p>
-                                    <h3 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
+                                    <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
                                         {isGkwth ? '' : '₦'}{form.getValues('amount').toLocaleString()}{isGkwth ? ' gkwth' : ''}
                                     </h3>
                                 </div>

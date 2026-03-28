@@ -660,7 +660,7 @@ const ActivationCards = () => {
 
             {/* Payment Details Modal */}
             <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-                <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden">
+                <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-y-auto">
                     <div className="bg-emerald-600 p-8 text-white relative">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <NairaIcon size={80} />
@@ -676,7 +676,7 @@ const ActivationCards = () => {
                         </DialogHeader>
                     </div>
 
-                    <div className="p-8 space-y-6">
+                    <div className="p-8 pb-12 space-y-6">
                         <div className="text-center space-y-2 pb-2">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Amount to Transfer</p>
                             <h3 className="text-4xl font-black tracking-tighter text-zinc-900">₦{paymentDetails?.amount.toLocaleString()}</h3>

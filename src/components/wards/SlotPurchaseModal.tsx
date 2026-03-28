@@ -93,7 +93,7 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl overflow-hidden p-0">
+            <DialogContent className="sm:max-w-[500px] border-none shadow-2xl overflow-y-auto p-0">
                 {!paymentDetail ? (
                     <div className="p-6 space-y-8">
                         <DialogHeader>

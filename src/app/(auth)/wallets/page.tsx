@@ -702,26 +702,26 @@ export default function WalletsPage() {
 
             {/* Bank Details Modal */}
             <Dialog open={showBankModal} onOpenChange={setShowBankModal}>
-                <DialogContent className="max-w-md rounded-[2.5rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
-                    <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+                <DialogContent className="max-w-[calc(100%-2rem)] md:max-w-md rounded-[2rem] md:rounded-[2.5rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
+                    <div className="bg-indigo-600 p-6 md:p-8 text-white relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <Plus size={120} />
                         </div>
                         <DialogHeader className="relative z-10">
-                            <DialogTitle className="text-2xl font-black">Transfer Details</DialogTitle>
-                            <DialogDescription className="text-indigo-100 font-medium">
+                            <DialogTitle className="text-xl md:text-2xl font-black">Transfer Details</DialogTitle>
+                            <DialogDescription className="text-indigo-100 font-medium text-xs md:text-sm">
                                 Follow the instructions below to fund your wallet.
                             </DialogDescription>
                         </DialogHeader>
                     </div>
                     
-                    <div className="p-8 space-y-6">
+                    <div className="p-6 md:p-8 md:pb-12 space-y-6">
                         {/* Noticeable Amount Card */}
-                        <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[2rem] p-6 text-center space-y-2 shadow-sm">
+                        <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 text-center space-y-3 shadow-sm">
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Amount to Transfer</p>
-                            <div className="flex items-center justify-center gap-2">
-                                <span className="text-3xl font-black text-indigo-600">₦</span>
-                                <h1 className="text-5xl md:text-6xl font-black text-zinc-900 tracking-tighter">
+                            <div className="flex items-center justify-center gap-3">
+                                <span className="text-3xl md:text-4xl font-black text-indigo-600">₦</span>
+                                <h1 className="text-4xl md:text-6xl font-black text-zinc-900 tracking-tighter">
                                     {fundingData?.amount?.toLocaleString()}
                                 </h1>
                             </div>
@@ -788,7 +788,7 @@ export default function WalletsPage() {
 
                         <Button 
                             onClick={startPolling}
-                            className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all"
+                            className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all mb-4"
                         >
                             I&apos;ve Made The Transfer
                         </Button>
@@ -798,16 +798,16 @@ export default function WalletsPage() {
 
             {/* Polling/Processing Modal */}
             <Dialog open={showPollingModal} onOpenChange={() => {}}>
-                <DialogContent className="max-w-sm rounded-[2.5rem] border-none p-12 text-center bg-white shadow-2xl overflow-hidden relative">
-                    <div className="absolute top-0 inset-x-0 h-2 bg-zinc-100 overflow-hidden">
-                        <motion.div 
-                            className="h-full bg-indigo-600"
-                            initial={{ x: "-100%" }}
-                            animate={{ x: "100%" }}
-                            transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                        />
-                    </div>
-                    <div className="space-y-6">
+                <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-sm rounded-[2rem] md:rounded-[2.5rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
+                    <div className="p-6 md:p-12 md:pb-16 text-center space-y-6 relative">
+                        <div className="absolute top-0 inset-x-0 h-2 bg-zinc-100 overflow-hidden rounded-t-[2rem] md:rounded-t-[2.5rem]">
+                            <motion.div 
+                                className="h-full bg-indigo-600"
+                                initial={{ x: "-100%" }}
+                                animate={{ x: "100%" }}
+                                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                            />
+                        </div>
                         <div className="relative inline-block">
                             <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-25" />
                             <div className="relative h-20 w-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
@@ -836,8 +836,8 @@ export default function WalletsPage() {
 
             {/* Success Modal */}
             <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-                <DialogContent className="max-w-sm rounded-[3rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
-                    <div className="bg-emerald-500 p-12 text-center text-white relative">
+                <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-sm rounded-[2rem] md:rounded-[3rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
+                    <div className="bg-emerald-500 p-8 md:p-12 text-center text-white relative">
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50" />
                         <motion.div 
                             initial={{ scale: 0 }}
@@ -847,13 +847,13 @@ export default function WalletsPage() {
                         >
                             <CheckCircle size={56} />
                         </motion.div>
-                        <h2 className="text-3xl font-black tracking-tighter mb-2 italic">Success!</h2>
-                        <p className="text-emerald-50 font-medium italic">Wallet Funded Successfully</p>
+                        <h2 className="text-2xl md:text-3xl font-black tracking-tighter mb-2 italic">Success!</h2>
+                        <p className="text-emerald-50 font-medium italic text-xs md:text-sm">Wallet Funded Successfully</p>
                     </div>
-                    <div className="p-8 space-y-6 text-center">
+                    <div className="p-6 md:p-8 md:pb-12 space-y-6 text-center">
                         <div className="space-y-1">
                             <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Amount Credited</p>
-                            <p className="text-4xl font-black text-zinc-900 tracking-tighter">₦{fundingData?.amount?.toLocaleString()}</p>
+                            <p className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tighter">₦{fundingData?.amount?.toLocaleString()}</p>
                         </div>
                         <Button 
                             onClick={() => {
@@ -870,15 +870,15 @@ export default function WalletsPage() {
 
             {/* Pending/Timeout Modal */}
             <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
-                <DialogContent className="max-w-md rounded-[2.5rem] border-none p-0 overflow-hidden bg-white shadow-2xl">
-                    <div className="bg-amber-500 p-12 text-center text-white relative">
+                <DialogContent className="max-w-[calc(100%-2rem)] md:max-w-md rounded-[2rem] md:rounded-[2.5rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
+                    <div className="bg-amber-500 p-8 md:p-12 text-center text-white relative">
                         <div className="relative h-20 w-20 bg-white/20 text-white rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertCircle size={48} />
                         </div>
-                        <h2 className="text-2xl font-black italic">Still Processing</h2>
-                        <p className="text-amber-50 font-medium italic">We haven&apos;t confirmed your payment yet.</p>
+                        <h2 className="text-xl md:text-2xl font-black italic">Still Processing</h2>
+                        <p className="text-amber-50 font-medium italic text-xs md:text-sm">We haven&apos;t confirmed your payment yet.</p>
                     </div>
-                    <div className="p-8 space-y-8">
+                    <div className="p-6 md:p-8 md:pb-12 space-y-8">
                         <div className="space-y-4">
                             <div className="flex gap-4 p-4 bg-zinc-50 rounded-2xl items-start">
                                 <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
