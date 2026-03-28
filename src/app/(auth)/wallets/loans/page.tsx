@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useGetWalletsQuery, useGetGkwthPricesQuery, useRequestAssetLoanMutation, useGetAssetLoansQuery } from '@/store/api/walletApi';
+import { useGetUserDashboardStatsQuery } from '@/store/api/userApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -27,6 +28,7 @@ export default function LoansPage() {
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const [requestAssetLoan, { isLoading: isRequestingLoan }] = useRequestAssetLoanMutation();
     const { data: loansResponse } = useGetAssetLoansQuery();
+    const { data: statsResponse } = useGetUserDashboardStatsQuery();
     
     // Eligibility calculation
     const threeMonthsAgo = useState(() => {
@@ -45,13 +47,17 @@ export default function LoansPage() {
 
     const handleLoanRequest = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!loanQuantity || Number(loanQuantity) <= (indirectWallet?.amount || 0)) {
-            toast.error(`Loan quantity must be greater than your current balance (${indirectWallet?.amount || 0})`);
+        
+        const currentBalance = indirectWallet?.amount || 0;
+        const requestedQuantity = Number(loanQuantity);
+
+        if (!loanQuantity || requestedQuantity <= currentBalance) {
+            toast.error(`Loan quantity must be greater than your current balance (${currentBalance})`);
             return;
         }
 
         try {
-            await requestAssetLoan({ quantity: Number(loanQuantity) }).unwrap();
+            await requestAssetLoan({ quantity: requestedQuantity }).unwrap();
             toast.success('Asset loan request submitted successfully');
             setLoanQuantity('');
         } catch (err) {
@@ -108,10 +114,10 @@ export default function LoansPage() {
                                 <div className="space-y-4">
                                     {[
                                         { label: "Account Age 3+ Months", check: user?.createdAt && new Date(user.createdAt) <= threeMonthsAgo },
-                                        { label: "12+ Direct Referrals", check: null },
-                                        { label: "No Outstanding Debt", check: null },
+                                        { label: "12+ Direct Referrals", check: (statsResponse?.data?.totalSales || 0) >= 12 },
+                                        { label: "No Outstanding Debt", check: !loansResponse?.data?.data?.some(l => l.status === 'granted' && l.quantityGranted > l.quantityRepaid) },
                                         { label: "Active Bank Details", check: !!user?.bank && !!user?.accountNumber },
-                                        { label: "Requested > Balance", check: Number(loanQuantity) > (indirectWallet?.amount || 0) }
+                                        { label: "Requested > Balance", check: loanQuantity ? Number(loanQuantity) > (indirectWallet?.amount || 0) : null }
                                     ].map((item, i) => (
                                         <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
                                             <span className="font-bold text-zinc-600">{item.label}</span>
@@ -181,6 +187,7 @@ export default function LoansPage() {
                                     </div>
 
                                     <Button 
+                                        type="submit"
                                         disabled={isRequestingLoan || !loanQuantity || Number(loanQuantity) <= (indirectWallet?.amount || 0)}
                                         className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all"
                                     >

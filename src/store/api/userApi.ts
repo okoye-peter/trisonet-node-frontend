@@ -1,5 +1,5 @@
 import { apiSlice, type AppResponse } from './apiSlice';
-import type { User, UpdatePasswordRequest, UpdateProfileRequest, UpdateBankRequest } from '@/types';
+import type { User, UpdatePasswordRequest, UpdateProfileRequest, UpdateBankRequest, DashboardStats } from '@/types';
 
 export const userApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -52,6 +52,10 @@ export const userApi = apiSlice.injectEndpoints({
         getUserByTransferId: builder.query<AppResponse<User>, string>({
             query: (transferId) => `users/lookup/${transferId}`,
         }),
+        getUserDashboardStats: builder.query<AppResponse<DashboardStats>, void>({
+            query: () => 'users/dashboard-stats',
+            providesTags: ['User', 'Wallet'],
+        }),
     }),
 });
 
@@ -63,6 +67,7 @@ export const {
     useSendOtpMutation, 
     useGetUserByTransferIdQuery,
     useSendWithdrawalPinOtpMutation,
-    useResetWithdrawalPinMutation
+    useResetWithdrawalPinMutation,
+    useGetUserDashboardStatsQuery
 } = userApi;
 
