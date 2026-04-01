@@ -13,7 +13,7 @@ import api from '@/lib/axios';
 interface KYCModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess?: (data: any) => void;
+    onSuccess?: (data: unknown) => void;
 }
 
 export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) {
@@ -71,7 +71,8 @@ export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) 
             onSuccess?.(response.data);
             handleClose();
         } catch (error: unknown) {
-            const message = (error as any)?.response?.data?.message || 'Failed to submit KYC. Please try again.';
+            const err = error as { response?: { data?: { message?: string } } };
+            const message = err.response?.data?.message || 'Failed to submit KYC. Please try again.';
             toast.error(message);
         } finally {
             setIsSubmitting(false);
@@ -215,7 +216,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) 
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting || bvn.length !== 11 || !passportImage}
-                                        className="flex-[2] h-16 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
+                                        className="flex-2 h-16 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
                                     >
                                         {isSubmitting ? (
                                             <>
