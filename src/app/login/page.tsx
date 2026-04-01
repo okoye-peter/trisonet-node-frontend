@@ -54,6 +54,7 @@ export default function LoginPage() {
             const { user, accessToken, refreshToken } = response.data.data;
             dispatch(loginSuccess({ user, accessToken, refreshToken }));
             toast.success('Successfully logged in!');
+            sessionStorage.setItem('showWelcomeVideo', 'true'); // Flag to show video on first dashboard load
             router.push('/dashboard');
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };

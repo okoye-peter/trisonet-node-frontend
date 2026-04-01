@@ -256,6 +256,17 @@ export interface WithDrawal {
     reference: string | null;
 }
 
+export interface EarningTransaction {
+    id: number;
+    amount: number;
+    type: string;
+    reference: string;
+    walletId: number;
+    narration: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface WithdrawalRequest {
     id: string;
     amountRequested: number;

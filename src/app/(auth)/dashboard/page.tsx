@@ -12,10 +12,10 @@ import {
     Copy,
     QrCode,
     ExternalLink,
-    Star,
     Award,
     ArrowUpRight,
     ChevronRight,
+    UserCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,8 +29,10 @@ import type { Partner, Wallet as WalletType, DashboardStats } from '@/types';
 import { MAX_ASSET_DEPOT } from '@/lib/constants';
 import { Variants } from 'framer-motion';
 import LoadingScreen from '@/components/LoadingScreen';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
+import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
+import KYCModal from '@/components/dashboard/KYCModal';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -154,11 +156,40 @@ const itemVariants: Variants = {
 
 export default function DashboardPage() {
     const { user } = useAppSelector((state) => state.auth);
+    const [showWelcome, setShowWelcome] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return sessionStorage.getItem('showWelcomeVideo') === 'true';
+        }
+        return false;
+    });
+
     const [qrCodeConfig, setQrCodeConfig] = useState<{ isOpen: boolean; url: string; title: string }>({
         isOpen: false,
         url: '',
         title: ''
     });
+
+    const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
+
+    useEffect(() => {
+        // Auto-show KYC modal if user is not verified and hasn't dismissed it in this session
+        if (user && !user.activatedAt) {
+            const hasSeenKYC = sessionStorage.getItem('hasSeenKYC');
+            if (!hasSeenKYC) {
+                const timer = setTimeout(() => {
+                    setIsKYCModalOpen(true);
+                    sessionStorage.setItem('hasSeenKYC', 'true');
+                }, 1000); // Small delay for better UX
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (showWelcome) {
+            sessionStorage.removeItem('showWelcomeVideo');
+        }
+    }, [showWelcome]);
 
     const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading } = useQuery<{ data: DashboardStats }>({
         queryKey: ['userDashboardStats', user?.id],
@@ -224,6 +255,10 @@ export default function DashboardPage() {
         toast.success('Copied to clipboard!');
     };
 
+    if (showWelcome) {
+        return <WelcomeVideo onEnded={() => setShowWelcome(false)} />;
+    }
+
     if (dashboardStatsIsLoading) return <LoadingScreen />
 
     return (
@@ -248,17 +283,13 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button size="lg" className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xl shadow-zinc-200 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                        <Star className="mr-2 h-4 w-4 fill-amber-400 text-amber-400" /> Click Here to Buy PIM
-                        <ArrowUpRight className="ml-2 h-4 w-4 opacity-50" />
-                    </Button>
                     <Button 
-                        variant="link"
-                        size="icon-lg"
-                        className="group relative flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-zinc-100 shadow-sm transition-all hover:border-indigo-100 hover:shadow-indigo-50"
+                        onClick={() => setIsKYCModalOpen(true)}
+                        size="lg" 
+                        className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        <Award className="h-6 w-6 text-zinc-400 group-hover:text-indigo-600 transition-colors" />
-                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white ring-4 ring-red-500/10" />
+                        <UserCheck className="mr-2 h-4 w-4" /> Verify Identity
+                        <ArrowUpRight className="ml-2 h-4 w-4 opacity-50" />
                     </Button>
                 </div>
             </motion.div>
@@ -400,6 +431,15 @@ export default function DashboardPage() {
                 onClose={() => setQrCodeConfig({ ...qrCodeConfig, isOpen: false })}
                 url={qrCodeConfig.url}
                 title={qrCodeConfig.title}
+            />
+
+            <KYCModal 
+                isOpen={isKYCModalOpen}
+                onClose={() => setIsKYCModalOpen(false)}
+                onSuccess={(data) => {
+                    console.log('KYC Data:', data);
+                    // Here you would typically refresh user state or redirect
+                }}
             />
         </motion.div>
     );

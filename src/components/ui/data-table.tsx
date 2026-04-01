@@ -50,6 +50,7 @@ export interface DataTableProps<TData, TValue> {
     searchKey?: string
     searchPlaceholder?: string
     orderBy?: 'asc' | 'desc'
+    filters?: Record<string, string | number | undefined>
 }
 
 export function DataTable<TData, TValue>({
@@ -59,6 +60,7 @@ export function DataTable<TData, TValue>({
     searchKey,
     searchPlaceholder = "Search...",
     orderBy,
+    filters,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -80,13 +82,18 @@ export function DataTable<TData, TValue>({
         return () => clearTimeout(timeout);
     }, [searchFilterValue]);
 
+    React.useEffect(() => {
+        setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    }, [filters]);
+
     const { data: fetchedData, isLoading, isFetching } = useQuery({
-        queryKey: ["dataTable", url, pagination.pageIndex, pagination.pageSize, searchFilter, orderBy],
+        queryKey: ["dataTable", url, pagination.pageIndex, pagination.pageSize, searchFilter, orderBy, filters],
         queryFn: async () => {
             if (!url) return null;
-            const params: Record<string, string | number> = {
+            const params: Record<string, string | number | undefined> = {
                 page: pagination.pageIndex + 1,
                 limit: pagination.pageSize,
+                ...filters,
             };
             if (searchFilter) {
                 params.search = searchFilter;

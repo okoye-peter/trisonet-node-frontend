@@ -57,7 +57,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 </div>
 
                 <div className="flex items-center gap-3 sm:gap-6">
-                    <div className="relative hidden md:block group">
+                    {/* <div className="relative hidden md:block group">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                             <Search size={18} className="text-zinc-400 group-focus-within:text-indigo-500 transition-colors" />
                         </span>
@@ -66,7 +66,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                             placeholder="Search..."
                             className="w-64 rounded-2xl border-none bg-zinc-100/50 py-2 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-zinc-400 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:shadow-sm"
                         />
-                    </div>
+                    </div> */}
 
                     <div className="relative">
                         <NotificationCenter />
