@@ -9,7 +9,7 @@ export type Partner = {
 
 export type Wallet = {
     id?: number
-    type: 'direct' | 'indirect' | 'central_treasury' | 'patronage';
+    type: 'direct' | 'indirect' | 'central_treasury' | 'patronage' | 'earning';
     amount: number;
     createdAt?: string;
     updatedAt?: string;
@@ -150,7 +150,7 @@ export interface WardStats {
     unlimitedSlotPrice: number;
 }
 
-export interface Ward extends User { }
+export type Ward = User;
 
 export interface PaginatedResult<T> {
     data: T[];
