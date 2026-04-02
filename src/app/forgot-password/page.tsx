@@ -61,8 +61,9 @@ export default function ForgotPasswordPage() {
             resetPasswordForm.setValue('email', values.email);
             setStep('reset-password');
             toast.success('OTP sent to your email!');
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to send OTP.');
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || 'Failed to send OTP.');
         } finally {
             setIsLoading(false);
         }
@@ -74,8 +75,9 @@ export default function ForgotPasswordPage() {
             await api.post('/password_reset/customers/reset-password', values);
             setStep('success');
             toast.success('Password reset successful!');
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Failed to reset password.');
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            toast.error(err.response?.data?.message || 'Failed to reset password.');
         } finally {
             setIsLoading(false);
         }
@@ -84,15 +86,23 @@ export default function ForgotPasswordPage() {
     if (step === 'success') {
         return (
             <AuthLayout title="Success!" description="Your password has been reset successfully.">
-                <div className="flex flex-col items-center space-y-6 text-center">
-                    <div className="rounded-full bg-green-100 p-3 text-green-600">
-                        <CheckCircle2 className="h-12 w-12" />
+                <div className="flex flex-col items-center space-y-6 text-center py-4">
+                    <div className="rounded-full bg-green-50 p-4 text-green-600 shadow-sm border border-green-100">
+                        <CheckCircle2 className="h-16 w-16" />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                        You can now sign in with your new password.
-                    </p>
-                    <Button render={<Link href="/login" />} className="w-full">
-                        Go to Login
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-[#040021]">Ready to Sign In</h3>
+                        <p className="text-sm text-[#8f98a8]">
+                            Your security is our priority. You can now access your account with your new password.
+                        </p>
+                    </div>
+                    <Button 
+                        render={<Link href="/login" />}
+                        className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20"
+                    >
+                        <span className="flex items-center justify-center gap-2">
+                            Go to Login <i className="fas fa-arrow-right text-xs"></i>
+                        </span>
                     </Button>
                 </div>
             </AuthLayout>
@@ -103,51 +113,76 @@ export default function ForgotPasswordPage() {
         <AuthLayout
             title={step === 'send-otp' ? 'Forgot Password?' : 'Reset Password'}
             description={step === 'send-otp'
-                ? "No worries, we'll send you reset instructions."
-                : `We've sent an OTP to ${email}`}
+                ? "No worries, we'll send you reset instructions to your email."
+                : `We've sent a secure OTP code to ${email}`}
         >
             {step === 'send-otp' ? (
                 <Form {...sendOtpForm}>
-                    <form onSubmit={sendOtpForm.handleSubmit(onSendOtp)} className="space-y-4">
+                    <form onSubmit={sendOtpForm.handleSubmit(onSendOtp)} className="space-y-6">
                         <FormField
                             control={sendOtpForm.control}
                             name="email"
-                            render={({ field }: { field: any }) => (
+                            render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email Address</FormLabel>
+                                    <FormLabel className="text-[#040021] font-semibold">Email Address</FormLabel>
                                     <FormControl>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input placeholder="name@company.com" className="pl-10 h-10" {...field} />
+                                        <div className="relative group">
+                                            <Mail className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input 
+                                                placeholder="name@company.com" 
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
+                                                {...field} 
+                                            />
                                         </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="w-full h-10" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Send OTP
-                        </Button>
-                        <Button variant="ghost" render={<Link href="/login" />} className="w-full h-10">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to login
-                        </Button>
+                        <div className="space-y-3">
+                            <Button 
+                                type="submit" 
+                                className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20" 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                ) : (
+                                    <span className="flex items-center justify-center gap-2">
+                                        Send OTP <i className="fas fa-paper-plane text-xs"></i>
+                                    </span>
+                                )}
+                            </Button>
+                            <Button 
+                                variant="ghost" 
+                                render={<Link href="/login" />}
+                                className="w-full h-11 text-[#8f98a8] hover:text-[#040021] font-semibold transition-colors"
+                            >
+                                <span className="flex items-center justify-center gap-2">
+                                    <ArrowLeft className="h-4 w-4" />
+                                    Back to login
+                                </span>
+                            </Button>
+                        </div>
                     </form>
                 </Form>
             ) : (
                 <Form {...resetPasswordForm}>
-                    <form onSubmit={resetPasswordForm.handleSubmit(onResetPassword)} className="space-y-4">
+                    <form onSubmit={resetPasswordForm.handleSubmit(onResetPassword)} className="space-y-6">
                         <FormField
                             control={resetPasswordForm.control}
                             name="otp"
-                            render={({ field }: { field: any }) => (
+                            render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>OTP Code</FormLabel>
+                                    <FormLabel className="text-[#040021] font-semibold">OTP Code</FormLabel>
                                     <FormControl>
-                                        <div className="relative">
-                                            <Key className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input placeholder="123456" className="pl-10 h-10" {...field} />
+                                        <div className="relative group">
+                                            <Key className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input 
+                                                placeholder="123456" 
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
+                                                {...field} 
+                                            />
                                         </div>
                                     </FormControl>
                                     <FormMessage />
@@ -157,13 +192,18 @@ export default function ForgotPasswordPage() {
                         <FormField
                             control={resetPasswordForm.control}
                             name="password"
-                            render={({ field }: { field: any }) => (
+                            render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>New Password</FormLabel>
+                                    <FormLabel className="text-[#040021] font-semibold">New Password</FormLabel>
                                     <FormControl>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input type="password" placeholder="••••••••" className="pl-10 h-10" {...field} />
+                                        <div className="relative group">
+                                            <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input 
+                                                type="password" 
+                                                placeholder="••••••••" 
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
+                                                {...field} 
+                                            />
                                         </div>
                                     </FormControl>
                                     <FormMessage />
@@ -173,31 +213,47 @@ export default function ForgotPasswordPage() {
                         <FormField
                             control={resetPasswordForm.control}
                             name="confirmPassword"
-                            render={({ field }: { field: any }) => (
+                            render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Confirm New Password</FormLabel>
+                                    <FormLabel className="text-[#040021] font-semibold">Confirm New Password</FormLabel>
                                     <FormControl>
-                                        <div className="relative">
-                                            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                            <Input type="password" placeholder="••••••••" className="pl-10 h-10" {...field} />
+                                        <div className="relative group">
+                                            <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input 
+                                                type="password" 
+                                                placeholder="••••••••" 
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
+                                                {...field} 
+                                            />
                                         </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="w-full h-10" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Reset Password
-                        </Button>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            className="w-full h-10"
-                            onClick={() => setStep('send-otp')}
-                        >
-                            Change email
-                        </Button>
+                        <div className="space-y-3">
+                            <Button 
+                                type="submit" 
+                                className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20" 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                ) : (
+                                    <span className="flex items-center justify-center gap-2">
+                                        Reset Password <i className="fas fa-check text-xs"></i>
+                                    </span>
+                                )}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="w-full h-11 text-[#8f98a8] hover:text-[#040021] font-semibold transition-colors"
+                                onClick={() => setStep('send-otp')}
+                            >
+                                Change email
+                            </Button>
+                        </div>
                     </form>
                 </Form>
             )}

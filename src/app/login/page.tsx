@@ -54,7 +54,6 @@ export default function LoginPage() {
             const { user, accessToken, refreshToken } = response.data.data;
             dispatch(loginSuccess({ user, accessToken, refreshToken }));
             toast.success('Successfully logged in!');
-            sessionStorage.setItem('showWelcomeVideo', 'true'); // Flag to show video on first dashboard load
             router.push('/dashboard');
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };
@@ -72,19 +71,19 @@ export default function LoginPage() {
             description="Enter your credentials to access your account"
         >
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                         control={form.control}
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Email Address</FormLabel>
+                                <FormLabel className="text-[#040021] font-semibold">Email Address</FormLabel>
                                 <FormControl>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <div className="relative group">
+                                        <Mail className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
                                             placeholder="name@company.com"
-                                            className="pl-10 h-10 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
                                             {...field}
                                         />
                                     </div>
@@ -99,29 +98,29 @@ export default function LoginPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center justify-between">
-                                    <FormLabel>Password</FormLabel>
+                                    <FormLabel className="text-[#040021] font-semibold">Password</FormLabel>
                                     <Link
                                         href="/forgot-password"
-                                        className="text-xs font-medium text-primary hover:underline underline-offset-4"
+                                        className="text-xs font-bold text-[#6639ff] hover:underline underline-offset-4"
                                     >
                                         Forgot password?
                                     </Link>
                                 </div>
                                 <FormControl>
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
                                             type={showPassword ? 'text' : 'password'}
                                             placeholder="••••••••"
-                                            className="pl-10 pr-10 h-10 ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            className="pl-10 pr-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
                                             {...field}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                                            className="absolute right-3 top-3 text-[#8f98a8] hover:text-[#040021] transition-colors"
                                         >
-                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                         </button>
                                     </div>
                                 </FormControl>
@@ -129,26 +128,35 @@ export default function LoginPage() {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full h-10 font-semibold" disabled={isLoading}>
-                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Sign In
+                    <Button 
+                        type="submit" 
+                        className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20" 
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        ) : (
+                            <span className="flex items-center justify-center gap-2">
+                                Sign In <i className="fas fa-arrow-right text-xs"></i>
+                            </span>
+                        )}
                     </Button>
                 </form>
             </Form>
 
-            <div className="relative my-8">
+            <div className="relative my-8 text-center">
                 <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-muted"></span>
+                    <span className="w-full border-t border-zinc-100"></span>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <span className="bg-white px-4 text-[#8f98a8] font-medium tracking-widest">Or secure access</span>
                 </div>
             </div>
 
-            <div className="text-center text-sm">
+            <div className="text-center text-sm font-medium text-[#8f98a8]">
                 Don&apos;t have an account?{' '}
-                <Link href="/register" className="font-semibold text-primary hover:underline underline-offset-4">
-                    Sign up
+                <Link href="/register" className="font-bold text-[#6639ff] hover:underline underline-offset-4">
+                    Sign up now
                 </Link>
             </div>
         </AuthLayout>

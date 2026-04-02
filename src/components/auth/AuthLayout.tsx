@@ -1,72 +1,92 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const AuthLayout = ({ children, title, description }: { children: React.ReactNode, title: string, description: string }) => {
     return (
-        <div className="min-h-screen grid lg:grid-cols-2">
-            {/* Left Side - Visual/Marketing */}
-            <div className="hidden lg:flex flex-col justify-between p-12 bg-zinc-950 text-white relative overflow-hidden">
-                {/* Background Animations */}
-                <div className="absolute inset-0 bg-linear-to-br from-indigo-500/20 via-transparent to-purple-500/20 opacity-50" />
-
-                {/* Pulsing Orbs */}
-                <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/15 blur-[120px] rounded-full animate-pulse-glow" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-500/15 blur-[120px] rounded-full animate-pulse-glow" style={{ animationDelay: '-4s' }} />
-
-                {/* Floating Elements */}
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-white/5 rounded-full animate-float opacity-20" />
-                <div className="absolute bottom-1/4 right-1/4 w-48 h-48 border border-white/5 rounded-3xl animate-float opacity-10" style={{ animationDelay: '-2s' }} />
-
-                {/* Moving Particles/Drift */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute top-1/2 left-1/3 w-1 h-1 bg-white rounded-full animate-drift opacity-40 shadow-[0_0_10px_white]" />
-                    <div className="absolute top-1/4 left-2/3 w-1 h-1 bg-white rounded-full animate-drift opacity-20 shadow-[0_0_8px_white]" style={{ animationDelay: '-10s' }} />
-                    <div className="absolute bottom-1/3 right-1/4 w-1 h-1 bg-indigo-400 rounded-full animate-drift opacity-30 shadow-[0_0_10px_indigo-400]" style={{ animationDelay: '-20s' }} />
-                </div>
-
-                <div className="relative z-10 flex items-center gap-2">
-                    <Image src="/logo.png" alt="Logo" width={40} height={40} className="invert brightness-0" />
-                    <span className="text-xl font-bold tracking-tight">Trisonet</span>
-                </div>
-
-                <div className="relative z-10">
-                    <blockquote className="space-y-2">
-                        <p className="text-lg font-medium leading-relaxed italic text-zinc-300">
-                            &ldquo;Trisonet has transformed how we manage our projects and scaled our infrastructure. The speed and security are unparalleled.&rdquo;
-                        </p>
-                        <footer className="text-sm text-zinc-400">&mdash; Engineering Lead, Triso Systems</footer>
-                    </blockquote>
-                </div>
+        <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5] p-4 relative overflow-hidden font-sans">
+            {/* Background shapes inspired by the template */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-10">
+                <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-[#6639ff] rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#ffc400] rounded-full blur-[120px]" />
             </div>
 
-            {/* Right Side - Form */}
-            <div className="flex flex-col items-center justify-center p-8 bg-background relative overflow-hidden">
-                {/* Subtle Right-side background elements */}
-                <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/5 blur-[100px] rounded-full animate-pulse-glow" />
-                <div className="absolute bottom-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-500/5 blur-[100px] rounded-full animate-pulse-glow" style={{ animationDelay: '-2s' }} />
-
-                <div className="w-full max-w-[400px] space-y-6 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out">
-                    <div className="flex flex-col space-y-2 text-center lg:text-left mb-8">
-                        <div className="lg:hidden flex justify-center mb-6">
-                            <Image src="/logo.png" alt="Logo" width={60} height={60} />
-                        </div>
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-                        <p className="text-sm text-muted-foreground">{description}</p>
+            <div className="w-full max-w-[1100px] bg-white rounded-xl shadow-2xl overflow-hidden grid lg:grid-cols-2 relative z-10 border border-zinc-100">
+                {/* Left Side - Visual/Branding */}
+                <div className="hidden lg:flex flex-col justify-between p-12 bg-[#040021] text-white relative">
+                    {/* Background Overlay Pattern */}
+                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("/assets/img/bg/counter-right-img.png")', backgroundSize: 'cover' }} />
+                    <div className="absolute inset-0 bg-[#6639ff]/40 mix-blend-multiply" />
+                    
+                    <div className="relative z-10">
+                        <Link href="/" className="flex items-center gap-3">
+                            <div className="bg-white p-2 rounded-lg">
+                                <Image src="/assets/img/logo/logo.png" alt="Logo" width={40} height={40} />
+                            </div>
+                            <span className="text-2xl font-bold tracking-tight text-white uppercase italic">Trisonet</span>
+                        </Link>
                     </div>
-                    {children}
+
+                    <div className="relative z-10 space-y-6">
+                        <div className="inline-block px-4 py-1 bg-[#6639ff] text-white text-xs font-bold uppercase tracking-widest rounded-full">
+                            Leading in Digital Assets
+                        </div>
+                        <h2 className="text-4xl font-extrabold leading-tight text-white uppercase">
+                            Empowering Your <span className="text-[#ffc400]">Digital Future</span>
+                        </h2>
+                        <p className="text-zinc-300 text-lg leading-relaxed">
+                            Join over 53,000+ partners globally. Access metaverse solutions, digital logistics, and sustainable economy building.
+                        </p>
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-4 text-sm text-zinc-400">
+                            <div className="flex -space-x-2">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="w-8 h-8 rounded-full border-2 border-[#040021] overflow-hidden bg-zinc-800">
+                                        <Image src={`/assets/img/team/team-${i}.jpg`} alt="User" width={32} height={32} />
+                                    </div>
+                                ))}
+                            </div>
+                            <span>Joined by 53k+ partners</span>
+                        </div>
+                    </div>
                 </div>
 
-                <p className="absolute bottom-8 text-center text-xs text-muted-foreground px-8">
-                    By clicking continue, you agree to our{' '}
-                    <a href="#" className="underline underline-offset-4 hover:text-primary transition-colors">
-                        Terms of Service
-                    </a>{' '}
-                    and{' '}
-                    <a href="#" className="underline underline-offset-4 hover:text-primary transition-colors">
-                        Privacy Policy
-                    </a>.
-                </p>
+                {/* Right Side - Form */}
+                <div className="flex flex-col p-8 lg:p-16 justify-center bg-white">
+                    <div className="w-full max-w-[400px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="lg:hidden flex justify-center mb-8">
+                            <Image src="/assets/img/logo/logo.png" alt="Logo" width={60} height={60} />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <h1 className="text-3xl font-bold text-[#040021] uppercase tracking-tight">{title}</h1>
+                            <p className="text-[#8f98a8] text-sm leading-relaxed">{description}</p>
+                        </div>
+
+                        <div className="auth-form-container">
+                            {children}
+                        </div>
+
+                        <div className="pt-6 border-t border-zinc-100">
+                            <p className="text-center text-xs text-[#8f98a8] leading-relaxed">
+                                By continuing, you agree to our{' '}
+                                <Link href="/terms" className="text-[#6639ff] font-semibold hover:underline">
+                                    Terms of Service
+                                </Link>{' '}
+                                and{' '}
+                                <Link href="/policy" className="text-[#6639ff] font-semibold hover:underline">
+                                    Privacy Policy
+                                </Link>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
+            
+            {/* Template-style decorative element */}
+            <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-[#6639ff]/5 rounded-full border border-[#6639ff]/10" />
         </div>
     );
 };

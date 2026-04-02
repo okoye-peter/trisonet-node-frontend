@@ -156,12 +156,7 @@ const itemVariants: Variants = {
 
 export default function DashboardPage() {
     const { user } = useAppSelector((state) => state.auth);
-    const [showWelcome, setShowWelcome] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return sessionStorage.getItem('showWelcomeVideo') === 'true';
-        }
-        return false;
-    });
+    const [showWelcome, setShowWelcome] = useState(true);
 
     const [qrCodeConfig, setQrCodeConfig] = useState<{ isOpen: boolean; url: string; title: string }>({
         isOpen: false,
@@ -184,13 +179,6 @@ export default function DashboardPage() {
             }
         }
     }, [user]);
-
-    useEffect(() => {
-        if (showWelcome) {
-            sessionStorage.removeItem('showWelcomeVideo');
-        }
-    }, [showWelcome]);
-
     const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading } = useQuery<{ data: DashboardStats }>({
         queryKey: ['userDashboardStats', user?.id],
         queryFn: async () => {
