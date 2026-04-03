@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { BottomNav } from './BottomNav';
 import { cn } from '@/lib/utils';
 
 
@@ -23,7 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 
             <main className={cn(
-                "pt-28 pb-8 transition-all duration-500 relative z-10",
+                "pt-28 pb-24 lg:pb-8 transition-all duration-500 relative z-10",
                 "lg:ml-64 px-4 sm:px-6 lg:px-10"
             )}>
                 <motion.div
@@ -59,11 +60,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-30 bg-black/40 backdrop-blur-md lg:hidden"
+                        className="fixed inset-0 z-55 bg-black/40 backdrop-blur-md lg:hidden"
                         onClick={() => setIsSidebarOpen(false)}
                     />
                 )}
             </AnimatePresence>
+
+            <BottomNav />
         </div>
     );
 }

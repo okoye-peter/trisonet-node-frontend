@@ -2,13 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, Search, ChevronDown, User, LogOut, Settings } from 'lucide-react';
+import { Menu, ChevronDown, User, LogOut, Settings } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout } from '@/store/features/authSlice';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const { user } = useAppSelector((state) => state.auth);
@@ -36,7 +35,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     }, []);
 
     return (
-        <header className="fixed top-0 z-50 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl transition-all duration-300">
+        <header className="fixed top-0 z-60 w-full border-b border-white/40 bg-white/70 backdrop-blur-xl transition-all duration-300">
             <div className="flex h-20 items-center justify-between px-6 sm:px-10 lg:px-12">
                 <div className="flex items-center gap-4">
                     <button
@@ -69,7 +68,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                     </div> */}
 
                     <div className="relative">
-                        <NotificationCenter />
+                        {/* <NotificationCenter /> */}
                     </div>
 
                     <div className="relative" ref={dropdownRef}>

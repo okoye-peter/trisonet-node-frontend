@@ -114,7 +114,7 @@ export default function LoansPage() {
                                 <div className="space-y-4">
                                     {[
                                         { label: "Account Age 3+ Months", check: user?.createdAt && new Date(user.createdAt) <= threeMonthsAgo },
-                                        { label: "12+ Direct Referrals", check: (statsResponse?.data?.totalSales || 0) >= 12 },
+                                        { label: "12+ Direct Partnership", check: (statsResponse?.data?.totalSales || 0) >= 12 },
                                         { label: "No Outstanding Debt", check: !loansResponse?.data?.data?.some(l => l.status === 'granted' && l.quantityGranted > l.quantityRepaid) },
                                         { label: "Active Bank Details", check: !!user?.bank && !!user?.accountNumber },
                                         { label: "Requested > Balance", check: loanQuantity ? Number(loanQuantity) > (indirectWallet?.amount || 0) : null }

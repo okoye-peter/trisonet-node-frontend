@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play } from 'lucide-react';
 
@@ -12,6 +13,11 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isVisible, setIsVisible] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (videoRef.current) {
@@ -34,7 +40,9 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
         setTimeout(onEnded, 500); // Wait for exit animation
     };
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isVisible && (
                 <motion.div
@@ -42,13 +50,14 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="fixed inset-0 z-9999 bg-black flex items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-[99999] bg-black flex items-center justify-center overflow-hidden"
                 >
                     <video
                         ref={videoRef}
                         className="w-full h-full object-cover"
-                        src="/Video_Generation_for_Trisonet_Welcome.mp4"
+                        src="/Avatar_Walks_Into_Community.mp4"
                         autoPlay
+                        muted
                         playsInline
                         onEnded={handleVideoEnd}
                     />
@@ -59,7 +68,7 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
                             <motion.div 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="absolute inset-0 z-10000 bg-black/80 flex flex-col items-center justify-center text-center p-6"
+                                className="absolute inset-0 z-[100000] bg-black/80 flex flex-col items-center justify-center text-center p-6"
                             >
                                 <motion.div 
                                     initial={{ scale: 0.9, opacity: 0 }}
@@ -87,13 +96,14 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
                     {!isBlocked && (
                         <button 
                             onClick={handleVideoEnd}
-                            className="absolute bottom-8 right-8 text-white/50 hover:text-white text-xs font-black uppercase tracking-widest border border-white/20 px-6 py-3 rounded-full transition-all hover:bg-white/10 backdrop-blur-sm z-10001"
+                            className="absolute bottom-8 right-8 text-white/50 hover:text-white text-xs font-black uppercase tracking-widest border border-white/20 px-6 py-3 rounded-full transition-all hover:bg-white/10 backdrop-blur-sm z-[100001]"
                         >
                             Skip Presentation
                         </button>
                     )}
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

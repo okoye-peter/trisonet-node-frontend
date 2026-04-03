@@ -11,9 +11,6 @@ import {
     CircleDollarSign,
     PieChart,
     CheckCircle2,
-    FileText,
-    Globe,
-    ShoppingBag,
     ChevronRight,
     ArrowRightLeft,
     ScrollText,
@@ -49,9 +46,9 @@ const sidebarItems = [
         ]
     },
     { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
-    { icon: FileText, label: 'TrisoBrief', href: '/dashboard/brief' },
-    { icon: Globe, label: 'Gist Zone', href: '/dashboard/gist' },
-    { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },
+    // { icon: FileText, label: 'TrisoBrief', href: '/dashboard/brief' },
+    // { icon: Globe, label: 'Gist Zone', href: '/dashboard/gist' },
+    // { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },
 ];
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => void }) {
@@ -81,7 +78,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
     return (
         <aside
             className={cn(
-                "fixed left-0 top-20 z-40 h-[calc(100vh-80px)] w-64 rounded-none border-r border-white/40 bg-white/80 backdrop-blur-xl transition-all duration-500 lg:translate-x-0 shadow-[0_8px_32px_rgba(0,0,0,0.04)]",
+                "fixed left-0 top-20 z-60 h-[calc(100vh-80px)] w-64 rounded-none border-r border-white/40 bg-white/80 backdrop-blur-xl transition-all duration-500 lg:translate-x-0 shadow-[0_8px_32px_rgba(0,0,0,0.04)]",
                 !isOpen && "-translate-x-full"
             )}
         >

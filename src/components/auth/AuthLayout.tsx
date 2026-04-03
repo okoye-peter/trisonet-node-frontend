@@ -21,7 +21,7 @@ const AuthLayout = ({ children, title, description }: { children: React.ReactNod
                     <div className="relative z-10">
                         <Link href="/" className="flex items-center gap-3">
                             <div className="bg-white p-2 rounded-lg">
-                                <Image src="/assets/img/logo/logo.png" alt="Logo" width={40} height={40} />
+                                <Image src="/assets/img/logo/logo.png" alt="Logo" width={40} height={40} style={{ height: 'auto' }} />
                             </div>
                             <span className="text-2xl font-bold tracking-tight text-white uppercase italic">Trisonet</span>
                         </Link>
@@ -42,9 +42,9 @@ const AuthLayout = ({ children, title, description }: { children: React.ReactNod
                     <div className="relative z-10">
                         <div className="flex items-center gap-4 text-sm text-zinc-400">
                             <div className="flex -space-x-2">
-                                {[1, 2, 3, 4].map((i) => (
+                                {['team1.png', 'team2.jpg', 'team3.jpg', 'team4.jpg'].map((img, i) => (
                                     <div key={i} className="w-8 h-8 rounded-full border-2 border-[#040021] overflow-hidden bg-zinc-800">
-                                        <Image src={`/assets/img/team/team-${i}.jpg`} alt="User" width={32} height={32} />
+                                        <Image src={`/assets/img/team/${img}`} alt="User" width={32} height={32} style={{ height: 'auto' }} />
                                     </div>
                                 ))}
                             </div>
@@ -57,7 +57,7 @@ const AuthLayout = ({ children, title, description }: { children: React.ReactNod
                 <div className="flex flex-col p-8 lg:p-16 justify-center bg-white">
                     <div className="w-full max-w-[400px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="lg:hidden flex justify-center mb-8">
-                            <Image src="/assets/img/logo/logo.png" alt="Logo" width={60} height={60} />
+                            <Image src="/assets/img/logo/logo.png" alt="Logo" width={60} height={60} style={{ height: 'auto' }} />
                         </div>
                         
                         <div className="space-y-2">

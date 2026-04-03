@@ -385,7 +385,7 @@ export default function DashboardPage() {
                 </motion.div>
 
                 {/* Global Countdown */}
-                <motion.div variants={itemVariants} className="relative group overflow-hidden rounded-3xl p-1 bg-linear-to-br from-indigo-600 to-indigo-900 shadow-2xl shadow-indigo-100 transition-transform hover:scale-[1.01]">
+                <motion.div variants={itemVariants} className="lg:col-span-2 relative group overflow-hidden rounded-3xl p-1 bg-linear-to-br from-indigo-600 to-indigo-900 shadow-2xl shadow-indigo-100 transition-transform hover:scale-[1.01]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] transition-transform duration-1000 group-hover:scale-150" />
                     <Card className="border-none bg-transparent text-white p-6 h-full flex flex-col justify-between">
                         <CardContent className="p-0">
@@ -404,7 +404,7 @@ export default function DashboardPage() {
                 </motion.div>
 
                 {/* Personal Referral Code */}
-                <motion.div variants={itemVariants}>
+                {/* <motion.div variants={itemVariants}>
                     <Card className="group border-none bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden h-full flex flex-col">
                         <CardContent className="p-6 flex flex-col h-full">
                             <div className="flex items-center justify-between mb-8">
@@ -445,7 +445,7 @@ export default function DashboardPage() {
                             <p className="mt-auto text-[10px] font-medium text-zinc-400">Share this code to build your partner network and earn rewards.</p>
                         </CardContent>
                     </Card>
-                </motion.div>
+                </motion.div> */}
             </div>
 
             {/* Partners Section Header */}

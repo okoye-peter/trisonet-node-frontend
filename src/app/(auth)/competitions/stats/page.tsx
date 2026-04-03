@@ -152,7 +152,7 @@ const Stats = () => {
                                                             <div className="bg-background border border-border p-3 rounded-xl shadow-xl ring-1 ring-black/5">
                                                                 <p className="font-bold text-sm mb-1">{item.fullName}</p>
                                                                 <p className="text-primary font-black text-lg">
-                                                                    {item.referrals} <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Referrals</span>
+                                                                    {item.referrals} <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Partnership</span>
                                                                 </p>
                                                                 <p className="text-[10px] text-muted-foreground mt-1">Rank #{item.rank}</p>
                                                             </div>
@@ -256,7 +256,7 @@ const Stats = () => {
                                                             </span>
                                                         </div>
                                                         <p className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-                                                            Confirmed Referrals
+                                                            Confirmed Partnership
                                                         </p>
                                                     </div>
                                                 </div>

@@ -1,12 +1,12 @@
 'use client';
 
 import { 
-    Coins,
-    BarChart3,
-    TrendingUp,
-    Wallet,
-    CheckCircle2,
-    History
+    Coins, 
+    BarChart3, 
+    TrendingUp, 
+    Wallet, 
+    CheckCircle2, 
+    ArrowUpRight
 } from 'lucide-react';
 import { useState } from 'react';
 import { DataTable } from "@/components/ui/data-table";
@@ -20,12 +20,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import type { EarningTransaction } from '@/types';
-import { cn } from '@/lib/utils';
-import { useAppSelector } from '@/store/hooks';
+import { useGetWalletsQuery } from '@/store/api/walletApi';
+import { WithdrawalModal } from '@/components/earnings/WithdrawalModal';
 
 export default function EarningsPage() {
-    const user = useAppSelector((state) => state.auth.user);
+    const { data: walletsResponse } = useGetWalletsQuery();
+    const wallets = walletsResponse?.data || [];
+    const earningWallet = wallets.find(w => w.type === 'earning');
+    
     const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('desc');
+    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<string>('all');
 
     const columns: ColumnDef<EarningTransaction>[] = [
@@ -97,7 +101,7 @@ export default function EarningsPage() {
                     </h1>
 
                     <p className="mt-4 text-zinc-500 font-medium max-w-lg text-lg leading-relaxed antialiased italic">
-                        Review your historical earnings, referral bonuses, and platform rewards in one place.
+                        Review your historical earnings, partnership bonuses, and platform rewards in one place.
                     </p>
                 </div>
 
@@ -149,7 +153,7 @@ export default function EarningsPage() {
                         <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] rounded-lg">ACTIVE</Badge>
                     </div>
                     <h3 className="text-zinc-400 text-xs font-black uppercase tracking-widest mb-1 antialiased">Primary Driver</h3>
-                    <div className="text-3xl font-black text-zinc-900 tracking-tight">Referral Rewards</div>
+                    <div className="text-3xl font-black text-zinc-900 tracking-tight">Partnership Rewards</div>
                 </div>
 
                 <div className="group p-8 rounded-[2.5rem] bg-zinc-950 border border-zinc-800 shadow-xl shadow-zinc-900/40 hover:shadow-2xl hover:shadow-emerald-900/20 transition-all duration-500 ease-out hover:-translate-y-1 overflow-hidden relative">
@@ -170,8 +174,22 @@ export default function EarningsPage() {
                             <Wallet className="text-white" size={24} />
                         </div>
                     </div>
-                    <h3 className="text-white/60 text-xs font-black uppercase tracking-widest mb-1 antialiased">Account Source</h3>
-                    <div className="text-3xl font-black text-white tracking-tight">Combined Wallets</div>
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <h3 className="text-white/60 text-xs font-black uppercase tracking-widest mb-1 antialiased">Earning Wallet</h3>
+                            <div className="text-3xl font-black text-white tracking-tight leading-none mb-1">
+                                <span className="text-white/60 mr-1 text-xl italic">₦</span>
+                                {earningWallet?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => setIsWithdrawModalOpen(true)}
+                            className="h-12 w-12 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn"
+                            title="Withdraw Funds"
+                        >
+                            <ArrowUpRight size={22} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -191,6 +209,12 @@ export default function EarningsPage() {
                     </div>
                 </div>
             </div>
+            {/* Modal */}
+            <WithdrawalModal 
+                open={isWithdrawModalOpen} 
+                onOpenChange={setIsWithdrawModalOpen} 
+                earningWallet={earningWallet} 
+            />
         </div>
     );
 }
