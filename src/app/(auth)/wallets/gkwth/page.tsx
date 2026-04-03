@@ -41,7 +41,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store/store';
+import { RootState } from '@/store';
 import { toast } from 'sonner';
 
 type TabType = 'overview' | 'fund' | 'sell';

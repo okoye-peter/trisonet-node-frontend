@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { store } from '@/store/store';
+import { store } from '@/store';
 import { refreshTokenSuccess, logout } from '@/store/features/authSlice';
 
 const api = axios.create({
