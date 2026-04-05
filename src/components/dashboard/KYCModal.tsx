@@ -119,7 +119,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) 
                                     </div>
                                     <div>
                                         <h3 className="text-2xl font-black tracking-tight text-zinc-900 leading-tight">Identity Verification</h3>
-                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">KYC Level 1</p>
+                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">KYC Level 2</p>
                                     </div>
                                 </div>
                             </div>

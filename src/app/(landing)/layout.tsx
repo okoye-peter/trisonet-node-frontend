@@ -1,5 +1,3 @@
-'use client';
-
 import Script from 'next/script';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
@@ -24,6 +22,10 @@ export default function LandingLayout({
 }) {
     return (
         <div className="landing-page-wrapper">
+            
+            {/* Core jQuery and Bootstrap for Landing */}
+            <Script src="/assets/js/vendor/jquery-3.6.0.min.js" strategy="beforeInteractive" />
+            <Script src="/assets/js/bootstrap.bundle.min.js" strategy="beforeInteractive" />
 
             <div id="preloader" style={{ display: 'none' }}>
                 <div className="preloader">
@@ -41,7 +43,7 @@ export default function LandingLayout({
             
             <Footer />
 
-            {/* JS Imports - Core jQuery and Bootstrap moved to RootLayout */}
+            {/* Other JS Imports */}
             <Script src="/assets/js/swiper-bundle.js" strategy="afterInteractive" />
             <Script src="/assets/js/isotope.pkgd.min.js" strategy="afterInteractive" />
             <Script src="/assets/js/jquery.meanmenu.min.js" strategy="afterInteractive" />

@@ -1,7 +1,14 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import ContactForm from '@/components/landing/ContactForm';
+import NewsletterForm from '@/components/landing/NewsletterForm';
+
+export const metadata: Metadata = {
+    title: 'Contact Us | Trisonet - Leading Digital Asset Community',
+    description: 'Get in touch with Trisonet Metaverse. We are available for your personal and business financial support.',
+    keywords: ['Contact Trisonet', 'Support', 'Customer Service', 'Metaverse Help'],
+};
 
 export default function ContactPage() {
     return (
@@ -79,37 +86,29 @@ export default function ContactPage() {
                                 <div className="contact-heading">
                                     <h4>Get in Touch</h4>
                                 </div>
-                                <form className="contact-form" action="#" onSubmit={(e) => e.preventDefault()}>
-                                    <div className="row wow fadeInUp">
-                                        <div className="col-md-6 mb-30">
-                                            <input type="text" placeholder="First Name" />
-                                        </div>
-                                        <div className="col-md-6 mb-30">
-                                            <input type="text" placeholder="Last Name" />
-                                        </div>
-                                        <div className="col-md-6 mb-30">
-                                            <input type="text" placeholder="Email" />
-                                        </div>
-                                        <div className="col-md-6 mb-30">
-                                            <input type="text" placeholder="Phone" />
-                                        </div>
-                                        <div className="col-md-12 mb-30">
-                                            <input type="text" placeholder="Subject" />
-                                        </div>
-                                        <div className="col-md-12 mb-30">
-                                            <textarea name="message" placeholder="Messages....."></textarea>
-                                        </div>
-                                        <div className="col-md-6">
-                                            <button type="submit"><i className="fas fa-paper-plane"></i>SUBMIT</button>
-                                        </div>
-                                    </div>
-                                </form>
+                                <ContactForm />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            {/* contact area end */}
+            {/* newsletter area start  */}
+            <div className="newsletter-area">
+                <div className="container">
+                    <div className="row wow fadeInUp align-items-center">
+                        <div className="col-lg-6">
+                            <div className="newsletter-text mb-30">
+                                <h4>Subscribe For Newsletter</h4>
+                                <p>Get insights on technology trends, product updates, and what&apos;s next — straight to your inbox.</p>
+                            </div>
+                        </div>
+                        <div className="col-lg-6">
+                            <NewsletterForm />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* newsletter area end */}
         </>
     );
 }

@@ -45,9 +45,9 @@ export default function Header() {
                         <div className="col-lg-3 d-none d-lg-block">
                             <div className="grb__social f-right st-1">
                                 <ul>
-                                    <li><a href="https://web.facebook.com/profile.php?id=100084876782538&_rdc=1&_rdr"><i className="fab fa-facebook-f"></i></a></li>
-                                    <li><a href="https://www.youtube.com/@trisonetassetchannel"><i className="fab fa-youtube"></i></a></li>
-                                    <li><a href="https://www.instagram.com/trisonet_asset_channel/?hl=en"><i className="fab fa-instagram"></i></a></li>
+                                    <li><a href="https://web.facebook.com/profile.php?id=100084876782538&_rdc=1&_rdr" target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a></li>
+                                    <li><a href="https://www.youtube.com/@trisonetassetchannel" target="_blank" rel="noopener noreferrer"><i className="fab fa-youtube"></i></a></li>
+                                    <li><a href="https://www.instagram.com/trisonet_asset_channel/?hl=en" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a></li>
                                 </ul>
                             </div>
                         </div>
@@ -56,24 +56,24 @@ export default function Header() {
             </div>
             <div className="header__main header-sticky header-main-1">
                 <div className="container">
-                    <div className="row">
+                    <div className="row align-items-center">
                         <div className="col-xl-2 col-lg-3 col-8">
                             <div className="logo p-relative">
-                                <div className="logo-bg-1 p-absolute inset-0">
-                                    <Image src="/assets/img/shape/logo-bg-1.png" alt="" fill className="object-contain" priority />
+                                <div className="logo-bg-1">
+                                    <Image src="/assets/img/shape/logo-bg-1.png" alt="" width={408} height={118} priority />
                                 </div>
-                                <Link className="logo-text-white p-relative z-10" href="/">
-                                    <Image src="/assets/img/logo/logo.png" alt="Trisonet Logo" width={80} height={80} priority />
+                                <Link className="logo-text-white" href="/">
+                                    <Image src="/assets/img/logo/logo.png" alt="Trisonet Logo" width={140} height={42} priority />
                                 </Link>
-                                <Link className="logo-text-black p-relative z-10" href="/">
-                                    <Image src="/assets/img/logo/logo-text-black.png" alt="Trisonet Logo Text" width={120} height={40} priority />
+                                <Link className="logo-text-black" href="/">
+                                    <Image src="/assets/img/logo/logo-text-black.png" alt="Trisonet Logo" width={140} height={42} priority />
                                 </Link>
                             </div>
                         </div>
                         <div className="col-xl-10 col-lg-9 col-4">
                             <div className="header__menu-area f-right p-relative">
-                                <div className="menu-bg-1 p-absolute inset-0">
-                                    <Image src="/assets/img/shape/menu-bg-1.png" alt="" fill className="object-cover" priority />
+                                <div className="menu-bg-1">
+                                    <Image src="/assets/img/shape/menu-bg-1.png" alt="" width={200} height={100} priority />
                                 </div>
                                 <div className="main-menu main-menu-1 p-relative z-10">
                                     <nav id="mobile-menu">
@@ -84,16 +84,14 @@ export default function Header() {
                                             <li><Link href="/patron">Patron</Link></li>
                                             <li><Link href="/team">Teams</Link></li>
                                             <li><Link href="/contact">Contact</Link></li>
-                                            <li className="d-sm-none"><Link href="/login">Login</Link></li>
                                         </ul>
                                     </nav>
                                 </div>
                                 <div className="header__search p-relative z-10">
-                                    <a className="side-toggle d-lg-none" href="javascript:void(0)"><i className="fal fa-bars"></i></a>
+                                    <button className="side-toggle d-lg-none" aria-label="Toggle Menu"><i className="fal fa-bars"></i></button>
                                 </div>
-                                <div className="header__btn d-none d-xl-inline-block p-relative z-20 flex gap-2">
-                                    <Link href="/login" className="grb-btn bg-transparent text-white border border-white hover:bg-white hover:text-indigo-900 ml-2">Login</Link>
-                                    <Link href="/login" className="grb-btn">Join Us<i className="fas fa-arrow-right"></i></Link>
+                                <div className="header__btn d-none d-xl-inline-block p-relative z-10">
+                                    <Link href="/contact" className="grb-btn">Get Reserved<i className="fas fa-arrow-right"></i></Link>
                                 </div>
                             </div>
                         </div>
@@ -103,3 +101,5 @@ export default function Header() {
         </header>
     );
 }
+
+

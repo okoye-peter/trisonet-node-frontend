@@ -8,6 +8,7 @@ import { logout } from '@/store/features/authSlice';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const { user } = useAppSelector((state) => state.auth);
@@ -68,7 +69,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                     </div> */}
 
                     <div className="relative">
-                        {/* <NotificationCenter /> */}
+                        <NotificationCenter />
                     </div>
 
                     <div className="relative" ref={dropdownRef}>
@@ -78,7 +79,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                         >
                             <div className="hidden text-right sm:block">
                                 <p className="text-sm font-bold text-zinc-800 leading-none">{user?.name || 'User'}</p>
-                                <p className="text-[10px] font-medium text-zinc-400 mt-1 uppercase tracking-wider">ID: {user?.id?.slice(0, 8) || 'TRN-2849'}</p>
+                                {/* <p className="text-[10px] font-medium text-zinc-400 mt-1 uppercase tracking-wider">ID: {user?.id?.slice(0, 8) || 'TRN-2849'}</p> */}
                             </div>
                             <div className="relative">
                                 <div className="absolute -inset-0.5 bg-linear-to-br from-indigo-500 to-purple-500 rounded-full blur-sm opacity-20 group-hover:opacity-40 transition duration-300"></div>
