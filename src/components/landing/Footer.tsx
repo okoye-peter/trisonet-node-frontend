@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Footer() {
     return (
@@ -82,7 +83,7 @@ export default function Footer() {
                         <div className="col-lg-3 d-none d-lg-block">
                             <div className="copyright-logo logo-shape">
                                 <Link href="/">
-                                    <img src="/assets/img/logo/logo-white.png" alt="" />
+                                    <Image src="/assets/img/logo/logo-white.png" alt="Trisonet Logo" width={150} height={50} className="w-auto h-auto" />
                                 </Link>
                             </div>
                         </div>

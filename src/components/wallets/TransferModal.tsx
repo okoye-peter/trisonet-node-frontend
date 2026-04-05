@@ -104,8 +104,9 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                 setIsSuccess(true);
                 toast.success('Funds transferred successfully!');
             }
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Transfer failed');
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || 'Transfer failed');
         }
     };
 
@@ -145,6 +146,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                 <UserIcon size={16} />
                                             </div>
                                             <Input
+                                                type='number'
                                                 {...form.register('receiverTransferId')}
                                                 placeholder="Enter account number"
                                                 className="h-14 rounded-xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-11 pr-4 font-bold focus:ring-indigo-500/10"

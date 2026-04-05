@@ -16,7 +16,8 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        const timer = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -50,15 +51,15 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="fixed inset-0 z-[99999] bg-black flex items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-99999 bg-black flex items-center justify-center overflow-hidden"
                 >
                     <video
                         ref={videoRef}
-                        className="w-full h-full object-cover"
+                        className="w-full h-auto max-h-screen object-cover"
                         src="/Avatar_Walks_Into_Community.mp4"
                         autoPlay
-                        muted
                         playsInline
+                        preload="auto"
                         onEnded={handleVideoEnd}
                     />
 
@@ -68,7 +69,7 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
                             <motion.div 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="absolute inset-0 z-[100000] bg-black/80 flex flex-col items-center justify-center text-center p-6"
+                                className="absolute inset-0 z-100000 bg-black/80 flex flex-col items-center justify-center text-center p-6"
                             >
                                 <motion.div 
                                     initial={{ scale: 0.9, opacity: 0 }}
@@ -96,7 +97,7 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
                     {!isBlocked && (
                         <button 
                             onClick={handleVideoEnd}
-                            className="absolute bottom-8 right-8 text-white/50 hover:text-white text-xs font-black uppercase tracking-widest border border-white/20 px-6 py-3 rounded-full transition-all hover:bg-white/10 backdrop-blur-sm z-[100001]"
+                            className="absolute bottom-8 right-8 text-white/50 hover:text-white text-xs font-black uppercase tracking-widest border border-white/20 px-6 py-3 rounded-full transition-all hover:bg-white/10 backdrop-blur-sm z-100001"
                         >
                             Skip Presentation
                         </button>

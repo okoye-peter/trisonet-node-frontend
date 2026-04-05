@@ -570,6 +570,7 @@ export default function WalletsPage() {
                                                             value={withdrawData.account_number}
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
+                                                                if(isNaN(parseInt(val))) return;
                                                                 setWithdrawData(prev => ({ ...prev, account_number: val }));
                                                                 if (val.length === 10 && withdrawData.bank_code) {
                                                                     handleResolveAccount(val, withdrawData.bank_code);
@@ -622,7 +623,10 @@ export default function WalletsPage() {
                                                     <div className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₦</div>
                                                     <Input 
                                                         value={withdrawData.amount}
-                                                        onChange={(e) => setWithdrawData(prev => ({ ...prev, amount: e.target.value }))}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if(isNaN(parseFloat(val))) return;
+                                                            setWithdrawData(prev => ({ ...prev, amount: val }))}}
                                                         placeholder="0"
                                                         className="h-20 pl-12 text-3xl font-black rounded-2xl bg-zinc-50 border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                         type="number"

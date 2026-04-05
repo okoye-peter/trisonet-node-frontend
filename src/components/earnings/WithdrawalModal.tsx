@@ -95,8 +95,9 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
 
             setIsSuccess(true);
             toast.success('Withdrawal initiated successfully');
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Withdrawal failed');
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || 'Withdrawal failed');
         }
     };
 

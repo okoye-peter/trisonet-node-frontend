@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Header() {
     return (
@@ -57,24 +58,24 @@ export default function Header() {
                 <div className="container">
                     <div className="row">
                         <div className="col-xl-2 col-lg-3 col-8">
-                            <div className="logo">
-                                <div className="logo-bg-1">
-                                    <img src="/assets/img/shape/logo-bg-1.png" alt="" />
+                            <div className="logo p-relative">
+                                <div className="logo-bg-1 p-absolute inset-0">
+                                    <Image src="/assets/img/shape/logo-bg-1.png" alt="" fill className="object-contain" priority />
                                 </div>
-                                <Link className="logo-text-white" href="/">
-                                    <img src="/assets/img/logo/logo.png" alt="" />
+                                <Link className="logo-text-white p-relative z-10" href="/">
+                                    <Image src="/assets/img/logo/logo.png" alt="Trisonet Logo" width={80} height={80} priority />
                                 </Link>
-                                <Link className="logo-text-black" href="/">
-                                    <img src="/assets/img/logo/logo-text-black.png" alt="" />
+                                <Link className="logo-text-black p-relative z-10" href="/">
+                                    <Image src="/assets/img/logo/logo-text-black.png" alt="Trisonet Logo Text" width={120} height={40} priority />
                                 </Link>
                             </div>
                         </div>
                         <div className="col-xl-10 col-lg-9 col-4">
-                            <div className="header__menu-area f-right">
-                                <div className="menu-bg-1">
-                                    <img src="/assets/img/shape/menu-bg-1.png" alt="" />
+                            <div className="header__menu-area f-right p-relative">
+                                <div className="menu-bg-1 p-absolute inset-0">
+                                    <Image src="/assets/img/shape/menu-bg-1.png" alt="" fill className="object-cover" priority />
                                 </div>
-                                <div className="main-menu main-menu-1">
+                                <div className="main-menu main-menu-1 p-relative z-10">
                                     <nav id="mobile-menu">
                                         <ul>
                                             <li><Link href="/">Home</Link></li>
@@ -87,10 +88,10 @@ export default function Header() {
                                         </ul>
                                     </nav>
                                 </div>
-                                <div className="header__search">
+                                <div className="header__search p-relative z-10">
                                     <a className="side-toggle d-lg-none" href="javascript:void(0)"><i className="fal fa-bars"></i></a>
                                 </div>
-                                <div className="header__btn d-none d-xl-inline-block flex gap-2">
+                                <div className="header__btn d-none d-xl-inline-block p-relative z-20 flex gap-2">
                                     <Link href="/login" className="grb-btn bg-transparent text-white border border-white hover:bg-white hover:text-indigo-900 ml-2">Login</Link>
                                     <Link href="/login" className="grb-btn">Join Us<i className="fas fa-arrow-right"></i></Link>
                                 </div>
