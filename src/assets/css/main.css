@@ -6532,7 +6532,7 @@ select {
 }
 .team-member.st-2 .member-img:before {
   position: absolute;
-  content: url("../img/shape/team-s1.png");
+  content: url("/assets/img/shape/team-s1.png");
   background: none;
   z-index: 2;
   left: -65px;
@@ -6546,7 +6546,7 @@ select {
 }
 .team-member.st-2 .member-img:after {
   position: absolute;
-  content: url("../img/shape/team-s2.png");
+  content: url("/assets/img/shape/team-s2.png");
   background: none;
   z-index: 1;
   left: -155px;
