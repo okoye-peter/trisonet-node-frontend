@@ -14,9 +14,10 @@ interface KYCModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: (data: unknown) => void;
+    isMandatory?: boolean;
 }
 
-export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) {
+export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = false }: KYCModalProps) {
     const [bvn, setBvn] = useState('');
     const [passportImage, setPassportImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
@@ -95,8 +96,11 @@ export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={handleClose}
-                        className="fixed inset-0 z-60 bg-zinc-900/40 backdrop-blur-md"
+                        onClick={isMandatory ? undefined : handleClose}
+                        className={cn(
+                            "fixed inset-0 z-60 bg-zinc-900/40 backdrop-blur-md",
+                            isMandatory ? "cursor-default" : "cursor-pointer"
+                        )}
                     />
                     <div className="fixed inset-0 z-70 flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
@@ -107,12 +111,14 @@ export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) 
                         >
                             {/* Header */}
                             <div className="relative p-8 pb-4">
-                                <button
-                                    onClick={handleClose}
-                                    className="absolute right-6 top-6 rounded-2xl bg-zinc-50 p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all active:scale-95"
-                                >
-                                    <X size={20} />
-                                </button>
+                                {!isMandatory && (
+                                    <button
+                                        onClick={handleClose}
+                                        className="absolute right-6 top-6 rounded-2xl bg-zinc-50 p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all active:scale-95"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                )}
                                 <div className="flex items-center gap-4">
                                     <div className="h-14 w-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
                                         <Fingerprint size={28} strokeWidth={2.5} />
@@ -204,15 +210,17 @@ export default function KYCModal({ isOpen, onClose, onSuccess }: KYCModalProps) 
 
                                 {/* Footer / Actions */}
                                 <div className="pt-4 flex gap-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={handleClose}
-                                        disabled={isSubmitting}
-                                        className="flex-1 h-16 rounded-3xl border-zinc-100 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50 transition-all hover:text-zinc-600"
-                                    >
-                                        Later
-                                    </Button>
+                                    {!isMandatory && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleClose}
+                                            disabled={isSubmitting}
+                                            className="flex-1 h-16 rounded-3xl border-zinc-100 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50 transition-all hover:text-zinc-600"
+                                        >
+                                            Later
+                                        </Button>
+                                    )}
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting || bvn.length !== 11 || !passportImage}

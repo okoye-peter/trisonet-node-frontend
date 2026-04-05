@@ -167,8 +167,14 @@ export default function DashboardPage() {
     const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
 
     useEffect(() => {
-        // Auto-show KYC modal if user is not verified and hasn't dismissed it in this session
-        if (user && !user.activatedAt) {
+        // Auto-show KYC modal if user is not verified Level 2
+        if (user && user.hasVerifiedLevel2 === false) {
+             const timer = setTimeout(() => {
+                setIsKYCModalOpen(true);
+            }, 500); 
+            return () => clearTimeout(timer);
+        } else if (user && !user.activatedAt) {
+            // Original logic for account activation (Level 1)
             const hasSeenKYC = sessionStorage.getItem('hasSeenKYC');
             if (!hasSeenKYC) {
                 const timer = setTimeout(() => {
@@ -471,6 +477,7 @@ export default function DashboardPage() {
 
             <KYCModal 
                 isOpen={isKYCModalOpen}
+                isMandatory={user?.hasVerifiedLevel2 === false}
                 onClose={() => setIsKYCModalOpen(false)}
                 onSuccess={(data) => {
                     console.log('KYC Data:', data);

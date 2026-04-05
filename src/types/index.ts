@@ -65,6 +65,7 @@ export interface User {
     unblockingCode: string | null;
     createdAt: string;
     updatedAt: string;
+    hasVerifiedLevel2: boolean;
 }
 
 export interface UpdatePasswordRequest {
