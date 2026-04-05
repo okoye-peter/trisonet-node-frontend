@@ -22,7 +22,22 @@ import {
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
-const sidebarItems = [
+type SidebarSubItem = {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+};
+
+type SidebarItem = {
+    icon: React.ElementType;
+    label: string;
+    href: string;
+    badge?: number;
+    hasSubmenu?: boolean;
+    subItems?: SidebarSubItem[];
+};
+
+const sidebarItems: SidebarItem[] = [
     { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
     // { icon: Mail, label: 'Inbox', href: '/dashboard/inbox', badge: 0 },
     { icon: Trophy, label: 'Winning Range', href: '/competitions/stats' },
