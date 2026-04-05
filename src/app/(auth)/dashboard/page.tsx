@@ -33,6 +33,7 @@ import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import KYCModal from '@/components/dashboard/KYCModal';
+import { useGetUserQuery } from '@/store/api/userApi';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -165,10 +166,17 @@ export default function DashboardPage() {
     });
 
     const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
+    const { refetch: refetchUser } = useGetUserQuery();
 
     useEffect(() => {
-        // Auto-show KYC modal if user is not verified and hasn't dismissed it in this session
-        if (user && !user.activatedAt) {
+        // Auto-show KYC modal if user is not verified Level 2
+        if (user && user.hasVerifiedLevel2 === false) {
+             const timer = setTimeout(() => {
+                setIsKYCModalOpen(true);
+            }, 500); 
+            return () => clearTimeout(timer);
+        } else if (user && !user.activatedAt) {
+            // Original logic for account activation (Level 1)
             const hasSeenKYC = sessionStorage.getItem('hasSeenKYC');
             if (!hasSeenKYC) {
                 const timer = setTimeout(() => {
@@ -179,7 +187,7 @@ export default function DashboardPage() {
             }
         }
     }, [user]);
-    const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading } = useQuery<{ data: DashboardStats }>({
+    const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading, refetch: refetchStats } = useQuery<{ data: DashboardStats }>({
         queryKey: ['userDashboardStats', user?.id],
         queryFn: async () => {
             const res = await api.get('/users/dashboard-stats');
@@ -471,10 +479,11 @@ export default function DashboardPage() {
 
             <KYCModal 
                 isOpen={isKYCModalOpen}
+                isMandatory={user?.hasVerifiedLevel2 === false}
                 onClose={() => setIsKYCModalOpen(false)}
-                onSuccess={(data) => {
-                    console.log('KYC Data:', data);
-                    // Here you would typically refresh user state or redirect
+                onSuccess={() => {
+                    refetchUser();
+                    refetchStats();
                 }}
             />
         </motion.div>
