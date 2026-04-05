@@ -1,11 +1,22 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
+
 export default function ServicesPage() {
     return (
         <>
             {/* page title area start  */}
-            <section className="page-title-area" data-background="/assets/img/bg/counter-right-img.png">
-                <div className="container">
+            <section className="page-title-area p-relative overflow-hidden">
+                <Image
+                    src="/assets/img/bg/counter-right-img.png"
+                    alt="Page title background"
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="100vw"
+                />
+                <div className="container p-relative z-10">
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="page-title-content text-center">
@@ -14,7 +25,7 @@ export default function ServicesPage() {
                                 </div>
                                 <nav className="grb-breadcrumb">
                                     <ol className="breadcrumb">
-                                        <li className="breadcrumb-item"><a href="/">Home</a></li>
+                                        <li className="breadcrumb-item"><Link href="/">Home</Link></li>
                                         <li className="breadcrumb-item active" aria-current="page">Services</li>
                                     </ol>
                                 </nav>
@@ -129,17 +140,17 @@ export default function ServicesPage() {
                                 <div className="row">
                                     <div className="col-sm-6">
                                         <div className="single-partner">
-                                            <a href="#"><img src="/assets/img/about/p.jpg" alt="" /></a>
+                                            <a href="#"><Image src="/assets/img/about/p.jpg" alt="" width={300} height={200} className="w-full h-auto" /></a>
                                         </div>
                                     </div>
                                     <div className="col-sm-6">
                                         <div className="single-partner text-end">
-                                            <a href="#"><img src="/assets/img/about/child1.jpg" alt="" /></a>
+                                            <a href="#"><Image src="/assets/img/about/child1.jpg" alt="" width={300} height={200} className="w-full h-auto" /></a>
                                         </div>
                                     </div>
                                     <div className="col-sm-12">
                                         <div className="single-partner text-center">
-                                            <a href="#"><img src="/assets/img/about/chi.jpg" alt="" /></a>
+                                            <a href="#"><Image src="/assets/img/about/chi.jpg" alt="" width={600} height={400} className="w-full h-auto mx-auto" /></a>
                                         </div>
                                     </div>
                                 </div>
@@ -151,8 +162,15 @@ export default function ServicesPage() {
             {/* partners area end */}
 
             {/* hire area start  */}
-            <section className="hire-area" data-background="/assets/img/bg/hire-bg.jpg">
-                <div className="container">
+            <section className="hire-area p-relative overflow-hidden">
+                <Image
+                    src="/assets/img/bg/hire-bg.jpg"
+                    alt="Hire background"
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                />
+                <div className="container p-relative z-10">
                     <div className="row wow fadeInUp justify-content-center">
                         <div className="col-lg-8 col-md-11">
                             <div className="hire-content text-center">

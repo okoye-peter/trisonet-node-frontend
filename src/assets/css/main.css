@@ -2162,7 +2162,7 @@ select {
 }
 .header-main-2 .main-menu nav > ul > li:before {
   position: absolute;
-  content: url(../img/shape/menu-link-shape.png);
+  content: url(/assets/img/shape/menu-link-shape.png);
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);

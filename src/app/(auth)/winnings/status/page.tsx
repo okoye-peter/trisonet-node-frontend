@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import type { UserAwards, Prize } from '@/types';
 import LoadingScreen from '@/components/LoadingScreen';
 import Link from 'next/link';
+import NextImage from 'next/image';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -136,10 +137,11 @@ export default function WinningsStatusPage() {
                                 <Card className="group h-full overflow-hidden border-zinc-100 hover:border-indigo-100 transition-all duration-500 hover:shadow-xl hover:shadow-indigo-500/5">
                                     <div className="relative h-48 overflow-hidden bg-zinc-50">
                                         {prize.url ? (
-                                            /* eslint-disable-next-line @next/next/no-img-element */
-                                            <img 
+                                            <NextImage 
                                                 src={prize.url} 
                                                 alt={prize.name} 
+                                                width={400}
+                                                height={300}
                                                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         ) : (

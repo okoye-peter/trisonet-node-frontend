@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function MobileMenu() {
     return (
@@ -12,7 +13,7 @@ export default function MobileMenu() {
                             <div className="row align-items-center">
                                 <div className="col-9">
                                     <Link href="/">
-                                        <img src="/assets/img/logo/logo.png" alt="Logo" />
+                                        <Image src="/assets/img/logo/logo.png" alt="Trisonet Logo" width={80} height={80} />
                                     </Link>
                                 </div>
                                 <div className="col-3 text-end">

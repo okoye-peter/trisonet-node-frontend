@@ -1,11 +1,22 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
+
 export default function ContactPage() {
     return (
         <>
             {/* page title area start  */}
-            <section className="page-title-area" data-background="/assets/img/bg/counter-right-img.png">
-                <div className="container">
+            <section className="page-title-area p-relative overflow-hidden">
+                <Image
+                    src="/assets/img/bg/counter-right-img.png"
+                    alt="Page title background"
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="100vw"
+                />
+                <div className="container p-relative z-10">
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="page-title-content text-center">
@@ -14,7 +25,7 @@ export default function ContactPage() {
                                 </div>
                                 <nav className="grb-breadcrumb">
                                     <ol className="breadcrumb">
-                                        <li className="breadcrumb-item"><a href="/">Home</a></li>
+                                        <li className="breadcrumb-item"><Link href="/">Home</Link></li>
                                         <li className="breadcrumb-item active" aria-current="page">Contact Us</li>
                                     </ol>
                                 </nav>
