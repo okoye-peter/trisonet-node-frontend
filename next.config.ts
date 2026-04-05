@@ -10,9 +10,10 @@ const nextConfig: NextConfig & { allowedDevOrigins?: string[] } = {
         // Some experimental features might be needed here
     },
     allowedDevOrigins: ["10.175.228.225", "trisonet-project.test", "http://localhost:5000"],
+
     typescript: {
-    ignoreBuildErrors: true,
-  },
+        ignoreBuildErrors: true,
+    },
 };
 
 export default nextConfig;

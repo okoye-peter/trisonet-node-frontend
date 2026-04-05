@@ -1,7 +1,13 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import NewsletterForm from '@/components/landing/NewsletterForm';
+
+export const metadata: Metadata = {
+    title: 'Services | Trisonet - Leading Digital Asset Community',
+    description: 'Explore Trisonet services including PIM, Agriculture, Health, Eatery, E-Commerce, and Logistics in our 3D virtual world.',
+    keywords: ['Trisonet Services', 'Digital Asset Management', 'Agriculture technology', 'E-Commerce', 'Logistics'],
+};
 
 export default function ServicesPage() {
     return (
@@ -47,8 +53,8 @@ export default function ServicesPage() {
                                         <i className="flaticon-idea"></i>
                                     </div>
                                     <div className="service-box-content-text">
-                                        <h5><a href="#">Partners Identification Module (PIM)</a></h5>
-                                        <p>The Partners Identification Module (PIM) is a secure and intelligent digital system designed to streamline partner onboarding, verification, and identity management within modern business ecosystems. Built to support trust, transparency, and efficiency, PIM ensures that every registered partner is uniquely identified, verified, and seamlessly integrated into your operational network.</p>
+                                        <h5><Link href="/services">Partners Identification Module (PIM)</Link></h5>
+                                        <p>The Partners Identification Module (PIM) is a secure and intelligent digital system designed to streamline partner onboarding, verification, and identity management within modern business ecosystems.</p>
                                     </div>
                                 </div>
                             </div>
@@ -60,8 +66,8 @@ export default function ServicesPage() {
                                         <i className="flaticon-consultation"></i>
                                     </div>
                                     <div className="service-box-content-text">
-                                        <h5><a href="#">Agriculture / Farming</a></h5>
-                                        <p>Our Agriculture and Farming Solutions are designed to empower farmers, agribusinesses, and agricultural partners with smart, technology-driven tools that improve productivity, sustainability, and profitability across the entire value chain. we partners gain access to verified networks, financial services, training resources, and market opportunities.</p>
+                                        <h5><Link href="/services">Agriculture / Farming</Link></h5>
+                                        <p>Our Agriculture and Farming Solutions are designed to empower farmers and agribusinesses with smart, technology-driven tools that improve productivity.</p>
                                     </div>
                                 </div>
                             </div>
@@ -73,8 +79,8 @@ export default function ServicesPage() {
                                         <i className="flaticon-healthcare"></i>
                                     </div>
                                     <div className="service-box-content-text">
-                                        <h4><a href="#">Health</a></h4>
-                                        <p>Our platform supports herbal partner identification, product traceability, digital records, and verified practitioner networks, ensuring that every herbal product and service can be tracked from source to consumer. Through smart data systems and secure identity management, TrisoNet Health helps protect against counterfeit products, promotes compliance with health standards, and builds confidence in natural healthcare solutions.</p>
+                                        <h4><Link href="/services">Health</Link></h4>
+                                        <p>Our platform supports herbal partner identification, product traceability, digital records, and verified practitioner networks, ensuring quality standards.</p>
                                     </div>
                                 </div>
                             </div>
@@ -86,8 +92,8 @@ export default function ServicesPage() {
                                         <i className="flaticon-analytics"></i>
                                     </div>
                                     <div className="service-box-content-text">
-                                        <h4><a href="#">Eatery</a></h4>
-                                        <p>TrisoNet Eatery is a modern, technology-powered food and hospitality platform designed to deliver fresh, affordable, and high-quality meals while creating seamless connections between customers, food partners, and local producers.</p>
+                                        <h4><Link href="/services">Eatery</Link></h4>
+                                        <p>TrisoNet Eatery is a modern, technology-powered food and hospitality platform designed to deliver fresh, affordable, and high-quality meals.</p>
                                     </div>
                                 </div>
                             </div>
@@ -99,8 +105,8 @@ export default function ServicesPage() {
                                         <i className="flaticon-digital-marketing"></i>
                                     </div>
                                     <div className="service-box-content-text">
-                                        <h4><a href="#">E-Commerce </a></h4>
-                                        <p>TrisoNet E-Commerce is a secure, digital marketplace designed to connect buyers, sellers, and business partners within a trusted, technology-driven ecosystem. Our platform enables seamless online transactions, verified vendor networks, and transparent product management that ensures quality, reliability, and customer confidence.</p>
+                                        <h4><Link href="/services">E-Commerce</Link></h4>
+                                        <p>TrisoNet E-Commerce is a secure, digital marketplace designed to connect buyers, sellers, and business partners within a trusted ecosystem.</p>
                                     </div>
                                 </div>
                             </div>
@@ -112,8 +118,8 @@ export default function ServicesPage() {
                                         <i className="flaticon-web-maintenance"></i>
                                     </div>
                                     <div className="service-box-content-text">
-                                        <h4><a href="#">Logistics</a></h4>
-                                        <p>TrisoNet Logistics is a smart, technology-driven logistics and supply chain platform designed to deliver fast, secure, and transparent movement of goods across local and regional networks. We connect shippers, carriers, partners, and customers through a trusted digital ecosystem that ensures efficiency, reliability, and real-time visibility.</p>
+                                        <h4><Link href="/services">Logistics</Link></h4>
+                                        <p>TrisoNet Logistics is a smart, technology-driven logistics platform designed to deliver fast, secure, and transparent movement of goods.</p>
                                     </div>
                                 </div>
                             </div>
@@ -132,7 +138,7 @@ export default function ServicesPage() {
                                 <div className="section-title mb-35">
                                     <h4>The fastest way to grow your wealth and Child’s right to education Digital-Gkwth</h4>
                                 </div>
-                                <p>TrisoNet Community is a Community where every citizen is wealthy through the power of TrisoNet Asset (Gkwth). Should you be interested to be one of our citizens? Then click on Get Started now and follow the instructions to sign up either as a basic or an infant citizen.</p>
+                                <p>TrisoNet Community is a Community where every citizen is wealthy through the power of TrisoNet Asset (Gkwth). sign up either as a basic or an infant citizen.</p>
                             </div>
                         </div>
                         <div className="col-lg-6">
@@ -178,7 +184,7 @@ export default function ServicesPage() {
                                     <h2 className="white-color">Become a Patron in Trisonet</h2>
                                 </div>
                                 <div className="hire-btn">
-                                    <a href="/contact" className="grb-btn">CONTACT US.</a>
+                                    <Link href="/contact" className="grb-btn">CONTACT US.</Link>
                                 </div>
                             </div>
                         </div>
@@ -186,6 +192,24 @@ export default function ServicesPage() {
                 </div>
             </section>
             {/* hire area end  */}
+
+            {/* newsletter area start  */}
+            <div className="newsletter-area">
+                <div className="container">
+                    <div className="row wow fadeInUp align-items-center">
+                        <div className="col-lg-6">
+                            <div className="newsletter-text mb-30">
+                                <h4>Subscribe For Newsletter</h4>
+                                <p>Get insights on technology trends, product updates, and what&apos;s next — straight to your inbox.</p>
+                            </div>
+                        </div>
+                        <div className="col-lg-6">
+                            <NewsletterForm />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* newsletter area end */}
         </>
     );
 }

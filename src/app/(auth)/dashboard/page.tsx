@@ -262,7 +262,8 @@ export default function DashboardPage() {
                         Welcome, <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-purple-600">{user?.name?.split(' ')[0] || 'Member'}</span>
                     </h1>
                     <p className="mt-2 text-zinc-500 font-medium max-w-md">
-                        Your financial summary is looking great today. You have <span className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4">0 unread notifications</span>.
+                        Your financial summary is looking great today.
+                        {/* You have <span className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4">0 unread notifications</span>. */}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">

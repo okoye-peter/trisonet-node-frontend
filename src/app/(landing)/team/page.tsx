@@ -1,7 +1,13 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import NewsletterForm from '@/components/landing/NewsletterForm';
+
+export const metadata: Metadata = {
+    title: 'Our Team | Trisonet - Leading Digital Asset Community',
+    description: 'Meet the Trisonet Metaverse team of experts dedicated to building a sustainable digital economy.',
+    keywords: ['Trisonet Team', 'Experts', 'Metaverse Leadership', 'Digital Economy'],
+};
 
 export default function TeamPage() {
     return (
@@ -126,7 +132,24 @@ export default function TeamPage() {
                     </div>
                 </div>
             </section>
-            {/* team area end */}
+            
+            {/* newsletter area start  */}
+            <div className="newsletter-area">
+                <div className="container">
+                    <div className="row wow fadeInUp align-items-center">
+                        <div className="col-lg-6">
+                            <div className="newsletter-text mb-30">
+                                <h4>Subscribe For Newsletter</h4>
+                                <p>Get insights on technology trends, product updates, and what&apos;s next — straight to your inbox.</p>
+                            </div>
+                        </div>
+                        <div className="col-lg-6">
+                            <NewsletterForm />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* newsletter area end */}
         </>
     );
 }
