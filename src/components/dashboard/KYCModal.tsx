@@ -1,8 +1,9 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Check, AlertCircle, Image as ImageIcon, Fingerprint, Loader2 } from 'lucide-react';
-import { useState, useRef, ChangeEvent } from 'react';
+import { X, Upload, Check, AlertCircle, Fingerprint, Loader2, Camera, RotateCcw } from 'lucide-react';
+import { useState, useRef, ChangeEvent, useCallback } from 'react';
+import Webcam from 'react-webcam';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,8 +23,45 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [passportImage, setPassportImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [isCameraMode, setIsCameraMode] = useState(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const webcamRef = useRef<Webcam>(null);
+
+    const videoConstraints = {
+        width: 1280,
+        height: 720,
+        facingMode: "user"
+    };
+
+    const dataURLtoFile = (dataurl: string, filename: string) => {
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    };
+
+    const handleCapture = useCallback(() => {
+        const imageSrc = webcamRef.current?.getScreenshot();
+        if (imageSrc) {
+            setPreview(imageSrc);
+            const file = dataURLtoFile(imageSrc, 'passport-photo.jpg');
+            setPassportImage(file);
+            setCameraError(null);
+        }
+    }, [webcamRef]);
+
+    const handleRetake = () => {
+        setPassportImage(null);
+        setPreview(null);
+        setCameraError(null);
+    };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -85,6 +123,8 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         setBvn('');
         setPassportImage(null);
         setPreview(null);
+        setIsCameraMode(false);
+        setCameraError(null);
         onClose();
     };
 
@@ -157,25 +197,63 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
 
                                 {/* ID Upload Section */}
                                 <div className="space-y-4">
-                                    <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
-                                        Passport Photograph
-                                    </label>
+                                    <div className="flex items-center justify-between ml-1">
+                                        <label className="text-xs font-black text-zinc-500 uppercase tracking-widest leading-none">
+                                            Passport Photograph
+                                        </label>
+                                        <div className="flex bg-zinc-100/80 p-0.5 rounded-xl border border-zinc-200/50">
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsCameraMode(false);
+                                                    handleRetake();
+                                                }}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                                                    !isCameraMode 
+                                                        ? "bg-white text-indigo-600 shadow-sm" 
+                                                        : "text-zinc-500 hover:text-zinc-700"
+                                                )}
+                                            >
+                                                Upload
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsCameraMode(true);
+                                                    handleRetake();
+                                                }}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                                                    isCameraMode 
+                                                        ? "bg-white text-indigo-600 shadow-sm" 
+                                                        : "text-zinc-500 hover:text-zinc-700"
+                                                )}
+                                            >
+                                                Camera
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
                                     <div 
-                                        onClick={() => fileInputRef.current?.click()}
+                                        onClick={() => !isCameraMode && !preview && fileInputRef.current?.click()}
                                         className={cn(
-                                            "relative group h-56 rounded-[2.5rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden",
-                                            preview 
+                                            "relative group h-64 rounded-[2.5rem] border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden",
+                                            preview || isCameraMode
                                                 ? "border-indigo-600 bg-indigo-50/20" 
                                                 : "border-zinc-200 bg-zinc-50/50 hover:border-indigo-400 hover:bg-white"
                                         )}
                                     >
-                                        <input 
-                                            type="file" 
-                                            ref={fileInputRef} 
-                                            className="hidden" 
-                                            accept="image/*"
-                                            onChange={handleFileChange}
-                                        />
+                                        {!isCameraMode && (
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                            />
+                                        )}
+
                                         {preview ? (
                                             <div className="absolute inset-0">
                                                 <Image 
@@ -185,14 +263,57 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                                     unoptimized
                                                     className="object-cover" 
                                                 />
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <div 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRetake();
+                                                    }}
+                                                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                >
                                                     <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center gap-2 font-bold text-xs">
-                                                        <ImageIcon size={18} /> Change Photo
+                                                        <RotateCcw size={18} /> Retake
                                                     </div>
                                                 </div>
                                                 <div className="absolute bottom-4 right-4 h-10 w-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
                                                     <Check size={18} strokeWidth={3} />
                                                 </div>
+                                            </div>
+                                        ) : isCameraMode ? (
+                                            <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+                                                <Webcam
+                                                    audio={false}
+                                                    ref={webcamRef}
+                                                    screenshotFormat="image/jpeg"
+                                                    videoConstraints={videoConstraints}
+                                                    onUserMediaError={() => setCameraError("Cannot access camera")}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                                {cameraError ? (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                                                        <div className="h-12 w-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-4">
+                                                            <Camera size={24} />
+                                                        </div>
+                                                        <p className="text-xs font-bold text-white uppercase tracking-widest">{cameraError}</p>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={handleRetake}
+                                                            className="mt-4 text-[9px] font-black text-indigo-400 uppercase tracking-widest"
+                                                        >
+                                                            Try Again
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCapture();
+                                                        }}
+                                                        className="absolute bottom-6 left-1/2 -translate-x-1/2 h-16 w-16 rounded-full bg-white/20 backdrop-blur-md border-4 border-white flex items-center justify-center group/btn active:scale-90 transition-all shadow-2xl"
+                                                    >
+                                                        <div className="h-10 w-10 rounded-full bg-white transition-all group-hover/btn:scale-90 shadow-inner" />
+                                                    </button>
+                                                )}
                                             </div>
                                         ) : (
                                             <>

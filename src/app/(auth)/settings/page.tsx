@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Shield, Lock, Loader2 } from 'lucide-react';
+import { Shield, Lock, Loader2, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -99,7 +99,7 @@ function PasswordTab() {
                 onClick={handleUpdate}
                 disabled={isPending}
             >
-                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update Security'}
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update'}
             </Button>
         </div>
     );
@@ -112,6 +112,8 @@ function TransactionPinTab() {
         confirmPin: ''
     });
     const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
     const [sendOtp, { isLoading: isSendingOtp }] = useSendWithdrawalPinOtpMutation();
     const [resetPin, { isLoading: isResettingPin }] = useResetWithdrawalPinMutation();
@@ -129,6 +131,21 @@ function TransactionPinTab() {
                 description: rtkError?.data?.message || "Something went wrong"
             });
         }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!pinData.otp) {
+            toast.error("Verification error", { description: "Please enter the code sent to your phone." });
+            return;
+        }
+
+        setIsVerifyingOtp(true);
+        // Simulate network delay for verification
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        setIsVerifyingOtp(false);
+        setIsVerified(true);
+        toast.success("Identity verified", { description: "You can now reset your transaction PIN." });
     };
 
     const handleResetPin = async () => {
@@ -164,79 +181,142 @@ function TransactionPinTab() {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="space-y-6">
+        <div className="min-h-[400px]">
+            <AnimatePresence mode="wait">
                 {!isOtpSent ? (
-                    <div className="p-8 rounded-[2rem] bg-linear-to-br from-zinc-50 to-white border border-zinc-100 shadow-sm space-y-4">
-                        <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                            <Shield size={24} />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-black text-zinc-900">Reset Transaction PIN</h3>
-                            <p className="text-sm text-zinc-500 font-medium">To protect your account, we need to verify your identity before you can change your withdrawal PIN.</p>
-                        </div>
-                        <Button
-                            className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95 w-full sm:w-auto"
-                            onClick={handleSendOtp}
-                            disabled={isSendingOtp}
-                        >
-                            {isSendingOtp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Send Verification Code'}
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="space-y-6">
-                        <div className="space-y-2.5">
-                            <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Verification Code</Label>
-                            <Input
-                                className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
-                                placeholder="Enter OTP"
-                                value={pinData.otp}
-                                onChange={(e) => setPinData(prev => ({ ...prev, otp: e.target.value }))}
-                            />
-                        </div>
-                        <div className="grid gap-6 sm:grid-cols-2">
-                            <div className="space-y-2.5">
-                                <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">New PIN</Label>
-                                <Input
-                                    type="password"
-                                    className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
-                                    placeholder="••••"
-                                    maxLength={6}
-                                    value={pinData.newPin}
-                                    onChange={(e) => setPinData(prev => ({ ...prev, newPin: e.target.value }))}
-                                />
+                    <motion.div
+                        key="step-otp-request"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-6"
+                    >
+                        <div className="p-8 rounded-[2rem] bg-linear-to-br from-indigo-50/50 to-white border border-indigo-100/50 shadow-sm space-y-4">
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100">
+                                <Shield size={24} />
                             </div>
-                            <div className="space-y-2.5">
-                                <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Confirm PIN</Label>
-                                <Input
-                                    type="password"
-                                    className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
-                                    placeholder="••••"
-                                    maxLength={6}
-                                    value={pinData.confirmPin}
-                                    onChange={(e) => setPinData(prev => ({ ...prev, confirmPin: e.target.value }))}
-                                />
+                            <div>
+                                <h3 className="text-xl font-black text-zinc-900 tracking-tight">Security Check</h3>
+                                <p className="text-sm text-zinc-500 font-medium mt-1 leading-relaxed">
+                                    To protect your account, we need to verify your identity before you can change your withdrawal PIN.
+                                </p>
                             </div>
-                        </div>
-                        <div className="flex gap-4">
                             <Button
-                                className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95"
-                                onClick={handleResetPin}
-                                disabled={isResettingPin}
+                                className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95 w-full"
+                                onClick={handleSendOtp}
+                                disabled={isSendingOtp}
                             >
-                                {isResettingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Reset PIN'}
+                                {isSendingOtp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Request Verification Code'}
+                            </Button>
+                        </div>
+                    </motion.div>
+                ) : !isVerified ? (
+                    <motion.div
+                        key="step-otp-verify"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-8"
+                    >
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                                    <Lock size={20} />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-black text-zinc-900 uppercase tracking-widest">Verify Identity</h4>
+                                    <p className="text-xs text-zinc-400 font-medium">Enter the 6-digit code sent to your phone.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2.5">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Verification Code</Label>
+                                <Input
+                                    className="h-16 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-black text-2xl tracking-[0.5em] text-zinc-900 placeholder:tracking-normal placeholder:text-zinc-300 placeholder:font-medium placeholder:text-sm"
+                                    placeholder="000 000"
+                                    maxLength={6}
+                                    value={pinData.otp}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '') }))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                                className="h-14 px-10 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95 disabled:opacity-50"
+                                onClick={handleVerifyOtp}
+                                disabled={isVerifyingOtp || pinData.otp.length < 6}
+                            >
+                                {isVerifyingOtp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Verification'}
                             </Button>
                             <Button
                                 variant="ghost"
-                                className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-xs transition-all"
+                                className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-xs transition-all text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50"
                                 onClick={() => setIsOtpSent(false)}
                             >
                                 Back
                             </Button>
                         </div>
-                    </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="step-pin-reset"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-8"
+                    >
+                        <div className="p-6 rounded-[2rem] bg-emerald-50/50 border border-emerald-100 flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                                <CheckCircle2 size={20} />
+                            </div>
+                            <p className="text-xs font-bold text-emerald-800 tracking-tight">Identity verified successfully. You can now set your new transaction PIN.</p>
+                        </div>
+
+                        <div className="grid gap-8 sm:grid-cols-2">
+                            <div className="space-y-2.5">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">New 4-6 Digit PIN</Label>
+                                <Input
+                                    type="password"
+                                    className="h-16 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900 text-xl tracking-widest"
+                                    placeholder="••••"
+                                    maxLength={6}
+                                    value={pinData.newPin}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, newPin: e.target.value.replace(/\D/g, '') }))}
+                                />
+                            </div>
+                            <div className="space-y-2.5">
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 ml-1">Confirm New PIN</Label>
+                                <Input
+                                    type="password"
+                                    className="h-16 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900 text-xl tracking-widest"
+                                    placeholder="••••"
+                                    maxLength={6}
+                                    value={pinData.confirmPin}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, confirmPin: e.target.value.replace(/\D/g, '') }))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                                className="h-14 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                                onClick={handleResetPin}
+                                disabled={isResettingPin}
+                            >
+                                {isResettingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update Transaction PIN'}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-xs transition-all text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50"
+                                onClick={() => setIsVerified(false)}
+                            >
+                                Change Code
+                            </Button>
+                        </div>
+                    </motion.div>
                 )}
-            </div>
+            </AnimatePresence>
         </div>
     );
 }

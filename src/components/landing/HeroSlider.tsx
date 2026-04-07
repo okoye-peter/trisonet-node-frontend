@@ -34,7 +34,7 @@ export default function HeroSlider() {
                                         <p data-animation="fadeInUp" data-delay=".6s">Digital Assets</p>
                                         <h1 data-animation="fadeInUp" data-delay=".9s">Commited to Building</h1>
                                         <div className="hero-content-btn" data-animation="fadeInUp" data-delay="1.1s">
-                                            <Link href="/contact" className="grb-btn">Get Started</Link>
+                                            <Link href="/login" className="grb-btn">Get Started</Link>
                                         </div>
                                         <div className="hero-video-btn" data-animation="fadeInUp" data-delay="1.2s">
                                             <a className="grb-video popup-video" href="https://www.youtube.com/watch?v=MQAU53mLeDU"><i className="fas fa-play"></i></a>

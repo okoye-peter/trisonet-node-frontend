@@ -23,6 +23,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (userData?.data) {
             dispatch(setUser(userData.data));
+
+            // Mandatory KYC Verification Check
+            const hasVerifiedLevel2 = userData.data.hasVerifiedLevel2;
+            const isDashboard = pathname === '/dashboard';
+            const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
+
+            if (isAuthenticated && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
+                router.push('/dashboard');
+            }
         }
 
         if (userError) {

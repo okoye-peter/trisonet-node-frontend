@@ -1,18 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { BottomNav } from './BottomNav';
 import { cn } from '@/lib/utils';
+import FinanceVideo from './FinanceVideo';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showFinanceVideo, setShowFinanceVideo] = useState(false);
+    const pathname = usePathname();
+
+    const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
+
+    useEffect(() => {
+        // Finance-related path prefixes
+        const financePaths = ['/wallets', '/transactions', '/earnings', '/vtu', '/dashboard/finance'];
+        const isFinanceSection = financePaths.some(path => pathname?.startsWith(path));
+
+        if (isFinanceSection && !hasSeenInCurrentVisit && !showFinanceVideo) {
+            setTimeout(() => setShowFinanceVideo(true), 0);
+        }
+    }, [pathname, showFinanceVideo, hasSeenInCurrentVisit]);
+
+    const handleFinanceVideoEnded = () => {
+        setShowFinanceVideo(false);
+        setHasSeenInCurrentVisit(true); // Don't show again until reload
+    };
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
+            <AnimatePresence>
+                {showFinanceVideo && (
+                    <FinanceVideo onEnded={handleFinanceVideoEnded} />
+                )}
+            </AnimatePresence>
             {/* Ambient Background Elements */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[140px]" />

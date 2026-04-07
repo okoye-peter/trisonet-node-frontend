@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
     LayoutGrid,
     Mail,
@@ -17,8 +17,11 @@ import {
     Receipt,
     Wallet,
     Briefcase,
-    TrendingUp
+    TrendingUp,
+    Lock,
+    Crown
 } from 'lucide-react';
+import { useAppSelector } from '@/store/hooks';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
@@ -68,26 +71,33 @@ const sidebarItems: SidebarItem[] = [
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => void }) {
 
+    const { user } = useAppSelector((state) => state.auth);
     const pathname = usePathname();
     const [openMenus, setOpenMenus] = useState<string[]>([]);
+
+    const isKycVerified = user?.hasVerifiedLevel2 !== false; // Default to true if user not loaded yet to avoid flickering, AuthGuard handles redirection anyway.
+
 
     // Automatically open parent menu if a sub-item is active
     useEffect(() => {
         sidebarItems.forEach(item => {
             if (item.subItems?.some(sub => pathname === sub.href)) {
-                if (!openMenus.includes(item.label)) {
-                    setOpenMenus(prev => [...prev, item.label]);
-                }
+                setOpenMenus(prev => prev.includes(item.label) ? prev : [...prev, item.label]);
             }
         });
-    }, [pathname, openMenus]);
+    }, [pathname]);
 
-    const toggleMenu = (label: string) => {
+    const router = useRouter();
+
+    const toggleMenu = (label: string, href?: string) => {
         setOpenMenus(prev =>
             prev.includes(label)
                 ? prev.filter(m => m !== label)
                 : [...prev, label]
         );
+        if (href && href !== '#') {
+            router.push(href);
+        }
     };
 
     return (
@@ -114,12 +124,17 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                                 {item.hasSubmenu ? (
                                     <>
                                         <button
-                                            onClick={() => toggleMenu(item.label)}
+                                            onClick={() => {
+                                                if (isKycVerified || item.href === '/dashboard' || item.label === 'Finance') {
+                                                    toggleMenu(item.label, item.href);
+                                                }
+                                            }}
                                             className={cn(
                                                 "group relative flex w-full items-center justify-between rounded-xl p-3 text-sm font-semibold transition-all duration-300 overflow-hidden",
                                                 isActive
                                                     ? "text-white shadow-lg shadow-indigo-200"
-                                                    : "text-zinc-500 hover:bg-zinc-50 hover:text-indigo-600"
+                                                    : "text-zinc-500 hover:bg-zinc-50 hover:text-indigo-600",
+                                                !isKycVerified && item.href !== '/dashboard' && item.label !== 'Finance' && "opacity-50 cursor-not-allowed group/locked"
                                             )}
                                         >
                                             {/* Active Background & Glow */}
@@ -140,11 +155,15 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                                             </div>
 
                                             <div className="relative z-10">
-                                                <ChevronRight className={cn(
-                                                    "h-3.5 w-3.5 transition-transform duration-300",
-                                                    isMenuOpen && "rotate-90",
-                                                    isActive ? "text-white" : "text-zinc-300 group-hover:text-indigo-600"
-                                                )} />
+                                                {!isKycVerified && item.href !== '/dashboard' && item.label !== 'Finance' ? (
+                                                    <Lock className="h-3.5 w-3.5 text-zinc-300 group-hover/locked:text-zinc-400 transition-colors" />
+                                                ) : (
+                                                    <ChevronRight className={cn(
+                                                        "h-3.5 w-3.5 transition-transform duration-300",
+                                                        isMenuOpen && "rotate-90",
+                                                        isActive ? "text-white" : "text-zinc-300 group-hover:text-indigo-600"
+                                                    )} />
+                                                )}
                                             </div>
                                         </button>
 
@@ -161,7 +180,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                                                         const isSubActive = pathname === sub.href;
                                                         return (
                                                             <li key={sub.label}>
-                                                                 <Link
+                                                                <Link
                                                                     href={sub.href}
                                                                     onClick={onClose}
 
@@ -183,15 +202,22 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                                         </AnimatePresence>
                                     </>
                                 ) : (
-                                     <Link
-                                        href={item.href}
-                                        onClick={onClose}
+                                    <Link
+                                        href={isKycVerified || item.href === '/dashboard' ? item.href : '#'}
+                                        onClick={(e) => {
+                                            if (!isKycVerified && item.href !== '/dashboard') {
+                                                e.preventDefault();
+                                            } else {
+                                                onClose?.();
+                                            }
+                                        }}
 
                                         className={cn(
                                             "group relative flex items-center justify-between rounded-xl p-3 text-sm font-semibold transition-all duration-300 overflow-hidden",
                                             isActive
                                                 ? "text-white shadow-lg shadow-indigo-200"
-                                                : "text-zinc-500 hover:bg-zinc-50 hover:text-indigo-600"
+                                                : "text-zinc-500 hover:bg-zinc-50 hover:text-indigo-600",
+                                            !isKycVerified && item.href !== '/dashboard' && "opacity-50 cursor-not-allowed group/locked"
                                         )}
                                     >
                                         {/* Active Background & Glow */}
@@ -212,7 +238,9 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                                         </div>
 
                                         <div className="relative z-10 flex items-center gap-2">
-                                            {item.badge !== undefined && item.badge > 0 && (
+                                            {!isKycVerified && item.href !== '/dashboard' ? (
+                                                <Lock className="h-3.5 w-3.5 text-zinc-300 group-hover/locked:text-zinc-400 transition-colors" />
+                                            ) : item.badge !== undefined && item.badge > 0 && (
                                                 <span className={cn(
                                                     "inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black tracking-tighter",
                                                     isActive ? "bg-white/20 text-white" : "bg-red-500 text-white shadow-lg shadow-red-200"
@@ -229,7 +257,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                 </ul>
 
                 {/* Bottom Card (Premium Ad/CT) */}
-                {/* <div className="mt-10 px-2">
+                {/* <div className="mt-auto px-2 pb-4">
                     <div className="relative rounded-2xl bg-indigo-950 p-4 overflow-hidden group">
                         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl transition-transform group-hover:scale-110" />
                         <p className="relative z-10 text-xs font-bold text-indigo-200 uppercase tracking-widest">Premium Plan</p>
