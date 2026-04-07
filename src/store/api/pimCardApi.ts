@@ -41,6 +41,7 @@ export interface PaymentAccountDetail {
     bank_uuid?: string;
     expiry_date: string;
     amount: number;
+    reference: string;
 }
 
 export const pimCardApi = apiSlice.injectEndpoints({
@@ -64,6 +65,14 @@ export const pimCardApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Wallet'],
         }),
+        verifyCardPurchasePayment: builder.mutation<AppResponse<void>, { reference: string }>({
+            query: (body) => ({
+                url: 'pim_cards/verify-payment',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Wallet'],
+        }),
     }),
 });
 
@@ -71,4 +80,5 @@ export const {
     useGetPimCardsQuery,
     useGetPimCardsSummaryQuery,
     usePurchasePimCardMutation,
+    useVerifyCardPurchasePaymentMutation,
 } = pimCardApi;

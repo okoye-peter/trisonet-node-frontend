@@ -23,16 +23,16 @@ export const bankApi = apiSlice.injectEndpoints({
                 body,
             }),
         }),
-        getUserBank: builder.query<AppResponse<Bank>, void>({
+        getUserBank: builder.query<AppResponse<BankAccountDetail>, void>({
             query: () => 'banks/user',
-            transformResponse: (response: AppResponse<{ success: boolean; data: Bank }>) => {
+            transformResponse: (response: AppResponse<{ success: boolean; data: BankAccountDetail }>) => {
                 if (response.data?.success && response.data?.data) {
                     return {
                         ...response,
                         data: response.data.data
-                    } as AppResponse<Bank>;
+                    } as AppResponse<BankAccountDetail>;
                 }
-                return response as unknown as AppResponse<Bank>;
+                return response as unknown as AppResponse<BankAccountDetail>;
             },
         }),
     }),

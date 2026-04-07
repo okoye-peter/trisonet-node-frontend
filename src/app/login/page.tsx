@@ -153,12 +153,12 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            <div className="text-center text-sm font-medium text-[#8f98a8]">
+            {/* <div className="text-center text-sm font-medium text-[#8f98a8]">
                 Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-bold text-[#6639ff] hover:underline underline-offset-4">
                     Sign up now
                 </Link>
-            </div>
+            </div> */}
         </AuthLayout>
     );
 }

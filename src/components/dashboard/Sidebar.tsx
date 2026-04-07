@@ -257,16 +257,16 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                 </ul>
 
                 {/* Bottom Card (Premium Ad/CT) */}
-                {/* <div className="mt-auto px-2 pb-4">
+                <div className="mt-auto px-2 pb-4">
                     <div className="relative rounded-2xl bg-indigo-950 p-4 overflow-hidden group">
                         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl transition-transform group-hover:scale-110" />
-                        <p className="relative z-10 text-xs font-bold text-indigo-200 uppercase tracking-widest">Premium Plan</p>
+                        <p className="relative z-10 text-xs font-bold text-indigo-200 uppercase tracking-widest">Patron Plan</p>
                         <p className="relative z-10 mt-1 text-sm font-bold text-white leading-snug">Unlock advanced financial reports today.</p>
-                        <button className="relative z-10 mt-4 w-full rounded-xl bg-white py-2 text-xs font-black text-indigo-950 shadow-lg hover:bg-zinc-100 transition-colors">
+                        <button disabled className="relative z-10 mt-4 w-full rounded-xl bg-white py-2 text-xs font-black text-indigo-950 shadow-lg hover:bg-zinc-100 transition-colors">
                             Upgrade Now
                         </button>
                     </div>
-                </div> */}
+                </div>
             </div>
         </aside>
     );

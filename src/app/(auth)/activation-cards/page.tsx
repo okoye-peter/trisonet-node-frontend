@@ -41,7 +41,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import LoadingScreen from '@/components/LoadingScreen'
-import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, type PaymentAccountDetail } from '@/store/api/pimCardApi'
+import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, useVerifyCardPurchasePaymentMutation, type PaymentAccountDetail } from '@/store/api/pimCardApi'
 import { useGetUserQuery } from '@/store/api/userApi'
 import { toast } from 'sonner'
 
@@ -189,9 +189,13 @@ const ActivationCards = () => {
     const [paymentDetails, setPaymentDetails] = useState<PaymentAccountDetail | null>(null)
     const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
+    const [isVerifying, setIsVerifying] = useState(false)
+    const [isTimeout, setIsTimeout] = useState(false)
+
     const { data: cardsResponse, isLoading: isCardsLoading, refetch: refetchCards } = useGetPimCardsQuery({ page: 1, limit: 100 })
     const { data: summaryResponse, isLoading: isSummaryLoading, refetch: refetchSummary } = useGetPimCardsSummaryQuery()
     const [purchaseCard, { isLoading: isPurchasing }] = usePurchasePimCardMutation()
+    const [verifyPayment] = useVerifyCardPurchasePaymentMutation()
 
     useEffect(() => {
         startTransition(() => {
@@ -208,6 +212,50 @@ const ActivationCards = () => {
         refetchCards()
         refetchSummary()
     }, [refetchCards, refetchSummary])
+
+    const handleVerifyPayment = async () => {
+        if (!paymentDetails?.reference) {
+            toast.error('Payment reference missing');
+            return;
+        }
+
+        setIsVerifying(true);
+        setIsTimeout(false);
+
+        const startTime = Date.now();
+        const maxDuration = 60000; // 1 minute limit
+        let currentDelay = 2000; // Start with 2 seconds
+
+        const poll = async () => {
+            try {
+                const res = await verifyPayment({ reference: paymentDetails.reference }).unwrap();
+                if (res.status === 'success') {
+                    toast.success('Payment verified successfully!');
+                    setIsPaymentModalOpen(false);
+                    setIsVerifying(false);
+                    setIsTimeout(false);
+                    fetchData();
+                    return;
+                }
+            } catch (err: unknown) {
+                // If it's a 400 error (payment not yet detected), we continue polling
+                console.log('Verification check failed, retrying...', err);
+            }
+
+            const elapsed = Date.now() - startTime;
+            if (elapsed >= maxDuration) {
+                setIsVerifying(false);
+                setIsTimeout(true);
+                return;
+            }
+
+            // Exponential backoff
+            setTimeout(poll, currentDelay);
+            currentDelay = Math.min(currentDelay * 1.5, 10000); // Max 10s delay
+        };
+
+        poll();
+    };
 
 
 
@@ -659,7 +707,13 @@ const ActivationCards = () => {
             </motion.div>
 
             {/* Payment Details Modal */}
-            <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+            <Dialog open={isPaymentModalOpen} onOpenChange={(open) => {
+                setIsPaymentModalOpen(open);
+                if (!open) {
+                    setIsVerifying(false);
+                    setIsTimeout(false);
+                }
+            }}>
                 <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-y-auto">
                     <div className="bg-emerald-600 p-8 text-white relative">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -713,12 +767,45 @@ const ActivationCards = () => {
                         </div>
 
                         <div className="pt-2">
-                            <Button 
-                                className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
-                                onClick={() => setIsPaymentModalOpen(false)}
-                            >
-                                I Have Made the Payment
-                            </Button>
+                            {isVerifying ? (
+                                <div className="space-y-4">
+                                    <Button 
+                                        disabled
+                                        className="w-full h-14 rounded-2xl bg-zinc-100 text-zinc-400 font-black text-lg border-2 border-dashed border-zinc-200"
+                                    >
+                                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                                        Verifying Payment...
+                                    </Button>
+                                    <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-pulse">
+                                        Please wait while we confirm your transaction
+                                    </p>
+                                </div>
+                            ) : isTimeout ? (
+                                <div className="space-y-4">
+                                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 space-y-2">
+                                        <p className="text-xs font-bold text-amber-800 flex items-center gap-2">
+                                            <AlertCircle size={14} />
+                                            Payment is being processed
+                                        </p>
+                                        <p className="text-[11px] text-amber-700 leading-relaxed font-medium">
+                                            If you don&apos;t get your PIM card in a few minutes, please contact the administrator.
+                                        </p>
+                                    </div>
+                                    <Button 
+                                        className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                        onClick={() => setIsPaymentModalOpen(false)}
+                                    >
+                                        Close Window
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Button 
+                                    className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                    onClick={handleVerifyPayment}
+                                >
+                                    I Have Made the Payment
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </DialogContent>
