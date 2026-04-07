@@ -91,7 +91,7 @@ export default function Header() {
                                     <button className="side-toggle d-lg-none" aria-label="Toggle Menu"><i className="fal fa-bars"></i></button>
                                 </div>
                                 <div className="header__btn d-none d-xl-inline-block p-relative z-10">
-                                    <Link href="/contact" className="grb-btn">Get Reserved<i className="fas fa-arrow-right"></i></Link>
+                                    <Link href="/login" className="grb-btn">Get Reserved<i className="fas fa-arrow-right"></i></Link>
                                 </div>
                             </div>
                         </div>

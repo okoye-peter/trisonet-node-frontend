@@ -34,6 +34,7 @@ import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import KYCModal from '@/components/dashboard/KYCModal';
 import { useGetUserQuery } from '@/store/api/userApi';
+import Link from 'next/link';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -275,14 +276,14 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <Button 
+                    {/* <Button 
                         onClick={() => setIsKYCModalOpen(true)}
                         size="lg" 
                         className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <UserCheck className="mr-2 h-4 w-4" /> Verify Identity
                         <ArrowUpRight className="ml-2 h-4 w-4 opacity-50" />
-                    </Button>
+                    </Button> */}
                 </div>
             </motion.div>
 
@@ -382,12 +383,12 @@ export default function DashboardPage() {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <Button className="h-12 px-8 rounded-2xl bg-white text-indigo-950 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-[1.03] active:scale-[0.98]">
+                                <Link href={'/earnings'} className="py-3 px-8 rounded-2xl bg-white text-indigo-950 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-[1.03] active:scale-[0.98]">
                                     Withdraw
-                                </Button>
-                                <Button variant="ghost" className="h-12 px-6 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest backdrop-blur-sm transition-all">
+                                </Link>
+                                <Link href={'/earnings'} className="py-3 px-6 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest backdrop-blur-sm transition-all">
                                     Details
-                                </Button>
+                                </Link>
                             </div>
                         </CardContent>
                     </Card>
