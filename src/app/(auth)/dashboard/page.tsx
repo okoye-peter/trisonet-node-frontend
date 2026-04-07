@@ -211,7 +211,8 @@ export default function DashboardPage() {
         },
         {
             label: 'Asset Depot',
-            value: dashboardStats?.assetDepot ?? 0.00,
+            // value: dashboardStats?.assetDepot ?? 0.00,
+            value: 0.00,
             prefix: '',
             icon: Warehouse,
             color: 'text-purple-600',

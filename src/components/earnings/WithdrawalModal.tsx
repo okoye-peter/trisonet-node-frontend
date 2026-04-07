@@ -69,6 +69,8 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
         }
     }, [open, form]);
 
+    console.log('bankResponse', bankResponse)
+
     const onSubmit = async (values: WithdrawalFormValues) => {
         if (!earningWallet || !user) return;
 
@@ -85,8 +87,8 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
         try {
             await initiateWithdrawal({
                 amount: values.amount,
-                bank_name: bankResponse.data.name,
-                bank_code: bankResponse.data.uuid,
+                bank_name: user.bank as string,
+                bank_code: bankResponse.data.bankUUID,
                 account_name: user.name,
                 account_number: user.accountNumber || '',
                 wallet: earningWallet.id?.toString() || '',
@@ -148,7 +150,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                         ) : (
                                             <>
                                                 <p className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
-                                                    {bankResponse?.data?.name || 'N/A'}
+                                                    {bankResponse?.data?.accountName || 'N/A'}
                                                 </p>
                                                 <p className="text-xs font-bold text-zinc-500">
                                                     {user?.accountNumber || 'Account not set'}
@@ -250,7 +252,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                     <div className="flex items-center justify-between">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Destination</span>
                                         <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tighter">
-                                            {bankResponse?.data?.name}
+                                            {bankResponse?.data?.accountName}
                                         </span>
                                     </div>
                                 </div>

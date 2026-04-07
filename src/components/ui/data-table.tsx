@@ -51,6 +51,7 @@ export interface DataTableProps<TData, TValue> {
     searchPlaceholder?: string
     orderBy?: 'asc' | 'desc'
     filters?: Record<string, string | number | undefined>
+    maxHeight?: string | number
 }
 
 export function DataTable<TData, TValue>({
@@ -61,6 +62,7 @@ export function DataTable<TData, TValue>({
     searchPlaceholder = "Search...",
     orderBy,
     filters,
+    maxHeight,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -196,8 +198,11 @@ export function DataTable<TData, TValue>({
             </div>
 
             {/* Table Container */}
-            <div className="rounded-md border bg-white dark:bg-zinc-950 overflow-auto shadow-sm">
-                <Table>
+            <div className="rounded-md border bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
+                <Table 
+                    containerClassName="max-h-[600px] overflow-auto"
+                    containerStyle={maxHeight ? { maxHeight } : undefined}
+                >
                     <TableHeader className="bg-muted/50">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>

@@ -21,6 +21,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
 
     const handleLogout = () => {
         dispatch(logout());
+        // window.location.href = 'https://trisonet.com/login'
         router.push('/login');
     };
 

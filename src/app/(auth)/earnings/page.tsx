@@ -6,7 +6,6 @@ import {
     TrendingUp, 
     Wallet, 
     CheckCircle2, 
-    ArrowUpRight
 } from 'lucide-react';
 import { useState } from 'react';
 import { DataTable } from "@/components/ui/data-table";
@@ -187,7 +186,7 @@ export default function EarningsPage() {
                             className="h-12 w-12 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn"
                             title="Withdraw Funds"
                         >
-                            <ArrowUpRight size={22} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                            Withdraw
                         </button>
                     </div>
                 </div>
