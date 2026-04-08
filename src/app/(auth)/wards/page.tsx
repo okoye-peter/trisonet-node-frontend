@@ -9,7 +9,6 @@ import {
     Zap,
     TrendingUp,
     ShieldCheck,
-    Plus,
     Clock,
     UserCircle,
     Mail,

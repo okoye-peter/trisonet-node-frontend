@@ -54,6 +54,7 @@ export default function PolicyPage() {
                                         alt="Policy main"
                                         fill
                                         className="object-cover"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 75vw"
                                     />
                                 </div>
                             </div>
@@ -66,6 +67,7 @@ export default function PolicyPage() {
                                                 alt="Policy detail 1"
                                                 fill
                                                 className="object-cover"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 25vw, 25vw"
                                             />
                                         </div>
                                     </div>
@@ -76,6 +78,7 @@ export default function PolicyPage() {
                                                 alt="Policy detail 2"
                                                 fill
                                                 className="object-cover"
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 25vw, 25vw"
                                             />
                                         </div>
                                     </div>

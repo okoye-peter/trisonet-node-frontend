@@ -57,7 +57,7 @@ export default function Footer() {
                                     <li><Link href="/about">About Us</Link></li>
                                     <li><Link href="/contact">Contact Us</Link></li>
                                     <li><Link href="/terms">Terms & Conditions</Link></li>
-                                    <li><Link href="/policy">Privacy Policy</Link></li>
+                                    {/* <li><Link href="/policy">Privacy Policy</Link></li> */}
                                 </ul>
                             </div>
                         </div>
@@ -83,7 +83,7 @@ export default function Footer() {
                         <div className="col-lg-3 d-none d-lg-block">
                             <div className="copyright-logo logo-shape">
                                 <Link href="/">
-                                    <Image src="/assets/img/logo/logo-white.png" alt="Trisonet Logo" width={60} height={60} />
+                                    <Image src="/assets/img/logo/logo-white.png" alt="Trisonet Logo" width={60} height={60} style={{ height: 'auto' }} />
                                 </Link>
                             </div>
                         </div>

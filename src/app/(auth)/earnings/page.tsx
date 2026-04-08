@@ -62,9 +62,9 @@ export default function EarningsPage() {
             accessorKey: "amount",
             header: "Amount",
             cell: ({ row }) => (
-                <div className="font-black text-emerald-600 min-w-[120px] flex items-center gap-1">
+                <div className={`font-black min-w-[120px] flex items-center gap-1 ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
                     <span className="text-zinc-400 text-[10px] font-bold">₦</span>
-                    {Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {row.original.type === 'debit' ? '-' : '+'}{Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
             )
         },
