@@ -75,10 +75,10 @@ const AuthLayout = ({ children, title, description }: { children: React.ReactNod
                                 <Link href="/terms" className="text-[#6639ff] font-semibold hover:underline">
                                     Terms of Service
                                 </Link>{' '}
-                                and{' '}
+                                {/* and{' '}
                                 <Link href="/policy" className="text-[#6639ff] font-semibold hover:underline">
                                     Privacy Policy
-                                </Link>.
+                                </Link>. */}
                             </p>
                         </div>
                     </div>

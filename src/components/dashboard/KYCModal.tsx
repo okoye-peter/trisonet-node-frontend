@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import api from '@/lib/axios';
+import { useAppSelector } from '@/store/hooks';
+import { User } from 'lucide-react';
 
 interface KYCModalProps {
     isOpen: boolean;
@@ -19,6 +21,8 @@ interface KYCModalProps {
 }
 
 export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = false }: KYCModalProps) {
+    const { user } = useAppSelector((state) => state.auth);
+    const [name, setName] = useState(user?.name || '');
     const [bvn, setBvn] = useState('');
     const [passportImage, setPassportImage] = useState<File | null>(null);
     const [preview, setPreview] = useState<string | null>(null);
@@ -97,6 +101,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         
         try {
             const formData = new FormData();
+            formData.append('name', name);
             formData.append('bvn', bvn);
             formData.append('image', passportImage);
 
@@ -170,7 +175,27 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                 </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="p-8 pt-2 space-y-8">
+                            <form onSubmit={handleSubmit} className="p-8 pt-2 space-y-7">
+                                {/* Name Section */}
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
+                                        Full Name (Must match your ID)
+                                    </label>
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-4 flex items-center text-zinc-400 group-hover:text-indigo-600 transition-colors">
+                                            <User size={18} />
+                                        </div>
+                                        <Input
+                                            type="text"
+                                            placeholder="Enter full name as on ID"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            className="h-14 pl-12 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 transition-all text-lg font-bold tracking-tight placeholder:tracking-normal placeholder:font-medium"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
                                 {/* BVN Section */}
                                 <div className="space-y-3">
                                     <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">

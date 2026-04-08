@@ -48,7 +48,7 @@ export const walletApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['Loan'],
         }),
-        generateWardSlotVirtualAccount: builder.mutation<AppResponse<{ account_detail: { account_name: string; bank_name: string; account_number: string; amount: number; expiry_date: string } }>, { type: 'limited' | 'unlimited'; quantity?: number }>({
+        generateWardSlotVirtualAccount: builder.mutation<AppResponse<{ reference: string; account_detail: { account_name: string; bank_name: string; account_number: string; amount: number; expiry_date: string } }>, { type: 'limited' | 'unlimited'; quantity?: number }>({
             query: (body) => ({
                 url: 'payment/wards/generate-virtual-account',
                 method: 'POST',
@@ -93,6 +93,14 @@ export const walletApi = apiSlice.injectEndpoints({
                 body,
             }),
         }),
+        verifyWardSlotPurchase: builder.mutation<AppResponse<any>, { reference: string }>({
+            query: (body) => ({
+                url: 'payment/wards/purchase/verify',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['User', 'Ward'],
+        }),
     }),
 });
 
@@ -108,5 +116,6 @@ export const {
     useInitiateDirectWalletFundingMutation,
     useLazyCheckFundingStatusQuery,
     useCheckFundingStatusQuery,
-    useInitiateIndirectGkwthFundingMutation
+    useInitiateIndirectGkwthFundingMutation,
+    useVerifyWardSlotPurchaseMutation
 } = walletApi;

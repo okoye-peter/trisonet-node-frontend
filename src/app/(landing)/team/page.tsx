@@ -5,8 +5,8 @@ import NewsletterForm from '@/components/landing/NewsletterForm';
 
 export const metadata: Metadata = {
     title: 'Our Team | Trisonet - Leading Digital Asset Community',
-    description: 'Meet the Trisonet Metaverse team of experts dedicated to building a sustainable digital economy.',
-    keywords: ['Trisonet Team', 'Experts', 'Metaverse Leadership', 'Digital Economy'],
+    description: 'Trisonet is a Nigerian-based company offering logistics services, digital platforms, e-commerce, metaverse solutions, health services, and community-driven technology solutions.',
+    keywords: ['Trisonet Team', 'Experts', 'Metaverse Leadership', 'Digital Economy', 'Logistics', 'E-commerce'],
 };
 
 export default function TeamPage() {
@@ -56,18 +56,27 @@ export default function TeamPage() {
                         <div className="col-lg-3 col-md-6">
                             <div className="team-member mb-30">
                                 <div className="member-img">
-                                    <Image src="/assets/img/team/team1.png" alt="Happiness Etuk" width={300} height={400} className="w-full h-auto" />
+                                    <Link href="/contact">
+                                        <Image 
+                                            src="/assets/img/team/team1.png" 
+                                            alt="Happiness Etuk" 
+                                            width={300} 
+                                            height={400} 
+                                            className="w-full h-auto"
+                                            sizes="(max-width: 768px) 100vw, 25vw"
+                                        />
+                                    </Link>
                                 </div>
                                 <div className="member-name p-relative">
                                     <div className="member-name-bg">
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                     </div>
-                                    <h5 className="p-relative z-10">Happiness Etuk</h5>
+                                    <h5 className="p-relative z-10"><Link href="/contact">Happiness Etuk</Link></h5>
                                     <span className="p-relative z-10">CEO</span>
                                 </div>
                             </div>
@@ -75,18 +84,27 @@ export default function TeamPage() {
                         <div className="col-lg-3 col-md-6">
                             <div className="team-member mb-30">
                                 <div className="member-img">
-                                    <Image src="/assets/img/team/team2.jpg" alt="Udeme Effanga Bassey" width={300} height={400} className="w-full h-auto" />
+                                    <Link href="/contact">
+                                        <Image 
+                                            src="/assets/img/team/team2.jpg" 
+                                            alt="Udeme Effanga Bassey" 
+                                            width={300} 
+                                            height={400} 
+                                            className="w-full h-auto"
+                                            sizes="(max-width: 768px) 100vw, 25vw"
+                                        />
+                                    </Link>
                                 </div>
                                 <div className="member-name p-relative">
                                     <div className="member-name-bg">
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                     </div>
-                                    <h5 className="p-relative z-10">Udeme Effanga Bassey</h5>
+                                    <h5 className="p-relative z-10"><Link href="/contact">Udeme Effanga Bassey</Link></h5>
                                     <span className="p-relative z-10">VP Media</span>
                                 </div>
                             </div>
@@ -94,18 +112,27 @@ export default function TeamPage() {
                         <div className="col-lg-3 col-md-6">
                             <div className="team-member mb-30">
                                 <div className="member-img">
-                                    <Image src="/assets/img/team/team3.jpg" alt="Imaobong Ekanem" width={300} height={400} className="w-full h-auto" />
+                                    <Link href="/contact">
+                                        <Image 
+                                            src="/assets/img/team/team3.jpg" 
+                                            alt="Imaobong Ekanem" 
+                                            width={300} 
+                                            height={400} 
+                                            className="w-full h-auto"
+                                            sizes="(max-width: 768px) 100vw, 25vw"
+                                        />
+                                    </Link>
                                 </div>
                                 <div className="member-name p-relative">
                                     <div className="member-name-bg">
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                     </div>
-                                    <h5 className="p-relative z-10">Imaobong Ekanem</h5>
+                                    <h5 className="p-relative z-10"><Link href="/contact">Imaobong Ekanem</Link></h5>
                                     <span className="p-relative z-10">VP Child’s Right to Education</span>
                                 </div>
                             </div>
@@ -113,18 +140,27 @@ export default function TeamPage() {
                         <div className="col-lg-3 col-md-6">
                             <div className="team-member mb-30">
                                 <div className="member-img">
-                                    <Image src="/assets/img/team/team4.jpg" alt="Ndifreke George Akpan" width={300} height={400} className="w-full h-auto" />
+                                    <Link href="/contact">
+                                        <Image 
+                                            src="/assets/img/team/team4.jpg" 
+                                            alt="Ndifreke George Akpan" 
+                                            width={300} 
+                                            height={400} 
+                                            className="w-full h-auto"
+                                            sizes="(max-width: 768px) 100vw, 25vw"
+                                        />
+                                    </Link>
                                 </div>
                                 <div className="member-name p-relative">
                                     <div className="member-name-bg">
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                         <div className="p-absolute inset-0">
-                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" />
+                                            <Image src="/assets/img/shape/member-name-c-bg.png" alt="" fill className="object-cover" sizes="25vw" />
                                         </div>
                                     </div>
-                                    <h5 className="p-relative z-10">Ndifreke George Akpan</h5>
+                                    <h5 className="p-relative z-10"><Link href="/contact">Ndifreke George Akpan</Link></h5>
                                     <span className="p-relative z-10">VP Health</span>
                                 </div>
                             </div>
