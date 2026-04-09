@@ -10,10 +10,13 @@ interface AuthState {
     error: string | null;
 }
 
+// NOTE: Do NOT read from localStorage here — this runs on the server during SSR
+// and causes a hydration mismatch (server: null, client: stored token → crash).
+// Instead, call `initAuth` in a client-side useEffect after the app mounts.
 const initialState: AuthState = {
     user: null,
-    token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
-    refreshToken: typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null,
+    token: null,
+    refreshToken: null,
     isAuthenticated: false,
     isLoading: false,
     error: null,
@@ -65,10 +68,22 @@ export const authSlice = createSlice({
         },
         setUser: (state, action: PayloadAction<User>) => {
             state.user = action.payload;
-        }
+        },
+        // Called once on the client after mount to safely hydrate from localStorage
+        initAuth: (state) => {
+            const token = localStorage.getItem('token');
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (token) {
+                state.token = token;
+                state.isAuthenticated = true;
+            }
+            if (refreshToken) {
+                state.refreshToken = refreshToken;
+            }
+        },
     },
 });
 
-export const { loginStart, loginSuccess, loginFailure, refreshTokenSuccess, logout, setAuthStatus, setUser } = authSlice.actions;
+export const { loginStart, loginSuccess, loginFailure, refreshTokenSuccess, logout, setAuthStatus, setUser, initAuth } = authSlice.actions;
 
 export default authSlice.reducer;
