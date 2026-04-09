@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import LoadingScreen from '@/components/LoadingScreen';
-import { setAuthStatus, setUser } from '@/store/features/authSlice';
+import { setUser } from '@/store/features/authSlice';
 import { useGetUserQuery } from '@/store/api/userApi';
 
 
@@ -18,7 +18,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { data: userData, error: userError, isLoading: userQueryLoading } = useGetUserQuery(undefined, {
         skip: !token || !isAuthenticated,
     });
-
 
     useEffect(() => {
         if (userData?.data) {
@@ -38,20 +37,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             router.push('/login');
         }
 
-        // Hydrate authentication status from token if available
-        if (token && !isAuthenticated) {
-            dispatch(setAuthStatus(true));
-        }
-
         const checkAuth = () => {
-            const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
-            if (!storedToken && !isAuthenticated) {
+            if (!isAuthenticated && !token) {
                 if (pathname !== '/login' && pathname !== '/register' && pathname !== '/forgot-password') {
                     router.push('/login');
                 }
             }
-
             setIsChecking(false);
         };
 
@@ -61,7 +52,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     // Show loading screen while checking auth or during auth transitions
     if (isChecking || authLoading || userQueryLoading) {
-
         return <LoadingScreen message="Verifying session..." />;
     }
 
