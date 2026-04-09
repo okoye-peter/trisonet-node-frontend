@@ -88,12 +88,15 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 // If refresh fails, reject all queued requests
                 processQueue(refreshError, null);
-                
+
                 // Log out the user and redirect to login
                 store.dispatch(logout());
-                const path = window.location.pathname;
-                if (typeof window !== 'undefined' && !['/login', '/register', '/forgot-password'].includes(path)) {
-                    window.location.href = '/login';
+                // Guard window access — axios interceptors can fire during module init on the server
+                if (typeof window !== 'undefined') {
+                    const path = window.location.pathname;
+                    if (!['/login', '/register', '/forgot-password'].includes(path)) {
+                        window.location.href = '/login';
+                    }
                 }
                 return Promise.reject(refreshError);
             } finally {

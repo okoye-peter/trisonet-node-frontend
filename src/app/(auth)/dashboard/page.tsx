@@ -158,7 +158,10 @@ const itemVariants: Variants = {
 
 export default function DashboardPage() {
     const { user } = useAppSelector((state) => state.auth);
-    const [showWelcome, setShowWelcome] = useState(true);
+    // showWelcome starts false — we check sessionStorage client-side to decide whether to show.
+    // This prevents the video from appearing on EVERY page refresh.
+    const [showWelcome, setShowWelcome] = useState(false);
+    const [welcomeReady, setWelcomeReady] = useState(false);
 
     const [qrCodeConfig, setQrCodeConfig] = useState<{ isOpen: boolean; url: string; title: string }>({
         isOpen: false,
@@ -168,6 +171,16 @@ export default function DashboardPage() {
 
     const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
     const { refetch: refetchUser } = useGetUserQuery();
+
+    // Check sessionStorage on mount — only show welcome video on first visit per session.
+    // This prevents the video from blocking the dashboard on every refresh.
+    useEffect(() => {
+        const hasSeen = sessionStorage.getItem('hasSeenWelcome');
+        if (!hasSeen) {
+            setShowWelcome(true);
+        }
+        setWelcomeReady(true);
+    }, []);
 
     useEffect(() => {
         // Auto-show KYC modal if user is not verified Level 2
@@ -248,8 +261,14 @@ export default function DashboardPage() {
     ], [dashboardStats]);
 
 
+    // Don't render anything until we've checked sessionStorage (avoids flash on SSR)
+    if (!welcomeReady) return <LoadingScreen />;
+
     if (showWelcome) {
-        return <WelcomeVideo onEnded={() => setShowWelcome(false)} />;
+        return <WelcomeVideo onEnded={() => {
+            sessionStorage.setItem('hasSeenWelcome', 'true');
+            setShowWelcome(false);
+        }} />;
     }
 
     if (dashboardStatsIsLoading) return <LoadingScreen />

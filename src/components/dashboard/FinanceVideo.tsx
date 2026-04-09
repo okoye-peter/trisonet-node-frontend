@@ -17,23 +17,27 @@ export default function FinanceVideo({ onEnded }: FinanceVideoProps) {
     const [isMuted, setIsMuted] = useState(true); // Guaranteed to start playing if muted
     const [mounted, setMounted] = useState(false);
 
+    // Step 1: After mount (client-only), render the portal
     useEffect(() => {
         const timer = setTimeout(() => setMounted(true), 0);
         return () => clearTimeout(timer);
     }, []);
 
+    // Step 2: Only attempt to play AFTER the portal is rendered (mounted=true)
+    // This prevents videoRef.current from being null when play() is called.
     useEffect(() => {
+        if (!mounted) return;
+        if (!videoRef.current) return;
+
         // We MUST start muted to guarantee autoplay success on all browsers
-        if (videoRef.current) {
-            videoRef.current.muted = true;
-            videoRef.current.play().then(() => {
-                console.log("Video playing successfully (muted)");
-            }).catch(error => {
-                console.error("Video play failed even when muted (extremely strict browser):", error);
-                setIsBlocked(true);
-            });
-        }
-    }, []);
+        videoRef.current.muted = true;
+        videoRef.current.play().then(() => {
+            console.log('Video playing successfully (muted)');
+        }).catch(error => {
+            console.error('Video play failed even when muted (extremely strict browser):', error);
+            setIsBlocked(true);
+        });
+    }, [mounted]);
 
     const handleStartVideo = () => {
         if (videoRef.current) {

@@ -17,23 +17,26 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
     const [isMuted, setIsMuted] = useState(true); // Always start muted to guarantee autoplay
     const [mounted, setMounted] = useState(false);
 
+    // Step 1: After mount (client-only), render the portal
     useEffect(() => {
         const timer = setTimeout(() => setMounted(true), 0);
         return () => clearTimeout(timer);
     }, []);
 
+    // Step 2: Only attempt to play AFTER the portal is rendered (mounted=true)
+    // This prevents videoRef.current from being null when play() is called.
     useEffect(() => {
-        if (videoRef.current) {
-            // Force muted for autoplay reliability
-            videoRef.current.muted = true;
-            videoRef.current.play().then(() => {
-                console.log("Welcome video playing (muted)");
-            }).catch(error => {
-                console.error("Video play failed (blocked by browser):", error);
-                setIsBlocked(true);
-            });
-        }
-    }, []);
+        if (!mounted) return;
+        if (!videoRef.current) return;
+
+        videoRef.current.muted = true;
+        videoRef.current.play().then(() => {
+            console.log('Welcome video playing (muted)');
+        }).catch(error => {
+            console.error('Video play failed (blocked by browser):', error);
+            setIsBlocked(true);
+        });
+    }, [mounted]);
 
     const handleStartVideo = () => {
         if (videoRef.current) {

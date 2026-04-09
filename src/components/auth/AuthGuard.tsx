@@ -6,7 +6,7 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import LoadingScreen from '@/components/LoadingScreen';
 import { setUser } from '@/store/features/authSlice';
 import { useGetUserQuery } from '@/store/api/userApi';
-
+import { store } from '@/store';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, token, isLoading: authLoading } = useAppSelector((state) => state.auth);
@@ -38,7 +38,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
 
         const checkAuth = () => {
-            if (!isAuthenticated && !token) {
+            // Read CURRENT state from store directly to avoid stale closure values.
+            // This is critical because initAuth() is dispatched in the parent (Providers)
+            // useEffect which runs synchronously BEFORE this child effect — so the Redux
+            // store already has the correct token by this point, but the component closure
+            // still reflects the pre-dispatch render snapshot.
+            const { isAuthenticated: currentAuth, token: currentToken } = store.getState().auth;
+
+            if (!currentAuth && !currentToken) {
                 if (pathname !== '/login' && pathname !== '/register' && pathname !== '/forgot-password') {
                     router.push('/login');
                 }
