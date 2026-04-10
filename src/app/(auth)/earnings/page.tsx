@@ -38,7 +38,7 @@ export default function EarningsPage() {
             header: "Transaction Details",
             cell: ({ row }) => (
                 <div className="flex flex-col min-w-[350px]">
-                    <span className="font-bold text-zinc-900 leading-tight">
+                    <span className={`font-bold leading-tight ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
                         {row.original.narration}
                     </span>
                     <span className="text-[10px] text-zinc-400 font-medium truncate mt-1 uppercase tracking-wider">
