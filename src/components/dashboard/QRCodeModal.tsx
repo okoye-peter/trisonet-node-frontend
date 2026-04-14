@@ -3,7 +3,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { X, Download, Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 
 interface QRCodeModalProps {
@@ -15,6 +16,12 @@ interface QRCodeModalProps {
 
 export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModalProps) {
     const [copied, setCopied] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleCopy = () => {
         navigator.clipboard.writeText(url);
@@ -54,7 +61,9 @@ export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModal
         img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
     };
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -64,9 +73,9 @@ export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModal
                         exit={{ opacity: 0 }}
                         onClick={handleClose}
 
-                        className="fixed inset-0 z-50 bg-zinc-900/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-90 bg-zinc-900/60 backdrop-blur-sm"
                     />
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -145,6 +154,7 @@ export default function QRCodeModal({ isOpen, onClose, url, title }: QRCodeModal
                     </div>
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

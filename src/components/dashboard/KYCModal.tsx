@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Upload, Check, AlertCircle, Fingerprint, Loader2, Camera, RotateCcw } from 'lucide-react';
-import { useState, useRef, ChangeEvent, useCallback } from 'react';
+import { useState, useRef, ChangeEvent, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Webcam from 'react-webcam';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -30,8 +31,15 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [isCameraMode, setIsCameraMode] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     
+    const [mounted, setMounted] = useState(false);
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
     const webcamRef = useRef<Webcam>(null);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setMounted(true), 0);
+        return () => clearTimeout(timer);
+    }, []);
 
     const videoConstraints = {
         width: 1280,
@@ -133,7 +141,9 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         onClose();
     };
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -143,16 +153,16 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                         exit={{ opacity: 0 }}
                         onClick={isMandatory ? undefined : handleClose}
                         className={cn(
-                            "fixed inset-0 z-60 bg-zinc-900/40 backdrop-blur-md",
+                            "fixed inset-0 z-90 bg-zinc-900/40 backdrop-blur-md",
                             isMandatory ? "cursor-default" : "cursor-pointer"
                         )}
                     />
-                    <div className="fixed inset-0 z-70 flex items-center justify-center p-4 pointer-events-none">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="w-full max-w-md overflow-hidden rounded-[2.5rem] bg-white shadow-2xl pointer-events-auto border border-zinc-100"
+                            className="w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto rounded-[2.5rem] bg-white shadow-2xl pointer-events-auto border border-zinc-100 scrollbar-hide"
                         >
                             {/* Header */}
                             <div className="relative p-8 pb-4">
@@ -386,6 +396,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                     </div>
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }
