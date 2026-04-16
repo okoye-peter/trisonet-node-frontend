@@ -153,11 +153,11 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                         exit={{ opacity: 0 }}
                         onClick={isMandatory ? undefined : handleClose}
                         className={cn(
-                            "fixed inset-0 z-90 bg-zinc-900/40 backdrop-blur-md",
+                            "fixed inset-0 z-[100010] bg-zinc-900/40 backdrop-blur-md",
                             isMandatory ? "cursor-default" : "cursor-pointer"
                         )}
                     />
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
+                    <div className="fixed inset-0 z-[100020] flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}

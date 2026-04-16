@@ -8,12 +8,18 @@ import { Topbar } from './Topbar';
 import { BottomNav } from './BottomNav';
 import { cn } from '@/lib/utils';
 import FinanceVideo from './FinanceVideo';
+import KYCModal from './KYCModal';
+import { useAppSelector } from '@/store/hooks';
+import { useGetUserQuery } from '@/store/api/userApi';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showFinanceVideo, setShowFinanceVideo] = useState(false);
+    const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
     const pathname = usePathname();
+    const { user } = useAppSelector((state) => state.auth);
+    const { refetch: refetchUser } = useGetUserQuery();
 
     const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
 
@@ -26,6 +32,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             setTimeout(() => setShowFinanceVideo(true), 0);
         }
     }, [pathname, showFinanceVideo, hasSeenInCurrentVisit]);
+
+    useEffect(() => {
+        // Auto-show KYC modal if user is not verified Level 2
+        // We show it globally across the dashboard layout to ensure visibility
+        if (user && user.hasVerifiedLevel2 === false) {
+            const timer = setTimeout(() => {
+                setIsKYCModalOpen(true);
+            }, 1500); // Wait a bit for layout to settle
+            return () => clearTimeout(timer);
+        }
+    }, [user, pathname]);
 
     const handleFinanceVideoEnded = () => {
         setShowFinanceVideo(false);
@@ -93,6 +110,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </AnimatePresence>
 
             <BottomNav />
+
+            <KYCModal 
+                isOpen={isKYCModalOpen}
+                isMandatory={user?.hasVerifiedLevel2 === false}
+                onClose={() => setIsKYCModalOpen(false)}
+                onSuccess={() => {
+                    refetchUser();
+                }}
+            />
         </div>
     );
 }

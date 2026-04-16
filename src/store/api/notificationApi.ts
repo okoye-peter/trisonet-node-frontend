@@ -37,11 +37,16 @@ export const notificationApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Notification'],
         }),
+        getNotification: builder.query<AppResponse<Notification>, string>({
+            query: (id) => `notifications/${id}`,
+            providesTags: (result, error, id) => [{ type: 'Notification', id }],
+        }),
     }),
 });
 
 export const { 
     useGetNotificationsQuery, 
     useMarkNotificationReadMutation, 
-    useMarkAllNotificationsReadMutation 
+    useMarkAllNotificationsReadMutation,
+    useGetNotificationQuery
 } = notificationApi;

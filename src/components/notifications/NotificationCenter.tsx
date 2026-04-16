@@ -10,12 +10,15 @@ import {
     useMarkAllNotificationsReadMutation 
 } from '@/store/api/notificationApi';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export function NotificationCenter() {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
     
-    const { data: response, isLoading } = useGetNotificationsQuery({ limit: 20 });
+    const { data: response, isLoading } = useGetNotificationsQuery({ limit: 10 });
     const [markRead] = useMarkNotificationReadMutation();
     const [markAllRead] = useMarkAllNotificationsReadMutation();
 
@@ -33,11 +36,20 @@ export function NotificationCenter() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleMarkRead = async (id: string) => {
+    const handleMarkRead = async (id: string, navigate: boolean = false) => {
         try {
             await markRead(id).unwrap();
+            if (navigate) {
+                setIsOpen(false);
+                router.push(`/notifications/${id}`);
+            }
         } catch (err) {
             console.error('Failed to mark notification as read:', err);
+            // Fallback navigation if marking fails
+            if (navigate) {
+                setIsOpen(false);
+                router.push(`/notifications/${id}`);
+            }
         }
     };
 
@@ -73,10 +85,10 @@ export function NotificationCenter() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute right-0 mt-4 w-80 lg:w-96 overflow-hidden rounded-[2rem] border border-white/40 bg-white/90 backdrop-blur-xl shadow-2xl shadow-zinc-200/50 z-50"
+                        className="fixed inset-x-4 top-24 sm:absolute sm:inset-auto sm:right-0 sm:mt-4 sm:w-80 lg:w-96 overflow-hidden rounded-[2.5rem] border border-white/40 bg-white/90 backdrop-blur-xl shadow-2xl shadow-zinc-200/50 z-50 transform origin-top sm:origin-top-right"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between border-b border-zinc-100 p-6">
+                        <div className="flex items-center justify-between border-b border-zinc-100 p-5 sm:p-6">
                             <div>
                                 <h3 className="text-lg font-black text-zinc-800">Notifications</h3>
                                 <p className="text-xs font-medium text-zinc-400 mt-0.5">
@@ -94,20 +106,20 @@ export function NotificationCenter() {
                         </div>
 
                         {/* Notifications List */}
-                        <div className="max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
+                        <div className="max-h-[45vh] sm:max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
                             {isLoading ? (
                                 <div className="flex flex-col items-center justify-center py-12 space-y-4">
                                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-indigo-500" />
                                     <p className="text-sm font-bold text-zinc-400">Loading your alerts...</p>
                                 </div>
                             ) : notifications.length > 0 ? (
-                                notifications.map((notification) => (
+                                notifications.slice(0, 5).map((notification) => (
                                     <div 
                                         key={notification.id}
-                                        onClick={() => !notification.status && handleMarkRead(notification.id)}
+                                        onClick={() => handleMarkRead(notification.id, true)}
                                         className={cn(
                                             "group relative flex gap-4 px-6 py-4 transition-all hover:bg-zinc-50 cursor-pointer",
-                                            !notification.status && "bg-indigo-50/30 hover:bg-indigo-50/50"
+                                            !notification.status && "bg-indigo-50/10 hover:bg-indigo-50/30"
                                         )}
                                     >
                                         {!notification.status && (
@@ -116,12 +128,12 @@ export function NotificationCenter() {
                                         
                                         <div className={cn(
                                             "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition-transform group-hover:scale-110",
-                                            !notification.status ? "bg-indigo-100 text-indigo-600" : "bg-zinc-100 text-zinc-400"
+                                            !notification.status ? "bg-indigo-50 text-indigo-600" : "bg-zinc-50 text-zinc-400"
                                         )}>
                                             <Bell size={20} />
                                         </div>
-
-                                        <div className="flex-1 space-y-1">
+                                        
+                                        <div className="flex-1 min-w-0 space-y-1">
                                             <div className="flex items-center justify-between gap-2">
                                                 <h4 className={cn(
                                                     "text-sm font-bold truncate",
@@ -129,13 +141,12 @@ export function NotificationCenter() {
                                                 )}>
                                                     {notification.title}
                                                 </h4>
-                                                <span className="flex items-center gap-1.5 text-[10px] font-medium text-zinc-400 whitespace-nowrap">
-                                                    <Clock size={10} />
+                                                <span className="flex items-center gap-1.5 text-[9px] font-bold text-zinc-400 whitespace-nowrap uppercase tracking-widest">
                                                     {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                                 </span>
                                             </div>
                                             <p className={cn(
-                                                "text-xs leading-relaxed line-clamp-2",
+                                                "text-[11px] leading-relaxed line-clamp-2",
                                                 !notification.status ? "text-zinc-800 font-medium" : "text-zinc-500"
                                             )}>
                                                 {notification.body}
@@ -161,9 +172,13 @@ export function NotificationCenter() {
                         {/* Footer */}
                         {notifications.length > 0 && (
                             <div className="border-t border-zinc-100 p-4">
-                                <button className="w-full rounded-xl py-3 text-xs font-black uppercase tracking-widest text-zinc-400 transition-colors hover:bg-zinc-50 hover:text-zinc-600">
+                                <Link 
+                                    href="/notifications"
+                                    onClick={() => setIsOpen(false)}
+                                    className="block w-full text-center rounded-2xl bg-zinc-50 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 transition-all hover:bg-zinc-100 hover:text-indigo-600 active:scale-[0.98]"
+                                >
                                     View all history
-                                </button>
+                                </Link>
                             </div>
                         )}
                     </motion.div>
