@@ -9,13 +9,9 @@ import {
     Wallet,
     Database,
     Clock,
-    Copy,
-    QrCode,
     ExternalLink,
-    Award,
-    ArrowUpRight,
     ChevronRight,
-    UserCheck,
+    Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -174,10 +170,17 @@ export default function DashboardPage() {
     // This prevents the video from blocking the dashboard on every refresh.
     useEffect(() => {
         const hasSeen = sessionStorage.getItem('hasSeenWelcome');
-        if (!hasSeen) {
-            setShowWelcome(true);
-        }
-        setWelcomeReady(true);
+        
+        // Use a timeout to avoid the synchronous re-render warning (cascading renders)
+        // This moves the state update to the next tick, ensuring the initial mount completes first.
+        const timer = setTimeout(() => {
+            if (!hasSeen) {
+                setShowWelcome(true);
+            }
+            setWelcomeReady(true);
+        }, 0);
+
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
