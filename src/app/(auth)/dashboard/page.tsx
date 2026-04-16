@@ -32,7 +32,6 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
-import KYCModal from '@/components/dashboard/KYCModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import Link from 'next/link';
 
@@ -169,7 +168,6 @@ export default function DashboardPage() {
         title: ''
     });
 
-    const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
     const { refetch: refetchUser } = useGetUserQuery();
 
     // Check sessionStorage on mount — only show welcome video on first visit per session.
@@ -183,23 +181,7 @@ export default function DashboardPage() {
     }, []);
 
     useEffect(() => {
-        // Auto-show KYC modal if user is not verified Level 2
-        if (user && user.hasVerifiedLevel2 === false) {
-             const timer = setTimeout(() => {
-                setIsKYCModalOpen(true);
-            }, 500); 
-            return () => clearTimeout(timer);
-        } else if (user && !user.activatedAt) {
-            // Original logic for account activation (Level 1)
-            const hasSeenKYC = sessionStorage.getItem('hasSeenKYC');
-            if (!hasSeenKYC) {
-                const timer = setTimeout(() => {
-                    setIsKYCModalOpen(true);
-                    sessionStorage.setItem('hasSeenKYC', 'true');
-                }, 1000); // Small delay for better UX
-                return () => clearTimeout(timer);
-            }
-        }
+        // Auto-show welcome video or other dashboard specific logic
     }, [user]);
     const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading, refetch: refetchStats } = useQuery<{ data: DashboardStats }>({
         queryKey: ['userDashboardStats', user?.id],
@@ -498,15 +480,6 @@ export default function DashboardPage() {
                 title={qrCodeConfig.title}
             />
 
-            <KYCModal 
-                isOpen={isKYCModalOpen}
-                isMandatory={user?.hasVerifiedLevel2 === false}
-                onClose={() => setIsKYCModalOpen(false)}
-                onSuccess={() => {
-                    refetchUser();
-                    refetchStats();
-                }}
-            />
         </motion.div>
     );
 }
