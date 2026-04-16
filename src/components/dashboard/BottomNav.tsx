@@ -4,7 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
-import { Bell } from 'lucide-react';
+import { useAppSelector } from '@/store/hooks';
+import { cn } from '@/lib/utils';
+import { 
+    Bell, 
+    LayoutGrid, 
+    CheckCircle2, 
+    User, 
+    Settings,
+    Lock
+} from 'lucide-react';
 
 export function BottomNav() {
     const { user } = useAppSelector((state) => state.auth);
