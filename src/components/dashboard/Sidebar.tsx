@@ -23,7 +23,9 @@ import {
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useGetNotificationsQuery } from '@/store/api/notificationApi';
+import { Bell } from 'lucide-react';
 
 type SidebarSubItem = {
     label: string;
@@ -40,40 +42,42 @@ type SidebarItem = {
     subItems?: SidebarSubItem[];
 };
 
-const sidebarItems: SidebarItem[] = [
-    { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
-    // { icon: Mail, label: 'Inbox', href: '/dashboard/inbox', badge: 0 },
-    { icon: Trophy, label: 'Winning Range', href: '/competitions/stats' },
-    { icon: User, label: 'Profile', href: '/profile' },
-    { icon: CreditCard, label: 'PIM Credit Cards', href: '/activation-cards' },
-    { icon: Users, label: 'Wards', href: '/wards' },
-    { icon: CircleDollarSign, label: 'Wards Fees', href: '/wards/fees' },
-    {
-        icon: PieChart,
-        label: 'Finance',
-        href: '/dashboard/finance',
-        hasSubmenu: true,
-        subItems: [
-            { label: 'Transfers', href: '/wallets/transfers', icon: ArrowRightLeft },
-            { label: 'Transactions', href: '/transactions', icon: ScrollText },
-            { label: 'Earnings', href: '/earnings', icon: TrendingUp },
-            { label: 'Utility Bills', href: '/vtu', icon: Receipt },
-            { label: 'Wallet', href: '/wallets', icon: Wallet },
-            { label: 'Gkwth Business', href: '/wallets/gkwth', icon: Briefcase },
-            { label: 'Upfront Sales', href: '/wallets/loans', icon: TrendingUp },
-        ]
-    },
-    { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
-    // { icon: FileText, label: 'TrisoBrief', href: '/dashboard/brief' },
-    // { icon: Globe, label: 'Gist Zone', href: '/dashboard/gist' },
-    // { icon: ShoppingBag, label: 'Shopping mall', href: '/dashboard/mall' },
-];
+// sidebarItems moved inside component to support dynamic badges
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => void }) {
 
     const { user } = useAppSelector((state) => state.auth);
     const pathname = usePathname();
     const [openMenus, setOpenMenus] = useState<string[]>([]);
+    
+    const { data: notificationResponse } = useGetNotificationsQuery({ limit: 0 });
+    const unreadCount = notificationResponse?.data?.unreadCount || 0;
+
+    const sidebarItems: SidebarItem[] = useMemo(() => [
+        { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
+        { icon: Bell, label: 'Notifications', href: '/notifications', badge: unreadCount },
+        { icon: Trophy, label: 'Winning Range', href: '/competitions/stats' },
+        { icon: User, label: 'Profile', href: '/profile' },
+        { icon: CreditCard, label: 'PIM Credit Cards', href: '/activation-cards' },
+        { icon: Users, label: 'Wards', href: '/wards' },
+        { icon: CircleDollarSign, label: 'Wards Fees', href: '/wards/fees' },
+        {
+            icon: PieChart,
+            label: 'Finance',
+            href: '/dashboard/finance',
+            hasSubmenu: true,
+            subItems: [
+                { label: 'Transfers', href: '/wallets/transfers', icon: ArrowRightLeft },
+                { label: 'Transactions', href: '/transactions', icon: ScrollText },
+                { label: 'Earnings', href: '/earnings', icon: TrendingUp },
+                { label: 'Utility Bills', href: '/vtu', icon: Receipt },
+                { label: 'Wallet', href: '/wallets', icon: Wallet },
+                { label: 'Gkwth Business', href: '/wallets/gkwth', icon: Briefcase },
+                { label: 'Upfront Sales', href: '/wallets/loans', icon: TrendingUp },
+            ]
+        },
+        { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
+    ], [unreadCount]);
 
     const isKycVerified = user?.hasVerifiedLevel2 !== false; // Default to true if user not loaded yet to avoid flickering, AuthGuard handles redirection anyway.
 
