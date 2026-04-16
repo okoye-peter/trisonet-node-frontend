@@ -253,6 +253,8 @@ export default function DashboardPage() {
         return <WelcomeVideo onEnded={() => {
             sessionStorage.setItem('hasSeenWelcome', 'true');
             setShowWelcome(false);
+            // Dispatch custom event to notify layout
+            window.dispatchEvent(new Event('welcomeVideoEnded'));
         }} />;
     }
 
