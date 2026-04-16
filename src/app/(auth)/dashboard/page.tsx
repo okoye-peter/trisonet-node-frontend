@@ -29,7 +29,9 @@ import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import { useGetUserQuery } from '@/store/api/userApi';
+import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
+import { Bell } from 'lucide-react';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -165,6 +167,9 @@ export default function DashboardPage() {
     });
 
     const { refetch: refetchUser } = useGetUserQuery();
+    const { data: notificationResponse } = useGetNotificationsQuery({ limit: 5 });
+    const unreadCount = notificationResponse?.data?.unreadCount || 0;
+    const latestNotifications = notificationResponse?.data?.notifications || [];
 
     // Check sessionStorage on mount — only show welcome video on first visit per session.
     // This prevents the video from blocking the dashboard on every refresh.
@@ -279,7 +284,13 @@ export default function DashboardPage() {
                     </h1>
                     <p className="mt-2 text-zinc-500 font-medium max-w-md">
                         Your financial summary is looking great today.
-                        {/* You have <span className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4">0 unread notifications</span>. */}
+                        {unreadCount > 0 ? (
+                            <span className="ml-1">
+                                You have <Link href="/notifications" className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4 hover:text-indigo-700 transition-colors">{unreadCount} unread notifications</Link>.
+                            </span>
+                        ) : (
+                            <span className="ml-1 text-zinc-400">No unread notifications.</span>
+                        )}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -476,6 +487,65 @@ export default function DashboardPage() {
             {/* Partners Table */}
             <motion.div variants={itemVariants} className="relative rounded-lg bg-white p-6 shadow-sm border border-zinc-100 overflow-hidden group hover:shadow-xl transition-all duration-700">
                 <DataTable columns={partnerColumns} url="/users/referrals" searchKey="email" searchPlaceholder="Search partners by email..." />
+            </motion.div>
+
+            {/* Recent Notifications Widget */}
+            <motion.div variants={itemVariants} className="space-y-6">
+                <div className="flex items-center justify-between px-2">
+                    <div>
+                        <h2 className="text-2xl font-black tracking-tighter text-zinc-900">Recent Activity</h2>
+                        <p className="text-sm font-medium text-zinc-400 mt-1">Stay informed about your account</p>
+                    </div>
+                    <Link 
+                        href="/notifications" 
+                        className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group"
+                    >
+                        View All
+                        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {latestNotifications.length > 0 ? (
+                        latestNotifications.slice(0, 3).map((notif, idx) => (
+                            <Card 
+                                key={notif.id}
+                                onClick={() => router.push(`/notifications/${notif.id}`)}
+                                className={cn(
+                                    "group relative border-none bg-white p-6 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer overflow-hidden border border-zinc-100",
+                                    !notif.status && "ring-1 ring-indigo-500/10 bg-indigo-50/5"
+                                )}
+                            >
+                                <div className="flex items-start gap-4">
+                                    <div className={cn(
+                                        "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-6",
+                                        !notif.status ? "bg-indigo-600 text-white shadow-lg shadow-indigo-100" : "bg-zinc-100 text-zinc-400"
+                                    )}>
+                                        <Bell size={20} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-black text-zinc-900 truncate">{notif.title}</h4>
+                                        <p className="text-[11px] text-zinc-500 line-clamp-1 mt-1 font-medium">{notif.body}</p>
+                                        <div className="flex items-center gap-2 mt-3">
+                                            <div className="h-1 w-1 rounded-full bg-zinc-300" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                                {new Date(notif.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))
+                    ) : (
+                        <Card className="col-span-full border-none bg-white p-12 rounded-[2.5rem] shadow-sm border border-zinc-100 flex flex-col items-center justify-center text-center">
+                            <div className="h-16 w-16 rounded-3xl bg-zinc-50 flex items-center justify-center text-zinc-200 mb-4">
+                                <Bell size={32} strokeWidth={1} />
+                            </div>
+                            <h4 className="text-lg font-black text-zinc-800">Everything up to date</h4>
+                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Check back later for new alerts</p>
+                        </Card>
+                    )}
+                </div>
             </motion.div>
 
             <QRCodeModal

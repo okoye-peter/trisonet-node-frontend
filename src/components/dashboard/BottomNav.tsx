@@ -3,21 +3,32 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { LayoutGrid, User, Settings, CheckCircle2, Lock } from 'lucide-react';
+import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import { useAppSelector } from '@/store/hooks';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-    { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
-    { icon: CheckCircle2, label: 'Winnings', href: '/transactions' },
-    { icon: User, label: 'Profile', href: '/profile' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
-];
+import { 
+    Bell, 
+    LayoutGrid, 
+    CheckCircle2, 
+    User, 
+    Settings,
+    Lock
+} from 'lucide-react';
 
 export function BottomNav() {
     const { user } = useAppSelector((state) => state.auth);
+    const { data: notificationResponse } = useGetNotificationsQuery({ limit: 0 });
+    const unreadCount = notificationResponse?.data?.unreadCount || 0;
     const pathname = usePathname();
     const isKycVerified = user?.hasVerifiedLevel2 !== false;
+
+    const navItems = [
+        { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
+        { icon: Bell, label: 'Alerts', href: '/notifications', badge: unreadCount },
+        { icon: CheckCircle2, label: 'Wins', href: '/transactions' },
+        { icon: User, label: 'Profile', href: '/profile' },
+        { icon: Settings, label: 'Settings', href: '/settings' },
+    ];
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden px-4 pb-6 pt-2">
@@ -59,6 +70,11 @@ export function BottomNav() {
                                             isActive ? "text-indigo-600" : "text-zinc-400 group-hover:text-zinc-600"
                                         )} 
                                     />
+                                )}
+                                {item.badge !== undefined && item.badge > 0 && (
+                                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-black text-white shadow-lg ring-2 ring-white">
+                                        {item.badge > 9 ? '9+' : item.badge}
+                                    </span>
                                 )}
                             </div>
 

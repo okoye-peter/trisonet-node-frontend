@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function NotificationDetailsPage() {
     const { id } = useParams();
