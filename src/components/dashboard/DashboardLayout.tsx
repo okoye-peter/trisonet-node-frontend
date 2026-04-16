@@ -35,14 +35,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     useEffect(() => {
         // Auto-show KYC modal if user is not verified Level 2
-        // We show it globally across the dashboard layout to ensure visibility
         if (user && user.hasVerifiedLevel2 === false) {
-            const timer = setTimeout(() => {
-                setIsKYCModalOpen(true);
-            }, 1500); // Wait a bit for layout to settle
-            return () => clearTimeout(timer);
+            
+            const triggerKYC = () => {
+                const timer = setTimeout(() => {
+                    setIsKYCModalOpen(true);
+                }, 1500);
+                return timer;
+            };
+
+            let timer: NodeJS.Timeout;
+
+            // Coordination logic
+            const checkAndTrigger = () => {
+                const isDashboard = pathname === '/dashboard';
+                const hasSeenWelcome = typeof window !== 'undefined' && sessionStorage.getItem('hasSeenWelcome') === 'true';
+                
+                // If on finance section, wait for FinanceVideo to finish
+                if (showFinanceVideo) return;
+
+                // If on dashboard home, wait for WelcomeVideo to finish
+                if (isDashboard && !hasSeenWelcome) return;
+
+                timer = triggerKYC();
+            };
+
+            checkAndTrigger();
+
+            // Listen for events that might clear the way for KYC
+            const handleVideoEnd = () => checkAndTrigger();
+            window.addEventListener('welcomeVideoEnded', handleVideoEnd);
+
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener('welcomeVideoEnded', handleVideoEnd);
+            };
         }
-    }, [user, pathname]);
+    }, [user, pathname, showFinanceVideo]);
 
     const handleFinanceVideoEnded = () => {
         setShowFinanceVideo(false);
