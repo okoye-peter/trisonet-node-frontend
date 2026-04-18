@@ -23,6 +23,8 @@ import AuthLayout from '@/components/auth/AuthLayout';
 import api from '@/lib/axios';
 import { useAppDispatch } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/features/authSlice';
+import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
+
 
 const loginSchema = z.object({
     email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -36,6 +38,8 @@ export default function LoginPage() {
     const dispatch = useAppDispatch();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [showWelcomeVideo, setShowWelcomeVideo] = useState(false);
+
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -50,11 +54,12 @@ export default function LoginPage() {
         dispatch(loginStart());
         try {
             const response = await api.post('/auth/login', values);
-            
+
             const { user, accessToken, refreshToken } = response.data.data;
             dispatch(loginSuccess({ user, accessToken, refreshToken }));
             toast.success('Successfully logged in!');
-            router.push('/dashboard');
+            setShowWelcomeVideo(true);
+
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };
             const message = err.response?.data?.message || 'Failed to login. Please check your credentials.';
@@ -82,7 +87,7 @@ export default function LoginPage() {
                                     <div className="relative group">
                                         <Mail className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
-                                            placeholder="name@company.com"
+                                            placeholder="Enter email address"
                                             className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
                                             {...field}
                                         />
@@ -159,6 +164,17 @@ export default function LoginPage() {
                     Sign up now
                 </Link>
             </div> */}
+
+            {showWelcomeVideo && (
+                <WelcomeVideo 
+                    onEnded={() => {
+                        sessionStorage.setItem('hasSeenWelcome', 'true');
+                        router.push('/dashboard');
+                        setShowWelcomeVideo(false);
+                    }} 
+                />
+            )}
         </AuthLayout>
     );
 }
+

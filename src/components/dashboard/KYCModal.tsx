@@ -11,8 +11,10 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import api from '@/lib/axios';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { User } from 'lucide-react';
+import { logout } from '@/store/features/authSlice';
+import { useRouter } from 'next/navigation';
 
 interface KYCModalProps {
     isOpen: boolean;
@@ -22,6 +24,8 @@ interface KYCModalProps {
 }
 
 export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = false }: KYCModalProps) {
+    const router = useRouter();
+    const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
     const [name, setName] = useState(user?.name || '');
     const [bvn, setBvn] = useState('');
@@ -140,6 +144,11 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         setCameraError(null);
         onClose();
     };
+
+    const handleLogout = () => {
+        dispatch(logout());
+        router.replace('/login');
+    }
 
     if (!mounted) return null;
 
@@ -366,17 +375,17 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
 
                                 {/* Footer / Actions */}
                                 <div className="pt-4 flex gap-4">
-                                    {!isMandatory && (
+                                    
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            onClick={handleClose}
+                                            onClick={handleLogout}
                                             disabled={isSubmitting}
                                             className="flex-1 h-16 rounded-3xl border-zinc-100 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50 transition-all hover:text-zinc-600"
                                         >
-                                            Later
+                                            Logout
                                         </Button>
-                                    )}
+                                    
                                     <Button
                                         type="submit"
                                         disabled={isSubmitting || bvn.length !== 11 || !passportImage}
