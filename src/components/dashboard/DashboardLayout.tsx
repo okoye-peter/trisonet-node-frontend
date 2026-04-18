@@ -11,6 +11,7 @@ import FinanceVideo from './FinanceVideo';
 import KYCModal from './KYCModal';
 import { useAppSelector } from '@/store/hooks';
 import { useGetUserQuery } from '@/store/api/userApi';
+import { useLogout } from '@/hooks/useLogout';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -20,6 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
     const { refetch: refetchUser } = useGetUserQuery();
+    const logout = useLogout();
 
     const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
 
@@ -141,9 +143,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <BottomNav />
 
             <KYCModal 
+                key={user?.id ?? 'kyc-modal'}
                 isOpen={isKYCModalOpen}
                 isMandatory={user?.hasVerifiedLevel2 === false}
                 onClose={() => setIsKYCModalOpen(false)}
+                onLogout={logout}
                 onSuccess={() => {
                     refetchUser();
                 }}

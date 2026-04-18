@@ -70,6 +70,17 @@ export default function LoginPage() {
         }
     }
 
+    if (showWelcomeVideo) {
+        return (
+            <WelcomeVideo 
+                onEnded={() => {
+                    sessionStorage.setItem('hasSeenWelcome', 'true');
+                    router.push('/dashboard');
+                }} 
+            />
+        );
+    }
+
     return (
         <AuthLayout
             title="Welcome back"
@@ -157,23 +168,6 @@ export default function LoginPage() {
                     <span className="bg-white px-4 text-[#8f98a8] font-medium tracking-widest">Or secure access</span>
                 </div>
             </div>
-
-            {/* <div className="text-center text-sm font-medium text-[#8f98a8]">
-                Don&apos;t have an account?{' '}
-                <Link href="/register" className="font-bold text-[#6639ff] hover:underline underline-offset-4">
-                    Sign up now
-                </Link>
-            </div> */}
-
-            {showWelcomeVideo && (
-                <WelcomeVideo 
-                    onEnded={() => {
-                        sessionStorage.setItem('hasSeenWelcome', 'true');
-                        router.push('/dashboard');
-                        setShowWelcomeVideo(false);
-                    }} 
-                />
-            )}
         </AuthLayout>
     );
 }

@@ -14,16 +14,17 @@ import api from '@/lib/axios';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useLogout } from '@/hooks/useLogout';
+import { logout } from '@/store/features/authSlice';
 
 interface KYCModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: (data: unknown) => void;
     isMandatory?: boolean;
+    onLogout?: () => void;
 }
 
-export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = false }: KYCModalProps) {
+export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = false, onLogout }: KYCModalProps) {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
@@ -45,12 +46,6 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         return () => clearTimeout(timer);
     }, []);
 
-    // Sync name when user is loaded (after reload)
-    useEffect(() => {
-        if (user?.name && !name) {
-            setName(user.name);
-        }
-    }, [user?.name, name]);
 
     const videoConstraints = {
         width: 1280,
@@ -152,10 +147,12 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         onClose();
     };
 
-    const logout = useLogout();
-
     const handleLogout = () => {
-        logout();
+        if (onLogout) {
+            onLogout();
+        } else {
+            dispatch(logout());
+        }
     }
 
     if (!mounted) return null;
