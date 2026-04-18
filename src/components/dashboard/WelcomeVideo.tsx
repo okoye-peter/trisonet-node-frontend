@@ -14,7 +14,7 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
     const [isVisible, setIsVisible] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false);
     const [isReady, setIsReady] = useState(false);
-    const [isMuted, setIsMuted] = useState(true); // Always start muted to guarantee autoplay
+    const [isMuted, setIsMuted] = useState(false); // Changed to false as requested by user
     const [mounted, setMounted] = useState(false);
 
     // Step 1: After mount (client-only), render the portal
@@ -29,9 +29,9 @@ export default function WelcomeVideo({ onEnded }: WelcomeVideoProps) {
         if (!mounted) return;
         if (!videoRef.current) return;
 
-        videoRef.current.muted = true;
+        videoRef.current.muted = false;
         videoRef.current.play().then(() => {
-            console.log('Welcome video playing (muted)');
+            console.log('Welcome video playing (unmuted)');
         }).catch(error => {
             console.error('Video play failed (blocked by browser):', error);
             setIsBlocked(true);

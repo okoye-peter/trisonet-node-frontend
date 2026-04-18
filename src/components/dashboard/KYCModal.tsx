@@ -13,8 +13,8 @@ import Image from 'next/image';
 import api from '@/lib/axios';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { User } from 'lucide-react';
-import { logout } from '@/store/features/authSlice';
 import { useRouter } from 'next/navigation';
+import { useLogout } from '@/hooks/useLogout';
 
 interface KYCModalProps {
     isOpen: boolean;
@@ -145,9 +145,10 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         onClose();
     };
 
+    const logout = useLogout();
+
     const handleLogout = () => {
-        dispatch(logout());
-        router.replace('/login');
+        logout();
     }
 
     if (!mounted) return null;

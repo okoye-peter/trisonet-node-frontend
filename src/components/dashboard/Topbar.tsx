@@ -4,25 +4,23 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Menu, ChevronDown, User, LogOut, Settings } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { logout } from '@/store/features/authSlice';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useLogout } from '@/hooks/useLogout';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const { user } = useAppSelector((state) => state.auth);
     const dispatch = useAppDispatch();
-    const router = useRouter();
+    const logout = useLogout();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'EK';
 
     const handleLogout = () => {
-        dispatch(logout());
-        // window.location.href = 'https://trisonet.com/login'
-        router.replace('/login');
+        logout();
     };
 
     // Close dropdown when clicking outside
