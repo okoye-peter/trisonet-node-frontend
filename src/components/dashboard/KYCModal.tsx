@@ -45,6 +45,13 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         return () => clearTimeout(timer);
     }, []);
 
+    // Sync name when user is loaded (after reload)
+    useEffect(() => {
+        if (user?.name && !name) {
+            setName(user.name);
+        }
+    }, [user?.name, name]);
+
     const videoConstraints = {
         width: 1280,
         height: 720,
@@ -190,7 +197,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     </div>
                                     <div>
                                         <h3 className="text-2xl font-black tracking-tight text-zinc-900 leading-tight">Identity Verification</h3>
-                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">KYC Level 2</p>
+                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">KYC Level 1</p>
                                     </div>
                                 </div>
                             </div>
