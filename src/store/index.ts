@@ -1,14 +1,24 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, Action } from '@reduxjs/toolkit';
 import authReducer from './features/authSlice';
 import userReducer from './features/userSlice';
 import { apiSlice } from './api/apiSlice';
 
+const appReducer = combineReducers({
+    auth: authReducer,
+    user: userReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
+});
+
+const rootReducer = (state: any, action: Action) => {
+    if (action.type === 'auth/logout') {
+        // Clear the state when logout is dispatched
+        state = undefined;
+    }
+    return appReducer(state, action);
+};
+
 export const store = configureStore({
-    reducer: {
-        auth: authReducer,
-        user: userReducer,
-        [apiSlice.reducerPath]: apiSlice.reducer,
-    },
+    reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: false,
