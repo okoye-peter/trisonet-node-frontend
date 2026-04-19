@@ -1,4 +1,4 @@
-import { configureStore, combineReducers, Action } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, UnknownAction } from '@reduxjs/toolkit';
 import authReducer from './features/authSlice';
 import userReducer from './features/userSlice';
 import { apiSlice } from './api/apiSlice';
@@ -9,10 +9,10 @@ const appReducer = combineReducers({
     [apiSlice.reducerPath]: apiSlice.reducer,
 });
 
-const rootReducer = (state: any, action: Action) => {
+const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: UnknownAction) => {
     if (action.type === 'auth/logout') {
-        // Clear the state when logout is dispatched
-        state = undefined;
+        // Reset all slices to their initial state
+        return appReducer(undefined, action);
     }
     return appReducer(state, action);
 };

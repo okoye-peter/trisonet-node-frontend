@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { store } from '@/store';
 import { refreshTokenSuccess, logout } from '@/store/features/authSlice';
 
 const api = axios.create({
@@ -11,7 +10,8 @@ const api = axios.create({
 
 // Request interceptor: Attach accessToken to every request
 api.interceptors.request.use(
-    (config) => {
+    async (config) => {
+        const { store } = await import('@/store');
         const token = store.getState().auth.token;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -64,6 +64,7 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             try {
+                const { store } = await import('@/store');
                 const refreshToken = store.getState().auth.refreshToken;
                 if (!refreshToken) {
                     throw new Error('No refresh token available');
@@ -90,6 +91,7 @@ api.interceptors.response.use(
                 processQueue(refreshError, null);
 
                 // Log out the user and redirect to login
+                const { store } = await import('@/store');
                 store.dispatch(logout());
                 // Guard window access — axios interceptors can fire during module init on the server
                 if (typeof window !== 'undefined') {
