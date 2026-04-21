@@ -32,6 +32,7 @@ import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -154,6 +155,7 @@ const itemVariants: Variants = {
 };
 
 export default function DashboardPage() {
+    const router = useRouter();
     const { user } = useAppSelector((state) => state.auth);
     // showWelcome starts false — we check sessionStorage client-side to decide whether to show.
     // This prevents the video from appearing on EVERY page refresh.
@@ -388,7 +390,6 @@ export default function DashboardPage() {
 
                             <div className="mt-10 mb-8">
                                 <div className="flex items-end gap-3">
-                                    <span className="text-3xl font-bold text-indigo-300 mb-1.5">₦</span>
                                     <h2 className="text-6xl font-black tracking-tighter">
                                         <CountUp 
                                             end={Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0)} 
@@ -397,6 +398,7 @@ export default function DashboardPage() {
                                             decimals={2} 
                                         />
                                     </h2>
+                                    <span className="text-3xl font-bold text-indigo-300 mb-1.5">Gwkth</span>
                                 </div>
                             </div>
 

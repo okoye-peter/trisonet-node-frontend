@@ -261,7 +261,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose?: () => 
                 </ul>
 
                 {/* Bottom Card (Premium Ad/CT) */}
-                <div className="mt-auto px-2 pb-4">
+                <div className="mt-10 px-2 pb-4">
                     <div className="relative rounded-2xl bg-indigo-950 p-4 overflow-hidden group">
                         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl transition-transform group-hover:scale-110" />
                         <p className="relative z-10 text-xs font-bold text-indigo-200 uppercase tracking-widest">Patron Plan</p>
