@@ -13,7 +13,6 @@ import Image from 'next/image';
 import api from '@/lib/axios';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { logout } from '@/store/features/authSlice';
 
 interface KYCModalProps {
@@ -25,7 +24,6 @@ interface KYCModalProps {
 }
 
 export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = false, onLogout }: KYCModalProps) {
-    const router = useRouter();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector((state) => state.auth);
     const [name, setName] = useState(user?.name || '');

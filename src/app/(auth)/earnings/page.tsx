@@ -63,8 +63,8 @@ export default function EarningsPage() {
             header: "Amount",
             cell: ({ row }) => (
                 <div className={`font-black min-w-[120px] flex items-center gap-1 ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
-                    <span className="text-zinc-400 text-[10px] font-bold">₦</span>
                     {row.original.type === 'debit' ? '-' : '+'}{Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <span className="text-zinc-400 text-[10px] font-bold">gkwth</span>
                 </div>
             )
         },
@@ -176,14 +176,14 @@ export default function EarningsPage() {
                     <div className="flex justify-between items-end">
                         <div>
                             <h3 className="text-white/60 text-xs font-black uppercase tracking-widest mb-1 antialiased">Earning Wallet</h3>
-                            <div className="text-3xl font-black text-white tracking-tight leading-none mb-1">
-                                <span className="text-white/60 mr-1 text-xl italic">₦</span>
+                            <div className="text-2xl font-black text-white tracking-tight leading-none mb-1">
                                 {earningWallet?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
+                                <span className="text-white/60 mr-1 text-sm italic"> Gkwth</span>
                             </div>
                         </div>
                         <button 
                             onClick={() => setIsWithdrawModalOpen(true)}
-                            className="h-12 w-12 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn"
+                            className="h-12 px-4 py-1 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn text-sm!"
                             title="Withdraw Funds"
                         >
                             Withdraw

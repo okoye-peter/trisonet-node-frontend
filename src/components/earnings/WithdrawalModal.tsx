@@ -75,7 +75,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
         if (!earningWallet || !user) return;
 
         if (values.amount > maxWithdrawal) {
-            toast.error(`You can only withdraw up to 50% of your balance (Max: ₦${maxWithdrawal.toLocaleString()})`);
+            toast.error(`You can only withdraw up to 50% of your balance (Max: ${maxWithdrawal.toLocaleString()} gkwth)`);
             return;
         }
 
@@ -167,15 +167,15 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                         <div className="flex justify-between items-end">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount</Label>
                                             <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-                                                Max: ₦{maxWithdrawal.toLocaleString()}
+                                                Max: {maxWithdrawal.toLocaleString()} gkwth
                                             </span>
                                         </div>
                                         <div className="relative group">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-lg group-focus-within:text-emerald-500 transition-colors italic">₦</span>
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-sm group-focus-within:text-emerald-500 transition-colors italic">Gkwth</span>
                                             <Input
                                                 type="number"
                                                 {...form.register('amount', { valueAsNumber: true })}
-                                                className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-10 pr-4 font-black text-xl text-zinc-900 dark:text-zinc-100 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"
+                                                className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-3 pr-16 font-black text-xl text-zinc-900 dark:text-zinc-100 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"
                                             />
                                         </div>
                                     </div>
