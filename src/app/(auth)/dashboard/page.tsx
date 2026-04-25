@@ -28,6 +28,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
+import PIMCardModal from '@/components/dashboard/PIMCardModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
@@ -168,6 +169,8 @@ export default function DashboardPage() {
         title: ''
     });
 
+    const [isPimModalOpen, setIsPimModalOpen] = useState(false);
+
     const { refetch: refetchUser } = useGetUserQuery();
     const { data: notificationResponse } = useGetNotificationsQuery({ limit: 5 });
     const unreadCount = notificationResponse?.data?.unreadCount || 0;
@@ -237,10 +240,8 @@ export default function DashboardPage() {
             hasAction: true
         },
         {
-            label: 'Asset Treasury',
-            value: dashboardStats ? ((
-                (dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 1) - 1
-            )) : 0,
+            label: 'Capital Asset',
+            value: dashboardStats ? ((dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0) > 1 ? 1 : 0) : 0,
             suffix: ' units',
             subValue: '0/0',
             icon: Database,
@@ -310,7 +311,14 @@ export default function DashboardPage() {
             {/* Main Stats Grid */}
             <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat, i) => (
-                    <Card key={i} className="group relative border-none bg-white p-1 rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
+                    <Card 
+                        key={i} 
+                        onClick={() => stat.label === 'Capital Asset' && setIsPimModalOpen(true)}
+                        className={cn(
+                            "group relative border-none bg-white p-1 rounded-xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden",
+                            stat.label === 'Capital Asset' && "cursor-pointer"
+                        )}
+                    >
                         <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-linear-to-br", stat.gradient)} />
                         <CardContent className="relative z-10 p-4 bg-white rounded-xl h-full">
                             <div className="flex items-start justify-between">
@@ -376,8 +384,8 @@ export default function DashboardPage() {
                                         <Wallet size={28} />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300/80">Earning Wallet</p>
-                                        <h3 className="text-sm font-bold text-white/50 mt-0.5">Accumulated Revenue</h3>
+                                        {/* <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300/80">Earning Wallet</p> */}
+                                        <h3 className="text-sm font-bold text-white/50">BUSINESS ASSET</h3>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
@@ -549,6 +557,13 @@ export default function DashboardPage() {
                     )}
                 </div>
             </motion.div>
+
+            <PIMCardModal 
+                isOpen={isPimModalOpen} 
+                onClose={() => setIsPimModalOpen(false)} 
+                user={user} 
+                capitalAssetValue={stats.find(s => s.label === 'Capital Asset')?.value as number || 0}
+            />
 
             <QRCodeModal
                 isOpen={qrCodeConfig.isOpen}

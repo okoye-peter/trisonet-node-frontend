@@ -97,6 +97,17 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
             return;
         }
 
+        if (!selectedWallet) return;
+
+        const availableAmount = isGkwth 
+            ? (selectedWallet.amount > 1 ? selectedWallet.amount - 1 : 0)
+            : selectedWallet.amount;
+
+        if (values.amount > availableAmount) {
+            toast.error(`Insufficient balance. Max available: ${isGkwth ? '' : '₦'}${availableAmount.toLocaleString()}${isGkwth ? ' gkwth' : ''}`);
+            return;
+        }
+
         try {
             const res = await transfer(values).unwrap();
             if (res.data) {
@@ -204,7 +215,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                         {(() => {
                                                             if (!selectedWallet) return undefined;
                                                             return selectedWallet.type === 'indirect'
-                                                                ? `${selectedWallet.amount.toLocaleString()} gkwth`
+                                                                ? `${((selectedWallet.amount > 1 ? selectedWallet.amount - 1 : 0)).toLocaleString()} gkwth`
                                                                 : `₦${selectedWallet.amount.toLocaleString()}`;
                                                         })()}
                                                     </SelectValue>
@@ -212,7 +223,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                 <SelectContent>
                                                     {wallets.map((wallet) => (
                                                         <SelectItem key={wallet.id} value={wallet.id?.toString() || ''}>
-                                                            {`${wallet.type === 'indirect' ? '' : '₦'}${wallet.amount.toLocaleString()}${wallet.type === 'indirect' ? ' gkwth' : ''}`}
+                                                            {`${wallet.type === 'indirect' ? '' : '₦'}${wallet.type === 'indirect' ? (wallet.amount > 1 ? wallet.amount - 1 : 0).toLocaleString() : wallet.amount.toLocaleString()}${wallet.type === 'indirect' ? ' gkwth' : ''}`}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>

@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useGetWalletsQuery, useGetGkwthPricesQuery, useInitiateIndirectGkwthFundingMutation, useLazyCheckFundingStatusQuery, walletApi } from '@/store/api/walletApi';
-import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
+import { useGetBanksQuery, useResolveAccountMutation, useGetUserBankQuery } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
 import {
     Dialog,
@@ -61,7 +61,6 @@ export default function GkwthWalletPage() {
     const [initiateWithdrawal, { isLoading: isWithdrawing }] = useInitiateWithdrawalMutation();
     const [initiateGkwthFunding, { isLoading: isPurchasing }] = useInitiateIndirectGkwthFundingMutation();
     const [checkStatus] = useLazyCheckFundingStatusQuery();
-    
     const wallets = walletsResponse?.data || [];
     const banks = useMemo(() => banksResponse?.data || [], [banksResponse]);
     const indirectWallet = wallets.find(w => w.type === 'indirect');
@@ -71,6 +70,8 @@ export default function GkwthWalletPage() {
     const salePrice = Number(prices?.gkwthSalePrice) || 0;
 
     const [activeTab, setActiveTab] = useState<TabType>('overview');
+    const { data: userBankResponse } = useGetUserBankQuery(undefined, { skip: !user?.bank || !user?.accountNumber || activeTab !== 'sell' });
+    const userBankDetails = userBankResponse?.data;
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState<{
         account_name: string;
@@ -126,12 +127,15 @@ export default function GkwthWalletPage() {
         }
     }, [activeTab, user, router]);
 
-    const isPrefilled = useRef(false);
+    const [isPrefilled, setIsPrefilled] = useState(false);
 
     // Prefill withdrawal data from user profile
     useEffect(() => {
-        if (user && activeTab === 'sell' && user.bank && user.accountNumber && banks.length > 0 && !isPrefilled.current) {
-            const userBank = banks.find(b => b.name === user.bank);
+        if (user && activeTab === 'sell' && user.bank && user.accountNumber && banks.length > 0 && !isPrefilled) {
+            const userBank = banks.find(b => 
+                b.name.toLowerCase() === user.bank?.toLowerCase() || 
+                b.name.toLowerCase().includes(user.bank?.toLowerCase() || '')
+            );
             if (userBank) {
                 const timer = setTimeout(() => {
                     setWithdrawData(prev => ({
@@ -141,18 +145,25 @@ export default function GkwthWalletPage() {
                         bank_code: userBank.uuid
                     }));
                 }, 0);
-                isPrefilled.current = true;
+                setIsPrefilled(true);
                 return () => clearTimeout(timer);
             }
         }
-    }, [user, activeTab, banks]);
+    }, [user, activeTab, banks, isPrefilled]);
 
     // Reset prefilled state when tab changes
     useEffect(() => {
         if (activeTab !== 'sell') {
-            isPrefilled.current = false;
+            setIsPrefilled(false);
         }
     }, [activeTab]);
+
+    // Sync resolved name from backend if available
+    useEffect(() => {
+        if (userBankDetails?.accountName && !withdrawData.account_name) {
+            setWithdrawData(prev => ({ ...prev, account_name: userBankDetails.accountName }));
+        }
+    }, [userBankDetails, withdrawData.account_name]);
 
     const handleResolveAccount = useCallback(async (accountNumber?: string, bankUUID?: string) => {
         const acc = accountNumber ?? withdrawData.account_number;
@@ -273,8 +284,15 @@ export default function GkwthWalletPage() {
             return;
         }
 
+        const availableAmount = (indirectWallet?.amount ?? 0) > 1 ? (Number(indirectWallet?.amount ?? 1) - 1) : 0;
+        
         if (!withdrawData.amount || Number(withdrawData.amount) < 1) {
             toast.error('Minimum withdrawal is 1 GKWTH.');
+            return;
+        }
+
+        if (Number(withdrawData.amount) > availableAmount) {
+            toast.error(`Insufficient balance. Max available: ${availableAmount.toLocaleString()} GKWTH`);
             return;
         }
 
@@ -349,7 +367,7 @@ export default function GkwthWalletPage() {
                         <div className="flex items-center gap-4">
                             <span className="text-4xl md:text-6xl font-black text-indigo-400">G</span>
                             <h1 className="text-6xl md:text-8xl font-black tracking-tighter">
-                                {indirectWallet?.amount.toLocaleString() ?? '0.00'}
+                                {(indirectWallet?.amount ?? 0) > 1 ? ((Number(indirectWallet?.amount ?? 1) - 1).toLocaleString()) : '0.00'}
                             </h1>
                         </div>
                         <div className="flex gap-2">
@@ -413,7 +431,7 @@ export default function GkwthWalletPage() {
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-3">GKWTH Wallet</p>
                                                 <div className="flex items-baseline gap-1">
                                                     <span className="text-2xl font-bold text-zinc-400">G</span>
-                                                    <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{indirectWallet.amount.toLocaleString()}</h3>
+                                                    <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{(indirectWallet.amount > 1 ? (indirectWallet.amount - 1) : 0).toLocaleString()}</h3>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -567,10 +585,10 @@ export default function GkwthWalletPage() {
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Wallet</Label>
                                             <Select defaultValue="indirect">
                                                 <SelectTrigger className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold text-zinc-900 w-full justify-between">
-                                                    <SelectValue>GKWTH Wallet ({indirectWallet?.amount.toLocaleString() || '0'})</SelectValue>
+                                                    <SelectValue>GKWTH Wallet ({(indirectWallet?.amount ?? 0) > 1 ? (Number(indirectWallet?.amount ?? 1) - 1).toLocaleString() : '0.00'})</SelectValue>
                                                 </SelectTrigger>
                                                 <SelectContent className="rounded-xl border-none shadow-2xl">
-                                                    <SelectItem value="indirect" className="font-medium px-6">GKWTH Wallet ({indirectWallet?.amount.toLocaleString() || '0'})</SelectItem>
+                                                    <SelectItem value="indirect" className="font-medium px-6">GKWTH Wallet ({(indirectWallet?.amount ?? 0) > 1 ? (Number(indirectWallet?.amount ?? 1) - 1).toLocaleString() : '0.00'})</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -585,6 +603,12 @@ export default function GkwthWalletPage() {
                                                     </div>
                                                     <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                                         <CheckCircle2 size={24} />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Number</p>
+                                                        <p className="text-xl font-black text-zinc-900">{user.accountNumber}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
@@ -639,34 +663,36 @@ export default function GkwthWalletPage() {
                                             </>
                                         )}
 
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-bold text-zinc-500 ml-1">Account Name</Label>
-                                            <div className="relative">
-                                                <Input 
-                                                    value={withdrawData.account_name}
-                                                    readOnly
-                                                    placeholder={isResolving ? "Resolving..." : "Validated Account Name"}
-                                                    className={cn(
-                                                        "h-16 rounded-2xl border-none font-black transition-all duration-300",
-                                                        withdrawData.account_name 
-                                                            ? "bg-emerald-50 text-emerald-600" 
-                                                            : "bg-zinc-50 text-zinc-400 placeholder:text-zinc-300"
-                                                    )}
-                                                />
-                                                <AnimatePresence>
-                                                    {withdrawData.account_name && !isResolving && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, scale: 0.5 }}
-                                                            animate={{ opacity: 1, scale: 1 }}
-                                                            exit={{ opacity: 0, scale: 0.5 }}
-                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
-                                                        >
-                                                            <CheckCircle2 size={20} />
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+                                        {!isPrefilled && (
+                                            <div className="space-y-2">
+                                                <Label className="text-sm font-bold text-zinc-500 ml-1">Account Name</Label>
+                                                <div className="relative">
+                                                    <Input 
+                                                        value={withdrawData.account_name}
+                                                        readOnly
+                                                        placeholder={isResolving ? "Resolving..." : "Validated Account Name"}
+                                                        className={cn(
+                                                            "h-16 rounded-2xl border-none font-black transition-all duration-300",
+                                                            withdrawData.account_name 
+                                                                ? "bg-emerald-50 text-emerald-600" 
+                                                                : "bg-zinc-50 text-zinc-400 placeholder:text-zinc-300"
+                                                        )}
+                                                    />
+                                                    <AnimatePresence>
+                                                        {withdrawData.account_name && !isResolving && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, scale: 0.5 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                exit={{ opacity: 0, scale: 0.5 }}
+                                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
+                                                            >
+                                                                <CheckCircle2 size={20} />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
 
 
                                         <div className="space-y-2">
