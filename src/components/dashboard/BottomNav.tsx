@@ -67,11 +67,6 @@ export function BottomNav() {
                                         )} 
                                     />
                                 )}
-                                {item.badge !== undefined && item.badge > 0 && (
-                                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-black text-white shadow-lg ring-2 ring-white">
-                                        {item.badge > 9 ? '9+' : item.badge}
-                                    </span>
-                                )}
                             </div>
 
                             {isActive && (
