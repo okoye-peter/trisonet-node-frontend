@@ -21,9 +21,10 @@ import {
 import { Input } from '@/components/ui/input';
 import AuthLayout from '@/components/auth/AuthLayout';
 import api from '@/lib/axios';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/features/authSlice';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
+import { ROLES } from '@/types';
 
 
 const loginSchema = z.object({
@@ -40,6 +41,8 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [showWelcomeVideo, setShowWelcomeVideo] = useState(false);
 
+
+    const { user } = useAppSelector((state) => state.auth);
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -75,7 +78,11 @@ export default function LoginPage() {
             <WelcomeVideo 
                 onEnded={() => {
                     sessionStorage.setItem('hasSeenWelcome', 'true');
-                    router.push('/dashboard');
+                    if (user?.role === ROLES.PATRON) {
+                        router.push('/patron/dashboard');
+                    } else {
+                        router.push('/dashboard');
+                    }
                 }} 
             />
         );

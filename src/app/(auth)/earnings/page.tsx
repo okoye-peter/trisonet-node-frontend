@@ -19,13 +19,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import type { EarningTransaction } from '@/types';
-import { useGetWalletsQuery } from '@/store/api/walletApi';
+import { useGetWalletsQuery, useGetGkwthPricesQuery } from '@/store/api/walletApi';
 import { WithdrawalModal } from '@/components/earnings/WithdrawalModal';
 
 export default function EarningsPage() {
     const { data: walletsResponse } = useGetWalletsQuery();
+    const { data: pricesResponse } = useGetGkwthPricesQuery();
     const wallets = walletsResponse?.data || [];
     const earningWallet = wallets.find(w => w.type === 'earning');
+    const prices = pricesResponse?.data;
+    const salePrice = Number(prices?.gkwthSalePrice) || 0;
     
     const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('desc');
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -180,6 +183,9 @@ export default function EarningsPage() {
                                 {earningWallet?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
                                 <span className="text-white/60 mr-1 text-sm italic"> Gkwth</span>
                             </div>
+                            <p className="text-white/40 text-[10px] font-bold">
+                                ≈ ₦{(earningWallet ? earningWallet.amount * salePrice : 0).toLocaleString()}
+                            </p>
                         </div>
                         <button 
                             onClick={() => setIsWithdrawModalOpen(true)}

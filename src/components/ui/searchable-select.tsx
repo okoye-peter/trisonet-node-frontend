@@ -1,18 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Search, ChevronDown, Check, X } from "lucide-react";
+import { Search, ChevronDown, Check, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 interface SearchableSelectProps {
-    items: { label: string; value: string }[];
+    items: { label: string; value: string; subLabel?: string }[];
     value: string;
     onValueChange: (value: string) => void;
     placeholder?: string;
     className?: string;
     triggerClassName?: string;
+    searchValue?: string;
+    onSearchChange?: (value: string) => void;
+    isLoading?: boolean;
 }
 
 export function SearchableSelect({
@@ -22,16 +25,27 @@ export function SearchableSelect({
     placeholder = "Select an option",
     className,
     triggerClassName,
+    searchValue: externalSearchValue,
+    onSearchChange,
+    isLoading = false,
 }: SearchableSelectProps) {
     const [isOpen, setIsOpen] = React.useState(false);
-    const [searchQuery, setSearchQuery] = React.useState("");
+    const [internalSearchQuery, setInternalSearchQuery] = React.useState("");
     const containerRef = React.useRef<HTMLDivElement>(null);
+
+    const isExternalSearch = onSearchChange !== undefined;
+    const searchQuery = isExternalSearch ? externalSearchValue : internalSearchQuery;
+    const setSearchQuery = isExternalSearch ? onSearchChange : setInternalSearchQuery;
 
     const selectedItem = items.find((item) => item.value === value);
 
-    const filteredItems = items.filter((item) =>
-        item.label.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filter items only if using internal search
+    const filteredItems = isExternalSearch 
+        ? items 
+        : items.filter((item) =>
+            item.label.toLowerCase().includes(searchQuery?.toLowerCase() || "") ||
+            item.subLabel?.toLowerCase().includes(searchQuery?.toLowerCase() || "")
+        );
 
     // Close on click outside
     React.useEffect(() => {
@@ -50,7 +64,9 @@ export function SearchableSelect({
     const handleSelect = (val: string) => {
         onValueChange(val);
         setIsOpen(false);
-        setSearchQuery("");
+        if (!isExternalSearch) {
+            setInternalSearchQuery("");
+        }
     };
 
     return (
@@ -82,7 +98,7 @@ export function SearchableSelect({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute z-50 mt-2 w-full overflow-hidden rounded-[1.5rem] bg-white border border-zinc-100 shadow-2xl shadow-zinc-200/50"
+                        className="absolute z-100 mt-2 w-full overflow-hidden rounded-[1.5rem] bg-white border border-zinc-100 shadow-2xl shadow-zinc-200/50"
                     >
                         <div className="p-3 border-b border-zinc-50">
                             <div className="relative group">
@@ -92,19 +108,22 @@ export function SearchableSelect({
                                 />
                                 <Input
                                     autoFocus
-                                    placeholder="Search banks..."
+                                    placeholder="Type to search..."
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) => setSearchQuery?.(e.target.value)}
                                     className="h-10 pl-10 pr-10 rounded-xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:ring-4 focus:ring-zinc-900/5 transition-all text-sm"
                                 />
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery("")}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                )}
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                    {isLoading && <Loader2 size={14} className="animate-spin text-zinc-400" />}
+                                    {searchQuery && !isLoading && (
+                                        <button
+                                            onClick={() => setSearchQuery?.("")}
+                                            className="text-zinc-400 hover:text-zinc-600 transition-colors"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -117,11 +136,16 @@ export function SearchableSelect({
                                             type="button"
                                             onClick={() => handleSelect(item.value)}
                                             className={cn(
-                                                "flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-bold transition-all hover:bg-zinc-50",
+                                                "flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-bold transition-all hover:bg-zinc-50 text-left",
                                                 value === item.value ? "bg-zinc-50 text-zinc-900" : "text-zinc-500 hover:text-zinc-700"
                                             )}
                                         >
-                                            <span className="truncate">{item.label}</span>
+                                            <div className="flex flex-col truncate">
+                                                <span className="truncate">{item.label}</span>
+                                                {item.subLabel && (
+                                                    <span className="text-[10px] text-zinc-400 font-medium truncate">{item.subLabel}</span>
+                                                )}
+                                            </div>
                                             {value === item.value && (
                                                 <motion.div
                                                     initial={{ scale: 0.5, opacity: 0 }}
@@ -139,10 +163,10 @@ export function SearchableSelect({
                                         <Search size={20} className="text-zinc-300" />
                                     </div>
                                     <p className="text-xs font-black text-zinc-400 uppercase tracking-widest leading-none">
-                                        No banks found
+                                        {isLoading ? "Searching..." : "No results found"}
                                     </p>
                                     <p className="text-[10px] text-zinc-400 mt-2 italic font-medium">
-                                        Try searching with a different name
+                                        {isLoading ? "Fetching data from server" : "Try searching with a different name"}
                                     </p>
                                 </div>
                             )}

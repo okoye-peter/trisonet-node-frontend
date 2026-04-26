@@ -27,8 +27,9 @@ import {
     useInitiateDirectWalletFundingMutation, 
     useLazyCheckFundingStatusQuery 
 } from '@/store/api/walletApi';
-import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
+import { useGetBanksQuery, useResolveAccountMutation, useGetUserBankQuery } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
+import { useGetUserQuery } from '@/store/api/userApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -84,6 +85,14 @@ export default function WalletsPage() {
     const router = useRouter();
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
+    const { data: userResponse } = useGetUserQuery();
+    const profile = userResponse?.data || user;
+
+    const { data: userBankResponse, isLoading: isUserBankLoading } = useGetUserBankQuery(undefined, {
+        skip: !profile?.bank || !profile?.accountNumber
+    });
+    const userBankDetail = userBankResponse?.data;
+
     const { data: walletsResponse, isLoading: isWalletsLoading, refetch: refetchWallets } = useGetWalletsQuery();
     const { data: banksResponse } = useGetBanksQuery();
     const [resolveAccount, { isLoading: isResolving }] = useResolveAccountMutation();
@@ -204,8 +213,8 @@ export default function WalletsPage() {
 
     // Check for bank details when switching to withdraw tab
     useEffect(() => {
-        if (activeTab === 'withdraw' && user) {
-            if (!user.bank || !user.accountNumber) {
+        if (activeTab === 'withdraw' && profile) {
+            if (!profile.bank || !profile.accountNumber) {
                 toast.error('Please set your bank details in your profile before withdrawing.');
                 const timer = setTimeout(() => {
                     router.push('/profile');
@@ -213,20 +222,24 @@ export default function WalletsPage() {
                 return () => clearTimeout(timer);
             }
         }
-    }, [activeTab, user, router]);
+    }, [activeTab, profile, router]);
 
     const isPrefilled = useRef(false);
 
     // Prefill withdrawal data from user profile
     useEffect(() => {
-        if (user && activeTab === 'withdraw' && user.bank && user.accountNumber && banks.length > 0 && !isPrefilled.current) {
-            const userBank = banks.find((b: { name: string; uuid: string }) => b.name === user.bank);
+        if (profile && activeTab === 'withdraw' && profile.bank && profile.accountNumber && banks.length > 0 && !isPrefilled.current) {
+            const lowerProfileBank = profile.bank.toLowerCase();
+            const userBank = banks.find((b: { name: string; uuid: string }) => 
+                b.name.toLowerCase() === lowerProfileBank || 
+                b.name.toLowerCase().includes(lowerProfileBank)
+            );
             if (userBank) {
                 const timer = setTimeout(() => {
                     setWithdrawData(prev => ({
                         ...prev,
-                        account_number: user.accountNumber || '',
-                        bank_name: user.bank || '',
+                        account_number: profile.accountNumber || '',
+                        bank_name: userBank.name,
                         bank_code: userBank.uuid || '',
                     }));
                 }, 0);
@@ -234,7 +247,7 @@ export default function WalletsPage() {
                 return () => clearTimeout(timer);
             }
         }
-    }, [user, activeTab, banks]);
+    }, [profile, activeTab, banks]);
 
     // Reset prefilled state when tab changes
     useEffect(() => {
@@ -300,17 +313,19 @@ export default function WalletsPage() {
         }
         
 
-        if (user?.role === 8 && !withdrawData.otp) {
+        if (profile?.role === 8 && !withdrawData.otp) {
             toast.error('Please enter your withdrawal OTP.');
             return;
         }
 
-        if (user?.role !== 8 && !withdrawData.pin) {
+        if (profile?.role !== 8 && !withdrawData.pin) {
             toast.error('Please enter your transaction PIN.');
             return;
         }
 
-        if (!withdrawData.account_name) {
+        const resolvedAccountName = userBankDetail?.accountName || withdrawData.account_name;
+
+        if (!resolvedAccountName) {
             toast.error('Please wait for account resolution or enter valid details.');
             return;
         }
@@ -320,10 +335,10 @@ export default function WalletsPage() {
                 amount: Number(withdrawData.amount),
                 bank_code: withdrawData.bank_code,
                 bank_name: withdrawData.bank_name,
-                account_name: withdrawData.account_name,
+                account_name: resolvedAccountName,
                 account_number: withdrawData.account_number,
                 wallet: directWallet.id!.toString(),
-                ...(user?.role === 8 
+                ...(profile?.role === 8 
                     ? { withdrawal_otp: withdrawData.otp } 
                     : { withdrawal_pin: withdrawData.pin }
                 )
@@ -353,18 +368,49 @@ export default function WalletsPage() {
                     <div className="absolute top-0 right-0 p-12 opacity-10 blur-3xl bg-indigo-500 w-96 h-96 rounded-full -mr-48 -mt-48 animate-pulse" />
                     <div className="absolute bottom-0 left-0 p-12 opacity-10 blur-3xl bg-emerald-500 w-96 h-96 rounded-full -ml-48 -mb-48 animate-pulse" />
 
-                    <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                    <div className="relative z-10 flex flex-col items-center text-center space-y-6">
                         <span className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Total Direct Balance</span>
-                        <div className="flex items-center gap-4">
-                            <span className="text-4xl md:text-6xl font-black text-zinc-500">₦</span>
-                            <h1 className="text-6xl md:text-8xl font-black tracking-tighter">
-                                {directWallet?.amount.toLocaleString() ?? '0.00'}
-                            </h1>
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="flex items-center gap-4">
+                                <span className="text-4xl md:text-6xl font-black text-zinc-500">₦</span>
+                                <h1 className="text-6xl md:text-8xl font-black tracking-tighter">
+                                    {directWallet?.amount.toLocaleString() ?? '0.00'}
+                                </h1>
+                            </div>
+                            <div className="flex gap-2">
+                                <Badge className="bg-emerald-500/20 text-emerald-400 border-none px-4 py-1 rounded-full font-bold">
+                                    <TrendingUp size={14} className="mr-1 inline" /> +2.4% this week
+                                </Badge>
+                            </div>
                         </div>
-                        <div className="flex gap-2">
-                            <Badge className="bg-emerald-500/20 text-emerald-400 border-none px-4 py-1 rounded-full font-bold">
-                                <TrendingUp size={14} className="mr-1 inline" /> +2.4% this week
-                            </Badge>
+
+                        {/* User Account Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl mt-8 pt-8 border-t border-white/10">
+                            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-left group hover:bg-white/10 transition-all">
+                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Account Name</p>
+                                <p className="text-lg font-black text-white truncate">{profile?.name || '---'}</p>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-left group hover:bg-white/10 transition-all flex items-center justify-between">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Account Number</p>
+                                    <p className="text-lg font-black text-white tracking-wider truncate">
+                                        {profile?.transferId || '---'}
+                                    </p>
+                                </div>
+                                {profile?.transferId && (
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(profile.transferId!);
+                                            toast.success('Account number copied!');
+                                        }}
+                                        className="h-10 w-10 text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl"
+                                    >
+                                        <Copy size={18} />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </motion.div>
@@ -523,25 +569,33 @@ export default function WalletsPage() {
                                     </div>
 
                                     <form onSubmit={handleWithdraw} className="space-y-8">
-                                        {user?.bank && user?.accountNumber ? (
+                                        {profile?.bank && profile?.accountNumber ? (
                                             <div className="p-6 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-1">
                                                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Withdrawal Bank</p>
-                                                        <p className="text-xl font-black text-zinc-900">{user.bank}</p>
+                                                        <p className="text-xl font-black text-zinc-900">{profile.bank}</p>
                                                     </div>
                                                     <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                                                         <CheckCircle2 size={24} />
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+                                                <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
                                                     <div className="space-y-1">
-                                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Name</p>
-                                                        <p className="text-xl font-black text-zinc-900">{withdrawData.account_name || (isResolving ? 'Resolving...' : '---')}</p>
+                                                        <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Number</p>
+                                                        <p className="text-xl font-black text-zinc-900">{profile.accountNumber}</p>
                                                     </div>
-                                                    <Link href="/profile" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
-                                                        Change Details
-                                                    </Link>
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Name</p>
+                                                            <Link href="/profile" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
+                                                                Change Details
+                                                            </Link>
+                                                        </div>
+                                                        <p className="text-xl font-black text-zinc-900 truncate">
+                                                            {userBankDetail?.accountName || withdrawData.account_name || (isResolving || isUserBankLoading ? 'Resolving...' : '---')}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ) : (
@@ -587,34 +641,34 @@ export default function WalletsPage() {
                                             </div>
                                         )}
 
-                                        <div className="space-y-2">
-                                            <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Name</Label>
-                                            <div className="relative">
-                                                <Input 
-                                                    value={withdrawData.account_name}
-                                                    readOnly
-                                                    placeholder={isResolving ? "Resolving..." : "Validated Account Name"}
-                                                    className={cn(
-                                                        "h-16 rounded-2xl border-none font-black transition-all duration-300",
-                                                        withdrawData.account_name 
-                                                            ? "bg-emerald-50 text-emerald-600" 
-                                                            : "bg-zinc-50 text-zinc-400 placeholder:text-zinc-300"
-                                                    )}
-                                                />
-                                                <AnimatePresence>
-                                                    {withdrawData.account_name && !isResolving && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, scale: 0.5 }}
-                                                            animate={{ opacity: 1, scale: 1 }}
-                                                            exit={{ opacity: 0, scale: 0.5 }}
-                                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
-                                                        >
-                                                            <CheckCircle2 size={20} />
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Name</Label>
+                                                <div className="relative">
+                                                    <Input 
+                                                        value={userBankDetail?.accountName || withdrawData.account_name}
+                                                        readOnly
+                                                        placeholder={isResolving || isUserBankLoading ? "Resolving..." : "Validated Account Name"}
+                                                        className={cn(
+                                                            "h-16 rounded-2xl border-none font-black transition-all duration-300",
+                                                            (userBankDetail?.accountName || withdrawData.account_name) 
+                                                                ? "bg-emerald-50 text-emerald-600" 
+                                                                : "bg-zinc-50 text-zinc-400 placeholder:text-zinc-300"
+                                                        )}
+                                                    />
+                                                    <AnimatePresence>
+                                                        {(userBankDetail?.accountName || withdrawData.account_name) && !isResolving && !isUserBankLoading && (
+                                                            <motion.div
+                                                                initial={{ opacity: 0, scale: 0.5 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                exit={{ opacity: 0, scale: 0.5 }}
+                                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
+                                                            >
+                                                                <CheckCircle2 size={20} />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
                                             </div>
-                                        </div>
 
                                         <div className="grid md:grid-cols-2 gap-6 items-end">
                                             <div className="space-y-2">
@@ -635,18 +689,18 @@ export default function WalletsPage() {
                                             </div>
                                             <div className="space-y-2">
                                                 <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">
-                                                    {user?.role === 8 ? 'Withdrawal OTP' : 'Transaction PIN'}
+                                                    {profile?.role === 8 ? 'Withdrawal OTP' : 'Transaction PIN'}
                                                 </Label>
                                                 <div className="relative">
                                                     <Input 
-                                                        value={user?.role === 8 ? withdrawData.otp : withdrawData.pin}
+                                                        value={profile?.role === 8 ? withdrawData.otp : withdrawData.pin}
                                                         onChange={(e) => setWithdrawData(prev => ({ 
                                                             ...prev, 
-                                                            [user?.role === 8 ? 'otp' : 'pin']: e.target.value 
+                                                            [profile?.role === 8 ? 'otp' : 'pin']: e.target.value 
                                                         }))}
-                                                        type={user?.role === 8 ? 'text' : 'password'}
-                                                        maxLength={user?.role === 8 ? 6 : 4}
-                                                        placeholder={user?.role === 8 ? "000000" : "****"}
+                                                        type={profile?.role === 8 ? 'text' : 'password'}
+                                                        maxLength={profile?.role === 8 ? 6 : 4}
+                                                        placeholder={profile?.role === 8 ? "000000" : "****"}
                                                         className="h-20 text-center text-3xl tracking-widest font-black rounded-2xl bg-zinc-50 border-none placeholder:text-zinc-200"
                                                     />
                                                     <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-300" />

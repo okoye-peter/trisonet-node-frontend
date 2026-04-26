@@ -1,3 +1,14 @@
+export const ROLES = {
+    SUPER_ADMIN: 1,
+    ADMIN: 2,
+    CUSTOMER: 3,
+    INFANT_ADMIN: 4,
+    INFLUENCER: 5,
+    SPONSOR: 6,
+    SCHOOL: 7,
+    PATRON: 8,
+} as const;
+
 export type Partner = {
     name?: string;
     email?: string;
@@ -66,6 +77,8 @@ export interface User {
     createdAt: string;
     updatedAt: string;
     hasVerifiedLevel2: boolean;
+    patronGroupId: string | null;
+    wallets?: Wallet[];
 }
 
 export interface UpdatePasswordRequest {
@@ -337,4 +350,94 @@ export interface UserAwards {
     rank: number;
     user: User;
     prizes: Prize[];
+}
+
+export interface PatronGroup {
+    id: string;
+    name: string;
+    refNo: string;
+    userId: string;
+    createdAt: string;
+    updatedAt: string;
+    balance: number;
+    owner?: {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+    };
+    _count?: {
+        users: number;
+    };
+}
+
+export interface PatronGroupTransaction {
+    id: string;
+    patronGroupId: string;
+    userId: string | null;
+    type: 'credit' | 'debit';
+    amount: number;
+    description: string | null;
+    reference: string | null;
+    walletId: string | null;
+    charge: number;
+    createdAt: string;
+    user?: {
+        id: string;
+        name: string;
+    };
+}
+
+export interface PagaVirtualAccountDetails {
+    virtual_account: string;
+    bank_name: string;
+    account_name: string;
+    amount: number;
+    reference: string;
+    expires_at: string | null;
+    expiry_date_full: string;
+}
+
+export interface PatronDashboardResponse {
+    patronGroup: PatronGroup | null;
+    members: (User & { _count: { patronees: number } })[];
+    transactions: PatronGroupTransaction[];
+    meta: {
+        totalMembers: number;
+        totalBeneficiaries: number;
+        walletBalance: number;
+        members: {
+            total: number;
+            page: number;
+            totalPages: number;
+        };
+        transactions: {
+            total: number;
+            page: number;
+            totalPages: number;
+        };
+    };
+}
+export interface PatronBeneficiary extends User {
+    patron?: {
+        id: string;
+        name: string;
+    };
+}
+
+export interface PatronBeneficiariesResponse {
+    beneficiaries: PatronBeneficiary[];
+    meta: {
+        total: number;
+        page: number;
+        totalPages: number;
+    };
+}
+export interface PatronMembersResponse {
+    members: (User & { _count: { patronees: number } })[];
+    meta: {
+        total: number;
+        page: number;
+        totalPages: number;
+    };
 }

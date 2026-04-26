@@ -7,6 +7,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { setUser } from '@/store/features/authSlice';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { store } from '@/store';
+import { ROLES } from '@/types';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, token, isLoading: authLoading } = useAppSelector((state) => state.auth);
@@ -23,12 +24,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (userData?.data) {
             dispatch(setUser(userData.data));
 
-            // Mandatory KYC Verification Check
+            // Mandatory KYC Verification Check (Only for Customers)
             const hasVerifiedLevel2 = userData.data.hasVerifiedLevel2;
+            const isCustomer = userData.data.role === ROLES.CUSTOMER;
             const isDashboard = pathname === '/dashboard';
             const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
 
-            if (isAuthenticated && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
+            if (isAuthenticated && isCustomer && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
                 router.push('/dashboard');
             }
         }

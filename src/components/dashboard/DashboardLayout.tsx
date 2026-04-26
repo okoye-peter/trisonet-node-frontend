@@ -12,6 +12,7 @@ import KYCModal from './KYCModal';
 import { useAppSelector } from '@/store/hooks';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useLogout } from '@/hooks/useLogout';
+import { ROLES } from '@/types';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -36,9 +37,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, [pathname, showFinanceVideo, hasSeenInCurrentVisit]);
 
     useEffect(() => {
-        // Auto-show KYC modal if user is not verified Level 2
-        if (user && user.hasVerifiedLevel2 === false) {
-            
+        // Auto-show KYC modal if user is a customer and not verified Level 2
+        if (user && user.hasVerifiedLevel2 === false && user.role === ROLES.CUSTOMER) {
             const triggerKYC = () => {
                 const timer = setTimeout(() => {
                     setIsKYCModalOpen(true);

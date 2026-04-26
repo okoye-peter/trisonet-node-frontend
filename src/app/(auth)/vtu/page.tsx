@@ -123,7 +123,7 @@ export default function VtuPage() {
                                     <WalletIcon size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500 uppercase font-semibold">{wallet.type.replace('_', ' ')}</p>
+                                    <p className="text-xs text-slate-500 uppercase font-semibold">Wallet</p>
                                     <p className="font-bold text-slate-800">₦{wallet.amount.toLocaleString()}</p>
                                 </div>
                             </div>

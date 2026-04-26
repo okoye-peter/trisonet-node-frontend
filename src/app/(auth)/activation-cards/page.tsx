@@ -77,13 +77,15 @@ const fmt = (n: number | undefined | null) =>
 const fmtDate = (iso: string | undefined | null) =>
     iso ? new Date(iso).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
-const statusLabel = (status: number) => {
+const statusLabel = (status: number, amount: number = 0, pricePerUser: number = 0) => {
+    if (status === 1 && amount < pricePerUser) return 'Used'
     if (status === 0) return 'Pending'
     if (status === 1) return 'Approved'
     return 'Cancelled'
 }
 
-const statusClass = (status: number) => {
+const statusClass = (status: number, amount: number = 0, pricePerUser: number = 0) => {
+    if (status === 1 && amount < pricePerUser) return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/40 dark:text-zinc-400'
     if (status === 0) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
     if (status === 1) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
     return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
@@ -486,9 +488,17 @@ const ActivationCards = () => {
                 >
                     <Card className="border-none shadow-xl shadow-black/5 rounded-3xl overflow-hidden h-full">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                Active Pim Code Card
+                            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                    <div className={cn(
+                                        "h-2 w-2 rounded-full animate-pulse",
+                                        activeCard && activeCard.amount < activeCard.pricePerUser ? "bg-zinc-400" : "bg-emerald-500"
+                                    )} />
+                                    Active Pim Code Card
+                                </div>
+                                {activeCard && activeCard.amount < activeCard.pricePerUser && (
+                                    <Badge variant="outline" className="text-[10px] bg-zinc-100 text-zinc-600 border-zinc-200">Used</Badge>
+                                )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-0 pb-6 px-6">
@@ -674,9 +684,9 @@ const ActivationCards = () => {
                                             <TableCell className="text-center">
                                                 <Badge className={cn(
                                                     'rounded-full px-3 py-1 font-bold text-[10px] uppercase tracking-wide border-none',
-                                                    statusClass(card.status)
+                                                    statusClass(card.status, card.amount, card.pricePerUser)
                                                 )}>
-                                                    {statusLabel(card.status)}
+                                                    {statusLabel(card.status, card.amount, card.pricePerUser)}
                                                 </Badge>
                                             </TableCell>
 

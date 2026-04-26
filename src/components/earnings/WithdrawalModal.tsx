@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
+import { useGetGkwthPricesQuery } from '@/store/api/walletApi';
 import { useGetUserBankQuery } from '@/store/api/bankApi';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
@@ -48,7 +49,11 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
     const [isSuccess, setIsSuccess] = useState(false);
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: bankResponse, isLoading: isLoadingBank } = useGetUserBankQuery();
+    const { data: pricesResponse } = useGetGkwthPricesQuery();
     const [initiateWithdrawal, { isLoading: isSubmitting }] = useInitiateWithdrawalMutation();
+    
+    const prices = pricesResponse?.data;
+    const purchasePrice = Number(prices?.gkwthPurchasePrice) || 0;
 
     const maxWithdrawal = earningWallet ? earningWallet.amount * 0.5 : 0;
 
@@ -177,6 +182,15 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                                 {...form.register('amount', { valueAsNumber: true })}
                                                 className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-3 pr-16 font-black text-xl text-zinc-900 dark:text-zinc-100 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"
                                             />
+                                            {form.watch('amount') > 0 && (
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1"
+                                                >
+                                                    ≈ ₦{(form.watch('amount') * purchasePrice).toLocaleString()}
+                                                </motion.p>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="space-y-2">
@@ -237,9 +251,12 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                             <div className="p-8 space-y-8 bg-zinc-50/50 dark:bg-zinc-900/20">
                                 <div className="text-center space-y-2">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Withdrawal Amount</p>
-                                    <h3 className="text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 italic">
-                                        ₦{form.getValues('amount').toLocaleString()}
+                                    <h3 className="text-4xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 italic">
+                                        {form.getValues('amount').toLocaleString()} <span className="text-sm font-bold text-zinc-400">gkwth</span>
                                     </h3>
+                                    <p className="text-xl font-black text-emerald-600">
+                                        ≈ ₦{(form.getValues('amount') * purchasePrice).toLocaleString()}
+                                    </p>
                                 </div>
 
                                 <div className="p-5 rounded-[1.5rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm space-y-4">

@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTransferMutation, useGetWalletsQuery } from '@/store/api/walletApi';
+import { useTransferMutation, useGetWalletsQuery, useGetGkwthPricesQuery } from '@/store/api/walletApi';
 import { useGetUserByTransferIdQuery } from '@/store/api/userApi';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
@@ -59,6 +59,9 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     const wallets = walletsResponse?.data || [];
 
     const [transfer, { isLoading: isTransferring }] = useTransferMutation();
+    const { data: pricesResponse } = useGetGkwthPricesQuery();
+    const prices = pricesResponse?.data;
+    const gkwthPrice = Number(prices?.gkwthSalePrice) || 0;
 
     const form = useForm<TransferFormValues>({
         resolver: zodResolver(transferSchema),
@@ -203,6 +206,15 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                     )}
                                                 />
                                             </div>
+                                            {isGkwth && form.watch('amount') > 0 && (
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest ml-1"
+                                                >
+                                                    ≈ ₦{(form.watch('amount') * gkwthPrice).toLocaleString()}
+                                                </motion.p>
+                                            )}
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">From Wallet</Label>

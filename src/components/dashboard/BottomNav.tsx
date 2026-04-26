@@ -3,11 +3,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import { useAppSelector } from '@/store/hooks';
 import { cn } from '@/lib/utils';
+import { ROLES } from '@/types';
 import { 
-    Bell, 
     LayoutGrid, 
     CheckCircle2, 
     User, 
@@ -17,14 +16,11 @@ import {
 
 export function BottomNav() {
     const { user } = useAppSelector((state) => state.auth);
-    const { data: notificationResponse } = useGetNotificationsQuery({ limit: 0 });
-    const unreadCount = notificationResponse?.data?.unreadCount || 0;
     const pathname = usePathname();
-    const isKycVerified = user?.hasVerifiedLevel2 !== false;
+    const isKycVerified = user?.role !== ROLES.CUSTOMER || user?.hasVerifiedLevel2 !== false;
 
     const navItems = [
         { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
-        { icon: Bell, label: 'Alerts', href: '/notifications', badge: unreadCount },
         { icon: CheckCircle2, label: 'Wins', href: '/transactions' },
         { icon: User, label: 'Profile', href: '/profile' },
         { icon: Settings, label: 'Settings', href: '/settings' },

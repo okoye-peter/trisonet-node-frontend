@@ -144,8 +144,8 @@ export default function GkwthWalletPage() {
                         bank_name: user.bank || '',
                         bank_code: userBank.uuid
                     }));
+                    setIsPrefilled(true);
                 }, 0);
-                setIsPrefilled(true);
                 return () => clearTimeout(timer);
             }
         }
@@ -154,14 +154,20 @@ export default function GkwthWalletPage() {
     // Reset prefilled state when tab changes
     useEffect(() => {
         if (activeTab !== 'sell') {
-            setIsPrefilled(false);
+            const timer = setTimeout(() => {
+                setIsPrefilled(false);
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [activeTab]);
 
     // Sync resolved name from backend if available
     useEffect(() => {
         if (userBankDetails?.accountName && !withdrawData.account_name) {
-            setWithdrawData(prev => ({ ...prev, account_name: userBankDetails.accountName }));
+            const timer = setTimeout(() => {
+                setWithdrawData(prev => ({ ...prev, account_name: userBankDetails.accountName }));
+            }, 0);
+            return () => clearTimeout(timer);
         }
     }, [userBankDetails, withdrawData.account_name]);
 
@@ -370,6 +376,9 @@ export default function GkwthWalletPage() {
                                 {(indirectWallet?.amount ?? 0) > 1 ? ((Number(indirectWallet?.amount ?? 1) - 1).toLocaleString()) : '0.00'}
                             </h1>
                         </div>
+                        <p className="text-indigo-300/80 font-medium text-sm">
+                            ≈ ₦{((indirectWallet?.amount ?? 1) - 1 > 0 ? ((Number(indirectWallet?.amount ?? 1) - 1) * salePrice) : 0).toLocaleString()}
+                        </p>
                         <div className="flex gap-2">
                             <Badge className="bg-indigo-500/20 text-indigo-400 border-none px-4 py-1 rounded-full font-bold">
                                 <TrendingUp size={14} className="mr-1 inline" /> Growing Stable
@@ -433,6 +442,9 @@ export default function GkwthWalletPage() {
                                                     <span className="text-2xl font-bold text-zinc-400">G</span>
                                                     <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{(indirectWallet.amount > 1 ? (indirectWallet.amount - 1) : 0).toLocaleString()}</h3>
                                                 </div>
+                                                <p className="text-[10px] font-bold text-zinc-400 mt-1">
+                                                    ≈ ₦{((indirectWallet.amount > 1 ? (indirectWallet.amount - 1) : 0) * salePrice).toLocaleString()}
+                                                </p>
                                             </CardContent>
                                         </Card>
                                     </div>
@@ -523,6 +535,15 @@ export default function GkwthWalletPage() {
                                                 step="0.01"
                                                 min="0.5"
                                             />
+                                            {fundQuantity && (
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1"
+                                                >
+                                                    ≈ ₦{(Number(fundQuantity) * salePrice).toLocaleString()}
+                                                </motion.p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
@@ -704,6 +725,15 @@ export default function GkwthWalletPage() {
                                                 className="h-14 px-6 rounded-xl bg-white border border-zinc-200 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 type="number"
                                             />
+                                            {withdrawData.amount && (
+                                                <motion.p 
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1"
+                                                >
+                                                    ≈ ₦{(Number(withdrawData.amount) * purchasePrice).toLocaleString()}
+                                                </motion.p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">

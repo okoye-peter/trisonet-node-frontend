@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import Link from 'next/link';
-import { Loader2, Mail, Lock, Key, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Loader2, User, Lock, Key, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -22,12 +22,12 @@ import AuthLayout from '@/components/auth/AuthLayout';
 import api from '@/lib/axios';
 
 const sendOtpSchema = z.object({
-    email: z.string().email({ message: 'Please enter a valid email address.' }),
+    username: z.string().min(1, { message: 'Please enter a valid username.' }),
 });
 
 const resetPasswordSchema = z.object({
-    email: z.string().email(),
-    otp: z.string().min(4, { message: 'OTP must be at least 4 digits.' }),
+    username: z.string().min(1, { message: 'Please enter a valid username.' }),
+    otp: z.string().length(6, { message: 'OTP must be exactly 6 digits.' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
     confirmPassword: z.string().min(6),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -41,26 +41,31 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 export default function ForgotPasswordPage() {
     const [step, setStep] = useState<'send-otp' | 'reset-password' | 'success'>('send-otp');
     const [isLoading, setIsLoading] = useState(false);
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const sendOtpForm = useForm<SendOtpFormValues>({
         resolver: zodResolver(sendOtpSchema),
-        defaultValues: { email: '' },
+        defaultValues: { username: '' },
     });
 
     const resetPasswordForm = useForm<ResetPasswordFormValues>({
         resolver: zodResolver(resetPasswordSchema),
-        defaultValues: { email: '', otp: '', password: '', confirmPassword: '' },
+        defaultValues: { username: '', otp: '', password: '', confirmPassword: '' },
     });
 
     async function onSendOtp(values: SendOtpFormValues) {
         setIsLoading(true);
         try {
             await api.post('/password_reset/customers/send-otp', values);
-            setEmail(values.email);
-            resetPasswordForm.setValue('email', values.email);
+            setUsername(values.username);
+            resetPasswordForm.setValue('username', values.username);
             setStep('reset-password');
-            toast.success('OTP sent to your email!');
+            toast.success('OTP sent to your username!');
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };
             toast.error(err.response?.data?.message || 'Failed to send OTP.');
@@ -82,6 +87,8 @@ export default function ForgotPasswordPage() {
             setIsLoading(false);
         }
     }
+
+    if (!mounted) return null;
 
     if (step === 'success') {
         return (
@@ -114,27 +121,27 @@ export default function ForgotPasswordPage() {
             title={step === 'send-otp' ? 'Forgot Password?' : 'Reset Password'}
             description={step === 'send-otp'
                 ? "No worries, we'll send you reset instructions to your email."
-                : `We've sent a secure OTP code to ${email}`}
+                : `We've sent a secure OTP code`}
         >
             {step === 'send-otp' ? (
-                <Form {...sendOtpForm}>
+                <Form {...sendOtpForm} key="send-otp-form">
                     <form onSubmit={sendOtpForm.handleSubmit(onSendOtp)} className="space-y-6">
                         <FormField
                             control={sendOtpForm.control}
-                            name="email"
+                            name="username"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-[#040021] font-semibold">Email Address</FormLabel>
-                                    <FormControl>
-                                        <div className="relative group">
-                                            <Mail className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                    <FormLabel className="text-[#040021] font-semibold">Partnership Name</FormLabel>
+                                    <div className="relative group">
+                                        <User className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                        <FormControl>
                                             <Input 
-                                                placeholder="name@company.com" 
+                                                placeholder="Enter your partnership name" 
                                                 className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
                                                 {...field} 
                                             />
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -167,7 +174,7 @@ export default function ForgotPasswordPage() {
                     </form>
                 </Form>
             ) : (
-                <Form {...resetPasswordForm}>
+                <Form {...resetPasswordForm} key="reset-password-form">
                     <form onSubmit={resetPasswordForm.handleSubmit(onResetPassword)} className="space-y-6">
                         <FormField
                             control={resetPasswordForm.control}
@@ -175,16 +182,21 @@ export default function ForgotPasswordPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-[#040021] font-semibold">OTP Code</FormLabel>
-                                    <FormControl>
-                                        <div className="relative group">
-                                            <Key className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                    <div className="relative group">
+                                        <Key className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                        <FormControl>
                                             <Input 
                                                 placeholder="123456" 
+                                                maxLength={6}
                                                 className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
-                                                {...field} 
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    field.onChange(val);
+                                                }}
                                             />
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -195,17 +207,17 @@ export default function ForgotPasswordPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-[#040021] font-semibold">New Password</FormLabel>
-                                    <FormControl>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                        <FormControl>
                                             <Input 
                                                 type="password" 
                                                 placeholder="••••••••" 
                                                 className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
                                                 {...field} 
                                             />
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -216,17 +228,17 @@ export default function ForgotPasswordPage() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-[#040021] font-semibold">Confirm New Password</FormLabel>
-                                    <FormControl>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                    <div className="relative group">
+                                        <Lock className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                        <FormControl>
                                             <Input 
                                                 type="password" 
                                                 placeholder="••••••••" 
                                                 className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
                                                 {...field} 
                                             />
-                                        </div>
-                                    </FormControl>
+                                        </FormControl>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -251,7 +263,7 @@ export default function ForgotPasswordPage() {
                                 className="w-full h-11 text-[#8f98a8] hover:text-[#040021] font-semibold transition-colors"
                                 onClick={() => setStep('send-otp')}
                             >
-                                Change email
+                                Change Username
                             </Button>
                         </div>
                     </form>
