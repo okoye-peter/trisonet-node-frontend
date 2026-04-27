@@ -54,6 +54,8 @@ const NairaIcon = ({ size = 24, className }: { size?: number, className?: string
 export interface PimCardsSummary {
     totalCards: number
     availableSlots: number
+    usedSlots: number
+    totalSlots: number
     pendingCards: number
     price: number
     activeCard: {
@@ -62,6 +64,7 @@ export interface PimCardsSummary {
         amount: number
         pricePerUser: number
         createdAt: string
+        slots: number
     } | null
     status: {
         PENDING: number
@@ -305,6 +308,14 @@ const ActivationCards = () => {
             border: 'border-violet-500/20',
         },
         {
+            label: 'Used Activation Slots',
+            value: summary.usedSlots,
+            icon: History,
+            color: 'text-amber-500',
+            bg: 'bg-amber-500/10',
+            border: 'border-amber-500/20',
+        },
+        {
             label: 'Available Activation Slots',
             value: summary.availableSlots,
             icon: CheckCircle2,
@@ -316,9 +327,9 @@ const ActivationCards = () => {
             label: 'Pending Requests',
             value: summary.pendingCards,
             icon: Clock,
-            color: 'text-amber-500',
-            bg: 'bg-amber-500/10',
-            border: 'border-amber-500/20',
+            color: 'text-blue-500',
+            bg: 'bg-blue-500/10',
+            border: 'border-blue-500/20',
         },
     ] : []
 
@@ -518,6 +529,14 @@ const ActivationCards = () => {
                             {activeCard && !loading && (
                                 <div className="mt-4 grid grid-cols-2 gap-3">
                                     <div className="rounded-2xl bg-muted/40 p-3">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Used</p>
+                                        <p className="font-bold text-sm">{summary?.usedSlots ?? 0} Users</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-muted/40 p-3">
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available</p>
+                                        <p className="font-bold text-sm text-emerald-600">{summary?.availableSlots ?? 0} Left</p>
+                                    </div>
+                                    <div className="rounded-2xl bg-muted/40 p-3">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Price/Slot</p>
                                         <p className="font-bold text-sm">{fmt(activeCard.pricePerUser)}</p>
                                     </div>
@@ -683,13 +702,13 @@ const ActivationCards = () => {
 
                                             {/* Used */}
                                             <TableCell className="text-center">
-                                                <span className="font-bold text-sm text-amber-600">{card._count?.transactions || 0}</span>
+                                                <span className="font-bold text-sm text-amber-600">{card._count?.usersWithCard || 0}</span>
                                             </TableCell>
 
                                             {/* Available */}
                                             <TableCell className="text-center">
                                                 <span className="font-bold text-sm text-emerald-600">
-                                                    {card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.transactions || 0)) : 0}
+                                                    {card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.usersWithCard || 0)) : 0}
                                                 </span>
                                             </TableCell>
 
@@ -697,9 +716,9 @@ const ActivationCards = () => {
                                             <TableCell className="text-center">
                                                 <Badge className={cn(
                                                     'rounded-full px-3 py-1 font-bold text-[10px] uppercase tracking-wide border-none',
-                                                    statusClass(card.status, card.amount, card.pricePerUser, card._count?.transactions || 0)
+                                                    statusClass(card.status, card.amount, card.pricePerUser, card._count?.usersWithCard || 0)
                                                 )}>
-                                                    {statusLabel(card.status, card.amount, card.pricePerUser, card._count?.transactions || 0)}
+                                                    {statusLabel(card.status, card.amount, card.pricePerUser, card._count?.usersWithCard || 0)}
                                                 </Badge>
                                             </TableCell>
 

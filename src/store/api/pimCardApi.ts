@@ -13,11 +13,16 @@ export interface PimCard {
     approvedBy: string | null;
     createdAt: string;
     updatedAt: string;
+    _count?: {
+        usersWithCard: number;
+    };
 }
 
 export interface PimCardsSummary {
     totalCards: number;
     availableSlots: number;
+    usedSlots: number;
+    totalSlots: number;
     pendingCards: number;
     price: number;
     activeCard: {
@@ -26,6 +31,7 @@ export interface PimCardsSummary {
         amount: number;
         pricePerUser: number;
         createdAt: string;
+        slots: number;
     } | null;
     status: {
         PENDING: number;
