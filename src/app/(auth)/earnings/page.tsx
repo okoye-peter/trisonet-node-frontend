@@ -184,7 +184,7 @@ export default function EarningsPage() {
                                 <span className="text-white/60 mr-1 text-sm italic"> Gkwth</span>
                             </div>
                             <p className="text-white/40 text-[10px] font-bold">
-                                ≈ ₦{(earningWallet ? earningWallet.amount * salePrice : 0).toLocaleString()}
+                                Total ≈ ₦{(earningWallet ? earningWallet.amount * salePrice : 0).toLocaleString()}
                             </p>
                         </div>
                         <button 

@@ -34,6 +34,7 @@ import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useGetGkwthPricesQuery } from '@/store/api/walletApi';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -205,6 +206,8 @@ export default function DashboardPage() {
     })
 
     const dashboardStats = dashboardStatsResponse?.data;
+    const { data: pricesResponse } = useGetGkwthPricesQuery();
+    const salePrice = Number(pricesResponse?.data?.gkwthSalePrice) || 0;
 
     const stats = useMemo(() => [
         {
@@ -241,7 +244,7 @@ export default function DashboardPage() {
         },
         {
             label: 'Capital Asset',
-            value: dashboardStats ? ((dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0) > 1 ? 1 : 0) : 0,
+            value: dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0.00,
             suffix: ' units',
             subValue: '0/0',
             icon: Database,
@@ -346,6 +349,20 @@ export default function DashboardPage() {
                                 </div>
                                 {stat.subValue && <p className="text-[10px] font-bold text-zinc-300 mt-1.5 uppercase tracking-tighter">{stat.subValue}</p>}
                             </div>
+                            
+                            {stat.label === 'Capital Asset' && (
+                                <Button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsPimModalOpen(true);
+                                    }}
+                                    variant="ghost"
+                                    className="mt-4 h-9 px-4 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all w-full flex items-center justify-between group/pim"
+                                >
+                                    View PIM
+                                    <ExternalLink size={14} className="group-hover/pim:translate-x-1 transition-transform" />
+                                </Button>
+                            )}
 
                             {stat.label === 'Asset Depot' && (
                                 <div className="mt-5 space-y-3">
@@ -408,6 +425,9 @@ export default function DashboardPage() {
                                     </h2>
                                     <span className="text-3xl font-bold text-indigo-300 mb-1.5">Gwkth</span>
                                 </div>
+                                <p className="text-white/40 text-xs font-bold mt-2">
+                                    Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * salePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
                             </div>
 
                             <div className="flex items-center gap-3">
