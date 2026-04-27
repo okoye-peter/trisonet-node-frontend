@@ -33,7 +33,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
 
     const sidebarItems: SidebarItem[] = useMemo(() => [
         { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
-        { icon: Bell, label: 'Notifications', href: '/notifications', badge: unreadCount },
+        // { icon: Bell, label: 'Notifications', href: '/notifications', badge: unreadCount },
         { icon: User, label: 'Profile', href: '/profile' },
         { icon: Trophy, label: 'Winning Range', href: '/competitions/stats' },
         { icon: CreditCard, label: 'PIM Credit Cards', href: '/activation-cards' },

@@ -77,15 +77,17 @@ const fmt = (n: number | undefined | null) =>
 const fmtDate = (iso: string | undefined | null) =>
     iso ? new Date(iso).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
-const statusLabel = (status: number, amount: number = 0, pricePerUser: number = 0) => {
-    if (status === 1 && amount < pricePerUser) return 'Used'
+const statusLabel = (status: number, amount: number = 0, pricePerUser: number = 0, numUsers: number = 0) => {
+    const slots = pricePerUser > 0 ? Math.floor(amount / pricePerUser) - numUsers : 0
+    if (status === 1 && slots <= 0) return 'Used'
     if (status === 0) return 'Pending'
     if (status === 1) return 'Approved'
     return 'Cancelled'
 }
 
-const statusClass = (status: number, amount: number = 0, pricePerUser: number = 0) => {
-    if (status === 1 && amount < pricePerUser) return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/40 dark:text-zinc-400'
+const statusClass = (status: number, amount: number = 0, pricePerUser: number = 0, numUsers: number = 0) => {
+    const slots = pricePerUser > 0 ? Math.floor(amount / pricePerUser) - numUsers : 0
+    if (status === 1 && slots <= 0) return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/40 dark:text-zinc-400'
     if (status === 0) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
     if (status === 1) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
     return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
@@ -303,7 +305,7 @@ const ActivationCards = () => {
             border: 'border-violet-500/20',
         },
         {
-            label: 'Available Slots',
+            label: 'Available Activation Slots',
             value: summary.availableSlots,
             icon: CheckCircle2,
             color: 'text-emerald-500',
@@ -492,11 +494,11 @@ const ActivationCards = () => {
                                 <div className="flex items-center gap-2">
                                     <div className={cn(
                                         "h-2 w-2 rounded-full animate-pulse",
-                                        activeCard && activeCard.amount < activeCard.pricePerUser ? "bg-zinc-400" : "bg-emerald-500"
+                                        activeCard && activeCard.slots <= 0 ? "bg-zinc-400" : "bg-emerald-500"
                                     )} />
                                     Active Pim Code Card
                                 </div>
-                                {activeCard && activeCard.amount < activeCard.pricePerUser && (
+                                {activeCard && activeCard.slots <= 0 && (
                                     <Badge variant="outline" className="text-[10px] bg-zinc-100 text-zinc-600 border-zinc-200">Used</Badge>
                                 )}
                             </CardTitle>
@@ -633,12 +635,13 @@ const ActivationCards = () => {
                             <Table className="min-w-[600px]">
                                 <TableHeader className="bg-muted/20">
                                     <TableRow className="hover:bg-transparent border-none whitespace-nowrap">
-                                        {['Code', 'Amount', 'Price/Slot', 'Status', 'Date'].map(h => (
+                                        {['Code', 'Amount', 'Used', 'Available', 'Status', 'Date'].map(h => (
                                             <TableHead key={h} className={cn(
                                                 'font-black text-[10px] uppercase tracking-widest py-4',
                                                 h === 'Code' && 'pl-4 sm:pl-7',
                                                 h === 'Amount' && 'text-right',
-                                                h === 'Price/Slot' && 'text-right hidden sm:table-cell',
+                                                h === 'Used' && 'text-center',
+                                                h === 'Available' && 'text-center',
                                                 h === 'Status' && 'text-center',
                                                 h === 'Date' && 'text-right pr-4 sm:pr-7 hidden md:table-cell',
                                             )}>
@@ -672,21 +675,31 @@ const ActivationCards = () => {
 
                                             {/* Amount */}
                                             <TableCell className="text-right">
-                                                <span className="font-black text-xs sm:text-sm">{fmt(card.amount)}</span>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="font-black text-xs sm:text-sm">{fmt(card.amount)}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-medium">{fmt(card.pricePerUser)}/slot</span>
+                                                </div>
                                             </TableCell>
 
-                                            {/* Price / Slot */}
-                                            <TableCell className="text-right hidden sm:table-cell">
-                                                <span className="text-sm text-muted-foreground font-medium">{fmt(card.pricePerUser)}</span>
+                                            {/* Used */}
+                                            <TableCell className="text-center">
+                                                <span className="font-bold text-sm text-amber-600">{card._count?.transactions || 0}</span>
+                                            </TableCell>
+
+                                            {/* Available */}
+                                            <TableCell className="text-center">
+                                                <span className="font-bold text-sm text-emerald-600">
+                                                    {card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.transactions || 0)) : 0}
+                                                </span>
                                             </TableCell>
 
                                             {/* Status */}
                                             <TableCell className="text-center">
                                                 <Badge className={cn(
                                                     'rounded-full px-3 py-1 font-bold text-[10px] uppercase tracking-wide border-none',
-                                                    statusClass(card.status, card.amount, card.pricePerUser)
+                                                    statusClass(card.status, card.amount, card.pricePerUser, card._count?.transactions || 0)
                                                 )}>
-                                                    {statusLabel(card.status, card.amount, card.pricePerUser)}
+                                                    {statusLabel(card.status, card.amount, card.pricePerUser, card._count?.transactions || 0)}
                                                 </Badge>
                                             </TableCell>
 

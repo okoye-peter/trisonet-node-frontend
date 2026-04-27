@@ -14,7 +14,7 @@ export default function FinanceVideo({ onEnded }: FinanceVideoProps) {
     const [isVisible, setIsVisible] = useState(true);
     const [isBlocked, setIsBlocked] = useState(false);
     const [isReady, setIsReady] = useState(false);
-    const [isMuted, setIsMuted] = useState(true); // Guaranteed to start playing if muted
+    const [isMuted, setIsMuted] = useState(false); // Default to unmuted
     const [mounted, setMounted] = useState(false);
 
     // Step 1: After mount (client-only), render the portal
@@ -29,13 +29,21 @@ export default function FinanceVideo({ onEnded }: FinanceVideoProps) {
         if (!mounted) return;
         if (!videoRef.current) return;
 
-        // We MUST start muted to guarantee autoplay success on all browsers
-        videoRef.current.muted = true;
+        // Try to play unmuted first
+        videoRef.current.muted = false;
         videoRef.current.play().then(() => {
-            console.log('Video playing successfully (muted)');
+            console.log('Video playing successfully (unmuted)');
         }).catch(error => {
-            console.error('Video play failed even when muted (extremely strict browser):', error);
-            setIsBlocked(true);
+            console.warn('Unmuted autoplay failed, falling back to muted:', error);
+            // Fallback to muted autoplay which is usually allowed
+            if (videoRef.current) {
+                videoRef.current.muted = true;
+                setIsMuted(true);
+                videoRef.current.play().catch(err => {
+                    console.error('Muted play also failed:', err);
+                    setIsBlocked(true);
+                });
+            }
         });
     }, [mounted]);
 
