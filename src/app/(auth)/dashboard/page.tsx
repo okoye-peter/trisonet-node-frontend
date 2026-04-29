@@ -431,7 +431,7 @@ export default function DashboardPage() {
                                     <span className="text-3xl font-bold text-indigo-300 mb-1.5">Gwkth</span>
                                 </div>
                                 <p className="text-white/40 text-xs font-bold mt-2">
-                                    Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthSalePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
 
