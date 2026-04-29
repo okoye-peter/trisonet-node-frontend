@@ -66,8 +66,13 @@ export default function EarningsPage() {
             header: "Amount",
             cell: ({ row }) => (
                 <div className={`font-black min-w-[120px] flex items-center gap-1 ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
-                    {row.original.type === 'debit' ? '-' : '+'}{Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    <span className="text-zinc-400 text-[10px] font-bold">gkwth</span>
+                    <div>
+                        {row.original.type === 'debit' ? '-' : '+'}{Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <span className="text-zinc-400 text-[10px] font-bold ml-1">gkwth</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-medium ml-2">
+                        ≈ ₦{(Number(row.original.amount) * salePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
                 </div>
             )
         },

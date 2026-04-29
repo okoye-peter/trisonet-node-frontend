@@ -98,11 +98,12 @@ const columns: ColumnDef<User & { _count: { patronees: number } }>[] = [
 ];
 
 export default function PatronMembersPage() {
+    const { user } = useAppSelector((state) => state.auth);
     const [page, setPage] = useState(1);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const { data: dashboardData, isLoading } = useGetPatronDashboardQuery({ page });
     
-    const members = dashboardData?.data?.members || [];
+    const members = (dashboardData?.data?.members || []).filter(m => String(m.patronId) === String(user?.id));
     const meta = dashboardData?.data?.meta;
 
     if (isLoading) return <LoadingScreen />;
@@ -144,14 +145,16 @@ export default function PatronMembersPage() {
                 <Card className="bg-white rounded-[2.5rem] p-6 border border-zinc-100 shadow-sm">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300 mb-1">Total Patrons</p>
                     <div className="flex items-end gap-2">
-                        <h3 className="text-4xl font-black text-zinc-900 tracking-tighter">{meta?.totalMembers || 0}</h3>
+                        <h3 className="text-4xl font-black text-zinc-900 tracking-tighter">{members.length}</h3>
                         <span className="text-[10px] font-bold text-emerald-500 mb-2 uppercase tracking-widest">Members</span>
                     </div>
                 </Card>
                 <Card className="bg-white rounded-[2.5rem] p-6 border border-zinc-100 shadow-sm">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300 mb-1">Total Beneficiaries</p>
                     <div className="flex items-end gap-2">
-                        <h3 className="text-4xl font-black text-zinc-900 tracking-tighter">{meta?.totalBeneficiaries || 0}</h3>
+                        <h3 className="text-4xl font-black text-zinc-900 tracking-tighter">
+                            {members.reduce((acc, m) => acc + (m._count?.patronees || 0), 0)}
+                        </h3>
                         <span className="text-[10px] font-bold text-indigo-500 mb-2 uppercase tracking-widest">Linked Slots</span>
                     </div>
                 </Card>

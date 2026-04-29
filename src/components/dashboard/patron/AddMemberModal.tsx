@@ -50,6 +50,7 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
             name: "",
             email: "",
             phone: "",
+            password: "",
         },
     });
 
@@ -79,8 +80,8 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                 </div>
                 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-6">
-                        <div className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className=" space-y-6">
+                        <div className="space-y-4 p-8">
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -145,7 +146,7 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                             />
                         </div>
 
-                        <DialogFooter className="pt-4 border-t border-zinc-50">
+                        <DialogFooter className="pt-8 pb-8 px-8 border-t border-zinc-50">
                             <Button 
                                 type="button" 
                                 variant="ghost" 

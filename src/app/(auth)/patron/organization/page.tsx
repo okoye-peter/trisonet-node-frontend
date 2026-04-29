@@ -15,7 +15,8 @@ import {
     ChevronRight,
     TrendingUp,
     ShieldCheck,
-    Briefcase
+    Briefcase,
+    Wallet
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,9 @@ import type { User as UserType, PatronGroupTransaction } from '@/types';
 
 import { AddMemberModal } from '@/components/dashboard/patron/AddMemberModal';
 import { CreditMemberModal } from '@/components/dashboard/patron/CreditMemberModal';
+import { CreateOrganizationForm } from '@/components/dashboard/patron/CreateOrganizationForm';
+import { FundOrganizationModal } from '@/components/dashboard/patron/FundOrganizationModal';
+
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -88,13 +92,22 @@ const memberColumns: ColumnDef<UserType & { _count: { patronees: number } }>[] =
     }
 ];
 
+
+const PLANS = [
+    { id: 'bronze', name: 'Bronze Patron', min: 1000000 },
+    { id: 'silver', name: 'Silver Patron', min: 10000000 },
+    { id: 'gold', name: 'Gold Patron', min: 50000000 },
+    { id: 'diamond', name: 'Diamond Patron', min: 100000000 },
+    { id: 'platinum', name: 'Platinum Patron', min: 1000000000 },
+];
+
 export default function PatronOrganizationPage() {
     const [page, setPage] = useState(1);
     const [activeTab, setActiveTab] = useState<'members' | 'transactions'>('members');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
-    const { data: dashboardData, isLoading } = useGetPatronDashboardQuery({ page });
+    const { data: dashboardData, isLoading, isError, refetch } = useGetPatronDashboardQuery({ page });
     
     const patronGroup = dashboardData?.data?.patronGroup;
     const meta = dashboardData?.data?.meta;
@@ -132,7 +145,19 @@ export default function PatronOrganizationPage() {
         },
     ], [meta]);
 
+    
+    const isUnfunded = patronGroup && !patronGroup.isFunded;
+    
     if (isLoading) return <LoadingScreen />;
+    if (isError) return <div>Error loading dashboard</div>;
+
+    if (!patronGroup) {
+        return (
+            <div className="min-h-[80vh] px-4 pt-10">
+                <CreateOrganizationForm onSuccess={refetch} />
+            </div>
+        );
+    }
 
     return (
         <motion.div
@@ -141,6 +166,14 @@ export default function PatronOrganizationPage() {
             animate="show"
             className="space-y-10"
         >
+            {isUnfunded && (
+                <FundOrganizationModal 
+                    initialName={patronGroup.name || ''}
+                    initialPlan={patronGroup.planName || 'Bronze'}
+                    onSuccess={refetch}
+                />
+            )}
+            
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
                 <div>
@@ -152,7 +185,7 @@ export default function PatronOrganizationPage() {
                         {patronGroup?.name || 'Organization Profile'}
                     </h1>
                     <p className="mt-3 text-zinc-400 font-medium text-sm">
-                        Central command for your organization's members, finances, and growth.
+                        Central command for your organization&apos;s members, finances, and growth.
                     </p>
                 </div>
 
@@ -332,7 +365,7 @@ export default function PatronOrganizationPage() {
                                 <div>
                                     <h3 className="text-2xl font-black tracking-tighter leading-tight">Quick Actions</h3>
                                     <p className="mt-2 text-sm font-medium text-indigo-200/60 leading-snug">
-                                        Manage your organization's financial flow and growth.
+                                        Manage your organization&apos;s financial flow and growth.
                                     </p>
                                 </div>
 

@@ -24,7 +24,8 @@ export type Wallet = {
     amount: number;
     createdAt?: string;
     updatedAt?: string;
-    userId?: number
+    userId?: number;
+    isParentWallet?: boolean;
 };
 
 export interface Region {
@@ -78,6 +79,7 @@ export interface User {
     updatedAt: string;
     hasVerifiedLevel2: boolean;
     patronGroupId: string | null;
+    pendingPatronType?: string | null;
     wallets?: Wallet[];
 }
 
@@ -360,6 +362,12 @@ export interface PatronGroup {
     createdAt: string;
     updatedAt: string;
     balance: number;
+    type: string;
+    planId: string | null;
+    plan: string;
+    planName?: string;
+    isFunded?: boolean;
+    minRequirement?: number;
     owner?: {
         id: string;
         name: string;
@@ -379,6 +387,7 @@ export interface PatronGroupTransaction {
     amount: number;
     description: string | null;
     reference: string | null;
+    status: 'pending' | 'success' | 'failed';
     walletId: string | null;
     charge: number;
     createdAt: string;
@@ -389,13 +398,15 @@ export interface PatronGroupTransaction {
 }
 
 export interface PagaVirtualAccountDetails {
-    virtual_account: string;
+    account_number: string;
     bank_name: string;
     account_name: string;
-    amount: number;
-    reference: string;
-    expires_at: string | null;
-    expiry_date_full: string;
+    expiry_date: string;
+    virtual_account?: string;
+    amount?: number;
+    reference?: string;
+    expires_at?: string | null;
+    expiry_date_full?: string;
 }
 
 export interface PatronDashboardResponse {
@@ -440,4 +451,15 @@ export interface PatronMembersResponse {
         page: number;
         totalPages: number;
     };
+}
+
+export interface PatronPlanDetail {
+    id: string;
+    name: string;
+    plan: string;
+    minAmount: number;
+    maxAmount: number;
+    returns: number;
+    createdAt: string;
+    updatedAt: string;
 }

@@ -209,52 +209,56 @@ export default function DashboardPage() {
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const salePrice = Number(pricesResponse?.data?.gkwthSalePrice) || 0;
 
-    const stats = useMemo(() => [
-        {
-            label: 'Total Sales',
-            value: dashboardStats?.totalSales ?? 0.00,
-            prefix: '',
-            icon: TrendingUp,
-            color: 'text-indigo-600',
-            bg: 'bg-indigo-50',
-            glow: 'shadow-indigo-100',
-            gradient: 'from-indigo-600/10 to-indigo-600/5'
-        },
-        {
-            label: 'Asset Depot',
-            // value: dashboardStats?.assetDepot ?? 0.00,
-            value: 0.00,
-            prefix: '',
-            icon: Warehouse,
-            color: 'text-purple-600',
-            bg: 'bg-purple-50',
-            glow: 'shadow-purple-100',
-            gradient: 'from-purple-600/10 to-purple-600/5'
-        },
-        {
-            label: 'Wallet',
-            value: dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'direct')?.amount ?? 0.00,
-            prefix: '₦',
-            icon: Wallet,
-            color: 'text-emerald-600',
-            bg: 'bg-emerald-50',
-            glow: 'shadow-emerald-100',
-            gradient: 'from-emerald-600/10 to-emerald-600/5',
-            hasAction: true
-        },
-        {
-            label: 'Capital Asset',
-            value: dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0.00,
-            suffix: ' units',
-            subValue: '0/0',
-            icon: Database,
-            color: 'text-blue-600',
-            bg: 'bg-blue-50',
-            glow: 'shadow-blue-100',
-            gradient: 'from-blue-600/10 to-blue-600/5',
-            hasAction: true
-        },
-    ], [dashboardStats]);
+    const stats = useMemo(() => {
+        const capitalAssetAmount = dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0.00;
+
+        return [
+            {
+                label: 'Total Sales',
+                value: dashboardStats?.totalSales ?? 0.00,
+                prefix: '',
+                icon: TrendingUp,
+                color: 'text-indigo-600',
+                bg: 'bg-indigo-50',
+                glow: 'shadow-indigo-100',
+                gradient: 'from-indigo-600/10 to-indigo-600/5'
+            },
+            {
+                label: 'Asset Depot',
+                // value: dashboardStats?.assetDepot ?? 0.00,
+                value: 0.00,
+                prefix: '',
+                icon: Warehouse,
+                color: 'text-purple-600',
+                bg: 'bg-purple-50',
+                glow: 'shadow-purple-100',
+                gradient: 'from-purple-600/10 to-purple-600/5'
+            },
+            {
+                label: 'Wallet',
+                value: dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'direct')?.amount ?? 0.00,
+                prefix: '₦',
+                icon: Wallet,
+                color: 'text-emerald-600',
+                bg: 'bg-emerald-50',
+                glow: 'shadow-emerald-100',
+                gradient: 'from-emerald-600/10 to-emerald-600/5',
+                hasAction: true
+            },
+            {
+                label: 'Capital Asset',
+                value: capitalAssetAmount,
+                suffix: ' gkwth',
+                subValue: `≈ ₦${(capitalAssetAmount * salePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                icon: Database,
+                color: 'text-blue-600',
+                bg: 'bg-blue-50',
+                glow: 'shadow-blue-100',
+                gradient: 'from-blue-600/10 to-blue-600/5',
+                hasAction: true
+            },
+        ];
+    }, [dashboardStats, salePrice]);
 
 
     // Don't render anything until we've checked sessionStorage (avoids flash on SSR)

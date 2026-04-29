@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -41,7 +42,7 @@ const withdrawSchema = z.object({
     bank_uuid: z.string().min(1, "Please select a bank"),
     account_number: z.string().length(10, "Account number must be 10 digits"),
     account_name: z.string().min(1, "Please resolve account name"),
-    amount: z.coerce.number().min(1000, "Minimum withdrawal is ₦1,000"),
+    amount: z.number().min(1000, "Minimum withdrawal is ₦1,000"),
     withdrawal_otp: z.string().length(6, "OTP must be 6 digits"),
 });
 
@@ -65,7 +66,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
     const form = useForm<WithdrawValues>({
         resolver: zodResolver(withdrawSchema),
         defaultValues: {
-            wallet: wallets.find(w => w.type === 'direct')?.id.toString() || "",
+            wallet: wallets.find(w => w.type === 'direct')?.id?.toString() || wallets[0]?.id?.toString() || "",
             bank_uuid: "",
             account_number: "",
             account_name: "",
@@ -100,8 +101,9 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                 form.setValue('account_name', name);
                 toast.success("Account resolved successfully");
             }
-        } catch (err: any) {
-            toast.error(err?.data?.message || "Failed to resolve account details");
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || "Failed to resolve account details");
         }
     };
 
@@ -110,8 +112,9 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
             await sendOtp().unwrap();
             toast.success("OTP sent to your registered email");
             setOtpCountdown(60);
-        } catch (err: any) {
-            toast.error(err?.data?.message || "Failed to send OTP");
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || "Failed to send OTP");
         }
     };
 
@@ -123,7 +126,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
     }, [otpCountdown]);
 
     const onSubmit = async (values: WithdrawValues) => {
-        const selectedWallet = wallets.find(w => w.id.toString() === values.wallet);
+        const selectedWallet = wallets.find(w => w.id?.toString() === values.wallet);
         if (!selectedWallet || selectedWallet.amount < values.amount) {
             toast.error("Insufficient wallet balance");
             return;
@@ -145,8 +148,9 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
 
             toast.success("Withdrawal initiated and under review");
             handleClose();
-        } catch (err: any) {
-            toast.error(err?.data?.message || "Failed to initiate withdrawal");
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || "Failed to initiate withdrawal");
         }
     };
 
@@ -180,6 +184,27 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-6">
                         <div className="grid grid-cols-1 gap-6">
+
+                            {/* Wallet Selection */}
+                            <FormField
+                                control={form.control}
+                                name="wallet"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Source Wallet</FormLabel>
+                                        <SearchableSelect 
+                                            items={wallets.map(w => ({
+                                                label: `${w.type === 'direct' ? 'Direct Wallet' : 'Patronage Wallet'} (₦${w.amount.toLocaleString()})`,
+                                                value: w.id?.toString() || ""
+                                            }))}
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                            placeholder="Choose source wallet"
+                                        />
+                                        <FormMessage className="text-[10px] font-bold" />
+                                    </FormItem>
+                                )}
+                            />
 
                             {/* Bank Selection */}
                             <FormField
@@ -255,7 +280,12 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                                             <FormControl>
                                                 <div className="relative">
                                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-zinc-400">₦</span>
-                                                    <Input type="number" className="h-14 rounded-xl bg-zinc-50 border-none pl-10 pr-4 font-black text-zinc-900 focus-visible:ring-2 focus-visible:ring-indigo-600/20" {...field} />
+                                                    <Input 
+                                                        type="number" 
+                                                        className="h-14 rounded-xl bg-zinc-50 border-none pl-10 pr-4 font-black text-zinc-900 focus-visible:ring-2 focus-visible:ring-indigo-600/20" 
+                                                        {...field}
+                                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                                    />
                                                 </div>
                                             </FormControl>
                                             <FormMessage className="text-[10px] font-bold" />

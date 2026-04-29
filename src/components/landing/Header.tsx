@@ -81,7 +81,7 @@ export default function Header() {
                                             <li><Link href="/">Home</Link></li>
                                             <li><Link href="/about">About</Link></li>
                                             <li><Link href="/services">Service</Link></li>
-                                            <li><Link href="/patron">Patron</Link></li>
+                                            <li><Link href="/register/patron">Patron</Link></li>
                                             <li><Link href="/team">Teams</Link></li>
                                             <li><Link href="/contact">Contact</Link></li>
                                         </ul>

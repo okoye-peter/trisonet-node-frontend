@@ -4,11 +4,16 @@ import type {
     PatronDashboardResponse, 
     PatronBeneficiariesResponse,
     PatronMembersResponse,
-    PatronGroupTransaction 
+    PatronGroupTransaction,
+    PagaVirtualAccountDetails,
+    PatronPlanDetail
 } from '@/types';
 
 export const patronApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
+        getPatronPlans: builder.query<AppResponse<PatronPlanDetail[]>, void>({
+            query: () => 'patrons/plans',
+        }),
         getPatronDashboard: builder.query<AppResponse<PatronDashboardResponse>, { page?: number } | void>({
             query: (params) => ({
                 url: 'patrons/dashboard',
@@ -38,6 +43,14 @@ export const patronApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+        createPatronGroup: builder.mutation<AppResponse<void>, { name: string; amount: number; type: string; plan: string }>({
+            query: (body) => ({
+                url: 'patrons/create-group',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['User', 'Wallet'],
+        }),
         creditPatronMember: builder.mutation<AppResponse<PatronGroupTransaction>, { amount: number; member_id: string }>({
             query: (body) => ({
                 url: 'patrons/credit-member',
@@ -46,13 +59,15 @@ export const patronApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Wallet'],
         }),
-        fundPatronGroup: builder.mutation<AppResponse<PagaVirtualAccountDetails>, { amount: number }>({
+        fundPatronGroup: builder.mutation<AppResponse<{ reference: string, amount: number, account_detail: PagaVirtualAccountDetails }>, { amount: number }>({
             query: (body) => ({
                 url: 'patrons/fund-group',
                 method: 'POST',
                 body,
             }),
-            invalidatesTags: ['Wallet'],
+        }),
+        checkPatronFundingStatus: builder.query<AppResponse<{ status: string }>, string>({
+            query: (reference) => `patrons/funding-status/${reference}`,
         }),
         sendPatronWithdrawalOtp: builder.mutation<AppResponse<void>, void>({
             query: () => ({
@@ -64,11 +79,15 @@ export const patronApi = apiSlice.injectEndpoints({
 });
 
 export const {
+    useGetPatronPlansQuery,
     useGetPatronDashboardQuery,
     useGetPatronMembersQuery,
     useGetPatronBeneficiariesQuery,
     useAddPatronMemberMutation,
+    useCreatePatronGroupMutation,
     useCreditPatronMemberMutation,
     useFundPatronGroupMutation,
+    useCheckPatronFundingStatusQuery,
+    useLazyCheckPatronFundingStatusQuery,
     useSendPatronWithdrawalOtpMutation,
 } = patronApi;

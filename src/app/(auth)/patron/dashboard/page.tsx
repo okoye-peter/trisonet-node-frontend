@@ -20,10 +20,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { useGetPatronDashboardQuery } from '@/store/api/patronApi';
+import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useMemo, useState } from 'react';
 import type { PatronGroupTransaction } from '@/types';
+import { CreateOrganizationForm } from '@/components/dashboard/patron/CreateOrganizationForm';
+import { FundOrganizationModal } from '@/components/dashboard/patron/FundOrganizationModal';
+import { ROLES } from '@/types';
+
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -51,7 +55,7 @@ export default function PatronDashboardPage() {
     const { user } = useAppSelector((state) => state.auth);
     const [page, setPage] = useState(1);
     
-    const { data: dashboardData, isLoading } = useGetPatronDashboardQuery({ page });
+    const { data: dashboardData, isLoading, refetch } = useGetPatronDashboardQuery({ page });
     const patronData = dashboardData?.data;
 
     const copyReferralLink = () => {
@@ -63,11 +67,11 @@ export default function PatronDashboardPage() {
     const stats = useMemo(() => {
         if (!patronData) return [];
         
-        const beneficiariesCount = patronData.members.reduce((acc, m) => acc + m._count.patronees, 0);
+        const beneficiariesCount = (patronData.members || []).reduce((acc, m) => acc + m._count.patronees, 0);
         const patronBalance = patronData.patronGroup?.balance || 0;
         const patronageWalletBalance = user?.wallets?.find(w => w.type === 'patronage')?.amount || 0;
 
-        return [
+        const allStats = [
             {
                 label: 'Total Beneficiaries',
                 value: beneficiariesCount,
@@ -78,7 +82,7 @@ export default function PatronDashboardPage() {
             },
             {
                 label: 'Patron Members',
-                value: patronData.meta.members.total,
+                value: patronData.meta?.members?.total || 0,
                 icon: UserPlus,
                 color: 'text-purple-600',
                 bg: 'bg-purple-50',
@@ -103,9 +107,42 @@ export default function PatronDashboardPage() {
                 gradient: 'from-blue-600/10 to-blue-600/5'
             }
         ];
+
+        return patronData.patronGroup?.type === 'group' 
+            ? allStats 
+            : allStats.filter(s => s.label !== 'Patron Balance');
     }, [patronData, user]);
 
-    if (isLoading) return <LoadingScreen />;
+    const { data: plansResponse, isLoading: isLoadingPlans } = useGetPatronPlansQuery();
+    const plans = plansResponse?.data || [];
+
+    // Restrict group patrons who haven't created a group yet or haven't made the minimum deposit
+    const isRestrictedGroupPatron = useMemo(() => {
+        if (user?.role !== ROLES.PATRON || user?.pendingPatronType !== 'group') return false;
+        
+        // No group created yet
+        if (!patronData?.patronGroup) return true;
+        
+        // Use isFunded flag from backend
+        return !patronData.patronGroup.isFunded;
+    }, [user, patronData]);
+
+    if (isLoading || isLoadingPlans) return <LoadingScreen />;
+
+    if (isRestrictedGroupPatron) {
+
+        if (!patronData?.patronGroup) {
+            return <CreateOrganizationForm onSuccess={() => refetch()} />;
+        }
+        
+        return (
+            <FundOrganizationModal 
+                initialName={patronData.patronGroup.name || ''} 
+                initialPlan={patronData.patronGroup.planName || 'Bronze'} 
+                onSuccess={() => refetch()} 
+            />
+        );
+    }
 
     return (
         <motion.div
@@ -118,7 +155,7 @@ export default function PatronDashboardPage() {
             <motion.div variants={itemVariants} className="relative overflow-hidden rounded-[2.5rem] bg-indigo-950 p-8 lg:p-12 shadow-2xl">
                 <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
                 <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-                
+
                 <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
                     <div className="max-w-2xl">
                         <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
@@ -132,7 +169,7 @@ export default function PatronDashboardPage() {
                             Welcome back, {user?.name.split(' ')[0]}. Your organization&lsquo;s financial ecosystem is thriving. Monitor members and manage distributions from here.
                         </p>
                     </div>
-                    
+
                     <Card className="border-none bg-white/5 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 w-full lg:w-96 shadow-2xl">
                         <div className="flex flex-col items-center text-center">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-4">Distribution Code</p>
@@ -184,70 +221,72 @@ export default function PatronDashboardPage() {
             {/* Main Content Grid */}
             <div className="grid gap-10">
                 {/* Transactions Section */}
-                <motion.div variants={itemVariants} className="space-y-6">
-                    <div className="px-2">
-                        <h2 className="text-3xl font-black tracking-tighter text-zinc-900">Activity Log</h2>
-                        <p className="text-sm font-medium text-zinc-400 mt-1">Recent organization transactions</p>
-                    </div>
-                    
-                    <Card className="border-none bg-white rounded-[2rem] shadow-sm border border-zinc-100 h-full overflow-hidden flex flex-col">
-                        <CardContent className="p-0">
-                            {patronData?.transactions.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center p-20 text-center">
-                                    <div className="h-16 w-16 rounded-3xl bg-zinc-50 flex items-center justify-center text-zinc-200 mb-4">
-                                        <History size={32} />
+                {patronData?.patronGroup?.type === 'group' && (
+                    <motion.div variants={itemVariants} className="space-y-6">
+                        <div className="px-2">
+                            <h2 className="text-3xl font-black tracking-tighter text-zinc-900">Activity Log</h2>
+                            <p className="text-sm font-medium text-zinc-400 mt-1">Recent organization transactions</p>
+                        </div>
+                        
+                        <Card className="border-none bg-white rounded-[2rem] shadow-sm border border-zinc-100 h-full overflow-hidden flex flex-col">
+                            <CardContent className="p-0">
+                                {(patronData?.transactions || []).length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center p-20 text-center">
+                                        <div className="h-16 w-16 rounded-3xl bg-zinc-50 flex items-center justify-center text-zinc-200 mb-4">
+                                            <History size={32} />
+                                        </div>
+                                        <p className="font-bold text-zinc-400 text-sm uppercase tracking-widest">No activity yet</p>
                                     </div>
-                                    <p className="font-bold text-zinc-400 text-sm uppercase tracking-widest">No activity yet</p>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-zinc-50">
-                                    {patronData?.transactions.slice(0, 6).map((tx) => (
-                                        <div key={tx.id} className="p-6 hover:bg-zinc-50/50 transition-colors group cursor-pointer">
-                                            <div className="flex items-center gap-4">
-                                                <div className={cn(
-                                                    "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
-                                                    tx.type === 'credit' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-                                                )}>
-                                                    <Clock size={20} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <h4 className="text-xs font-black text-zinc-900 uppercase tracking-widest truncate">
-                                                            {tx.type === 'credit' ? 'Organization Funding' : 'Member Distribution'}
-                                                        </h4>
-                                                        <span className={cn(
-                                                            "font-black text-sm tracking-tighter",
-                                                            tx.type === 'credit' ? "text-emerald-600" : "text-rose-600"
-                                                        )}>
-                                                            {tx.type === 'credit' ? '+' : '-'}₦{tx.amount.toLocaleString()}
-                                                        </span>
+                                ) : (
+                                    <div className="divide-y divide-zinc-50">
+                                        {(patronData?.transactions || []).slice(0, 6).map((tx) => (
+                                            <div key={tx.id} className="p-6 hover:bg-zinc-50/50 transition-colors group cursor-pointer">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={cn(
+                                                        "h-12 w-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                                                        tx.type === 'credit' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                                    )}>
+                                                        <Clock size={20} />
                                                     </div>
-                                                    <p className="text-[10px] text-zinc-400 mt-1 font-bold line-clamp-1">{tx.description}</p>
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">
-                                                            {new Date(tx.createdAt).toLocaleDateString()}
-                                                        </span>
-                                                        <div className="h-1 w-1 rounded-full bg-zinc-200" />
-                                                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">
-                                                            REF: {tx.reference?.slice(0, 10)}...
-                                                        </span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <h4 className="text-xs font-black text-zinc-900 uppercase tracking-widest truncate">
+                                                                {tx.type === 'credit' ? 'Organization Funding' : 'Member Distribution'}
+                                                            </h4>
+                                                            <span className={cn(
+                                                                "font-black text-sm tracking-tighter",
+                                                                tx.type === 'credit' ? "text-emerald-600" : "text-rose-600"
+                                                            )}>
+                                                                {tx.type === 'credit' ? '+' : '-'}₦{tx.amount.toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[10px] text-zinc-400 mt-1 font-bold line-clamp-1">{tx.description}</p>
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">
+                                                                {new Date(tx.createdAt).toLocaleDateString()}
+                                                            </span>
+                                                            <div className="h-1 w-1 rounded-full bg-zinc-200" />
+                                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300">
+                                                                REF: {tx.reference?.slice(0, 10)}...
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                            {patronData && (patronData.transactions || []).length > 6 && (
+                                <div className="mt-auto p-4 bg-zinc-50/50 border-t border-zinc-100">
+                                    <Button variant="ghost" className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-indigo-600">
+                                        View Full History <ArrowUpRight size={14} className="ml-2" />
+                                    </Button>
                                 </div>
                             )}
-                        </CardContent>
-                        {patronData && patronData.transactions.length > 6 && (
-                            <div className="mt-auto p-4 bg-zinc-50/50 border-t border-zinc-100">
-                                <Button variant="ghost" className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-indigo-600">
-                                    View Full History <ArrowUpRight size={14} className="ml-2" />
-                                </Button>
-                            </div>
-                        )}
-                    </Card>
-                </motion.div>
+                        </Card>
+                    </motion.div>
+                )}
             </div>
         </motion.div>
     );

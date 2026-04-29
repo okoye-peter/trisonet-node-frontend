@@ -143,15 +143,15 @@ export default function PatronBeneficiariesPage() {
         >
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
                 <div>
-                    <div className="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600">
-                        <UserPlus size={12} className="fill-emerald-600/20" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Growth Tracking</span>
+                    <div className="inline-flex items-center gap-2 mb-3 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600">
+                        <ShieldCheck size={12} className="fill-indigo-600/20" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Network Reach</span>
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-black tracking-tighter text-zinc-900 leading-none">
-                        Patron Beneficiaries
+                        Beneficiaries
                     </h1>
-                    <p className="mt-2 text-zinc-400 font-medium text-sm">
-                        You have {meta?.total || 0} individuals benefiting from your organization.
+                    <p className="mt-2 text-zinc-400 font-medium text-sm max-w-2xl">
+                        A total of {meta?.total || 0} activated customers in your network. This includes your direct recruits and customers recruited by your organization members.
                     </p>
                 </div>
             </div>

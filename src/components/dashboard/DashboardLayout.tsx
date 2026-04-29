@@ -13,6 +13,7 @@ import { useAppSelector } from '@/store/hooks';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useLogout } from '@/hooks/useLogout';
 import { ROLES } from '@/types';
+import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             setTimeout(() => setShowFinanceVideo(true), 0);
         }
     }, [pathname, showFinanceVideo, hasSeenInCurrentVisit]);
+
+    const { data: dashboardData } = useGetPatronDashboardQuery(undefined, { skip: user?.role !== ROLES.PATRON });
+    const { data: plansResponse } = useGetPatronPlansQuery(undefined, { skip: user?.role !== ROLES.PATRON });
+    const plans = plansResponse?.data || [];
+    const patronData = dashboardData?.data;
+
+    useEffect(() => {
+        // Redirect restricted group patrons to dashboard if they try to access other patron pages
+        const isGroupPatron = user?.role === ROLES.PATRON && user?.pendingPatronType === 'group';
+        
+        if (isGroupPatron) {
+            let isRestricted = false;
+            
+            if (!patronData?.patronGroup) {
+                isRestricted = true;
+            } else {
+                isRestricted = !patronData.patronGroup.isFunded;
+            }
+
+            const isPatronPage = pathname?.startsWith('/patron');
+            const isDashboard = pathname === '/patron/dashboard';
+
+            if (isRestricted && isPatronPage && !isDashboard) {
+                window.location.href = '/patron/dashboard';
+            }
+        }
+    }, [user, patronData, plans, pathname]);
 
     useEffect(() => {
         // Auto-show KYC modal if user is a customer and not verified Level 2
