@@ -28,7 +28,7 @@ export default function EarningsPage() {
     const wallets = walletsResponse?.data || [];
     const earningWallet = wallets.find(w => w.type === 'earning');
     const prices = pricesResponse?.data;
-    const salePrice = Number(prices?.gkwthSalePrice) || 0;
+    const purchasePrice = Number(prices?.gkwthPurchasePrice) || 0;
     
     const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('desc');
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -71,7 +71,7 @@ export default function EarningsPage() {
                         <span className="text-zinc-400 text-[10px] font-bold ml-1">gkwth</span>
                     </div>
                     <span className="text-[10px] text-zinc-400 font-medium ml-2">
-                        ≈ ₦{(Number(row.original.amount) * salePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ≈ ₦{(Number(row.original.amount) * purchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                 </div>
             )
@@ -189,7 +189,7 @@ export default function EarningsPage() {
                                 <span className="text-white/60 mr-1 text-sm italic"> Gkwth</span>
                             </div>
                             <p className="text-white/40 text-[10px] font-bold">
-                                Total ≈ ₦{(earningWallet ? earningWallet.amount * salePrice : 0).toLocaleString()}
+                                Total ≈ ₦{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}
                             </p>
                         </div>
                         <button 

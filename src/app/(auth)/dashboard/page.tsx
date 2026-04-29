@@ -207,7 +207,8 @@ export default function DashboardPage() {
 
     const dashboardStats = dashboardStatsResponse?.data;
     const { data: pricesResponse } = useGetGkwthPricesQuery();
-    const salePrice = Number(pricesResponse?.data?.gkwthSalePrice) || 0;
+    const gkwthSalePrice = Number(pricesResponse?.data?.gkwthSalePrice) || 0;
+    const gkwthPurchasePrice = Number(pricesResponse?.data?.gkwthPurchasePrice) || 0;
 
     const stats = useMemo(() => {
         const capitalAssetAmount = dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0.00;
@@ -249,7 +250,7 @@ export default function DashboardPage() {
                 label: 'Capital Asset',
                 value: capitalAssetAmount,
                 suffix: ' gkwth',
-                subValue: `≈ ₦${(capitalAssetAmount * salePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                subValue: `≈ ₦${(capitalAssetAmount * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                 icon: Database,
                 color: 'text-blue-600',
                 bg: 'bg-blue-50',
@@ -258,7 +259,7 @@ export default function DashboardPage() {
                 hasAction: true
             },
         ];
-    }, [dashboardStats, salePrice]);
+    }, [dashboardStats, gkwthSalePrice, gkwthPurchasePrice]);
 
 
     // Don't render anything until we've checked sessionStorage (avoids flash on SSR)
@@ -430,7 +431,7 @@ export default function DashboardPage() {
                                     <span className="text-3xl font-bold text-indigo-300 mb-1.5">Gwkth</span>
                                 </div>
                                 <p className="text-white/40 text-xs font-bold mt-2">
-                                    Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * salePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthSalePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
 
