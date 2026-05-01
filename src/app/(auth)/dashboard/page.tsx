@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useAppSelector } from '@/store/hooks';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -47,12 +48,12 @@ const partnerColumns: ColumnDef<Partner>[] = [
             const email = partner.email || 'No email';
             return (
                 <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-linear-to-br from-zinc-200 to-zinc-100 flex items-center justify-center font-bold text-zinc-600">
+                    <div className="flex items-center justify-center w-10 h-10 font-bold rounded-xl bg-linear-to-br from-zinc-200 to-zinc-100 text-zinc-600">
                         {name[0]}
                     </div>
                     <div>
-                        <p className="font-bold text-zinc-900 leading-none">{name}</p>
-                        <p className="text-xs text-zinc-400 mt-1">{email}</p>
+                        <p className="font-bold leading-none text-zinc-900">{name}</p>
+                        <p className="mt-1 text-xs text-zinc-400">{email}</p>
                     </div>
                 </div>
             );
@@ -92,7 +93,7 @@ const partnerColumns: ColumnDef<Partner>[] = [
             const actAt = row.original.activatedAt;
             const formatted = actAt ? new Date(actAt).toLocaleDateString() : '-';
             return (
-                <div className="flex items-center gap-2 text-zinc-500 font-medium whitespace-nowrap">
+                <div className="flex items-center gap-2 font-medium text-zinc-500 whitespace-nowrap">
                     <Clock size={14} className="opacity-40" />
                     {formatted}
                 </div>
@@ -124,7 +125,7 @@ const partnerColumns: ColumnDef<Partner>[] = [
                     <Button 
                         variant="ghost" 
                         size="icon-sm"
-                        className="p-2 rounded-xl text-zinc-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm transition-all"
+                        className="p-2 transition-all rounded-xl text-zinc-300 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
                     >
                         <ChevronRight size={18} />
                     </Button>
@@ -287,17 +288,17 @@ export default function DashboardPage() {
             <motion.div variants={itemVariants} className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <div className="flex items-center gap-2 mb-2 text-indigo-600 font-bold uppercase tracking-[0.2em] text-[10px]">
-                        <div className="h-1 w-8 bg-indigo-600/20 rounded-full" />
+                        <div className="w-8 h-1 rounded-full bg-indigo-600/20" />
                         Overview Dashboard
                     </div>
                     <h1 className="text-4xl font-black tracking-tighter text-zinc-900 lg:text-5xl">
-                        Welcome, <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-purple-600">{user?.name?.split(' ')[0] || 'Member'}</span>
+                        Welcome, <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">{user?.name?.split(' ')[0] || 'Member'}</span>
                     </h1>
-                    <p className="mt-2 text-zinc-500 font-medium max-w-md">
+                    <p className="max-w-md mt-2 font-medium text-zinc-500">
                         Your financial summary is looking great today.
                         {unreadCount > 0 ? (
                             <span className="ml-1">
-                                You have <Link href="/notifications" className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4 hover:text-indigo-700 transition-colors">{unreadCount} unread notifications</Link>.
+                                You have <Link href="/notifications" className="font-bold text-indigo-600 underline transition-colors decoration-indigo-200 underline-offset-4 hover:text-indigo-700">{unreadCount} unread notifications</Link>.
                             </span>
                         ) : (
                             <span className="ml-1 text-zinc-400">No unread notifications.</span>
@@ -310,8 +311,8 @@ export default function DashboardPage() {
                         size="lg" 
                         className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
-                        <UserCheck className="mr-2 h-4 w-4" /> Verify Identity
-                        <ArrowUpRight className="ml-2 h-4 w-4 opacity-50" />
+                        <UserCheck className="w-4 h-4 mr-2" /> Verify Identity
+                        <ArrowUpRight className="w-4 h-4 ml-2 opacity-50" />
                     </Button> */}
                 </div>
             </motion.div>
@@ -328,7 +329,7 @@ export default function DashboardPage() {
                         )}
                     >
                         <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-linear-to-br", stat.gradient)} />
-                        <CardContent className="relative z-10 p-4 bg-white rounded-xl h-full">
+                        <CardContent className="relative z-10 h-full p-4 bg-white rounded-xl">
                             <div className="flex items-start justify-between">
                                 <div className={cn("rounded-[1.2rem] p-4 shadow-sm transition-transform duration-500 group-hover:rotate-12", stat.bg, stat.color)}>
                                     <stat.icon size={28} strokeWidth={2.5} />
@@ -337,20 +338,20 @@ export default function DashboardPage() {
                                     <Button 
                                         variant="ghost" 
                                         size="icon-sm"
-                                        className="p-2 rounded-xl bg-zinc-50 text-zinc-400 transition-all hover:bg-zinc-100 hover:text-zinc-900 group/btn"
+                                        className="p-2 transition-all rounded-xl bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 group/btn"
                                     >
-                                        <ExternalLink size={14} className="group-hover/btn:scale-110 transition-transform" />
+                                        <ExternalLink size={14} className="transition-transform group-hover/btn:scale-110" />
                                     </Button>
                                 )}
                             </div>
                             <div className="mt-8">
-                                <p className="text-xs font-black text-zinc-400 uppercase tracking-widest leading-none">{stat.label}</p>
-                                <div className="mt-3 flex items-baseline gap-1">
+                                <p className="text-xs font-black leading-none tracking-widest uppercase text-zinc-400">{stat.label}</p>
+                                <div className="flex items-baseline gap-1 mt-3">
                                     {stat.prefix && <span className="text-xl font-bold text-zinc-400">{stat.prefix}</span>}
                                     <h3 className="text-3xl font-black tracking-tighter text-zinc-900">
                                         <CountUp end={stat.value} duration={2.5} separator="," decimals={stat.value % 1 !== 0 ? 2 : 0} />
                                     </h3>
-                                    {stat.suffix && <span className="text-sm font-bold text-zinc-400 ml-1 uppercase">{stat.suffix}</span>}
+                                    {stat.suffix && <span className="ml-1 text-sm font-bold uppercase text-zinc-400">{stat.suffix}</span>}
                                 </div>
                                 {stat.subValue && <p className="text-[10px] font-bold text-zinc-300 mt-1.5 uppercase tracking-tighter">{stat.subValue}</p>}
                             </div>
@@ -365,7 +366,7 @@ export default function DashboardPage() {
                                     className="mt-4 h-9 px-4 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all w-full flex items-center justify-between group/pim"
                                 >
                                     View PIM
-                                    <ExternalLink size={14} className="group-hover/pim:translate-x-1 transition-transform" />
+                                    <ExternalLink size={14} className="transition-transform group-hover/pim:translate-x-1" />
                                 </Button>
                             )}
 
@@ -396,13 +397,13 @@ export default function DashboardPage() {
                 <motion.div variants={itemVariants} className="lg:col-span-2">
                     <Card className="group relative overflow-hidden border-none bg-linear-to-br from-indigo-950 via-purple-900 to-indigo-900 text-white rounded-3xl shadow-2xl h-full min-h-[220px]">
                         {/* Animated Background Elements */}
-                        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-                        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute top-0 right-0 -mt-20 -mr-20 rounded-full w-80 h-80 bg-purple-500/20 blur-3xl animate-pulse" />
+                        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 rounded-full w-80 h-80 bg-indigo-500/20 blur-3xl animate-pulse" />
                         
-                        <CardContent className="relative z-10 p-8 flex flex-col h-full justify-between">
+                        <CardContent className="relative z-10 flex flex-col justify-between h-full p-8">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-indigo-200">
+                                    <div className="flex items-center justify-center text-indigo-200 border h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md border-white/20">
                                         <Wallet size={28} />
                                     </div>
                                     <div>
@@ -419,8 +420,10 @@ export default function DashboardPage() {
                             </div>
 
                             <div className="mt-10 mb-8">
-                                <div className="flex items-end gap-3">
+                                <div className="flex items-center gap-3">
+                                    <Image src={"/assets/img/diamond-removebg-preview.png"} alt="asset" width={100} height={100} />
                                     <h2 className="text-6xl font-black tracking-tighter">
+                                        
                                         <CountUp 
                                             end={Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0)} 
                                             duration={2.5} 
@@ -428,9 +431,9 @@ export default function DashboardPage() {
                                             decimals={2} 
                                         />
                                     </h2>
-                                    <span className="text-3xl font-bold text-indigo-300 mb-1.5">Gwkth</span>
+                                    <span className="text-3xl font-bold text-indigo-300 mb-1.5">Asset</span>
                                 </div>
-                                <p className="text-white/40 text-xs font-bold mt-2">
+                                <p className="mt-2 text-xs font-bold text-white/40">
                                     Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
@@ -450,15 +453,15 @@ export default function DashboardPage() {
                 {/* Global Countdown */}
                 <motion.div variants={itemVariants} className="lg:col-span-2 relative group overflow-hidden rounded-3xl p-1 bg-linear-to-br from-indigo-600 to-indigo-900 shadow-2xl shadow-indigo-100 transition-transform hover:scale-[1.01]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] transition-transform duration-1000 group-hover:scale-150" />
-                    <Card className="border-none bg-transparent text-white p-6 h-full flex flex-col justify-between">
+                    <Card className="flex flex-col justify-between h-full p-6 text-white bg-transparent border-none">
                         <CardContent className="p-0">
                             <div className="flex items-center gap-3.5 mb-8">
-                                <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
+                                <div className="p-3 border rounded-2xl bg-white/10 backdrop-blur-sm border-white/10">
                                     <Clock size={20} className="text-white" />
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Global Countdown</span>
                             </div>
-                            <h2 className="text-4xl font-black tracking-tighter leading-none">
+                            <h2 className="text-4xl font-black leading-none tracking-tighter">
                                 <CountUp end={dashboardStats ? (dashboardStats?.region.max - (dashboardStats?.regionTotalUsers ?? 0)) : 0} duration={3} separator="," decimals={2} />
                             </h2>
                             <p className="mt-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">Calculated per region</p>
@@ -468,10 +471,10 @@ export default function DashboardPage() {
 
                 {/* Personal Referral Code */}
                 {/* <motion.div variants={itemVariants}>
-                    <Card className="group border-none bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden h-full flex flex-col">
-                        <CardContent className="p-6 flex flex-col h-full">
+                    <Card className="flex flex-col h-full overflow-hidden transition-all duration-500 bg-white border-none shadow-sm group rounded-3xl hover:shadow-xl">
+                        <CardContent className="flex flex-col h-full p-6">
                             <div className="flex items-center justify-between mb-8">
-                                <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                <div className="flex items-center justify-center w-12 h-12 text-indigo-600 rounded-2xl bg-indigo-50">
                                     <QrCode size={24} />
                                 </div>
                                 <Button
@@ -482,15 +485,15 @@ export default function DashboardPage() {
                                         url: window.location.origin + '/register?ref=' + user?.username,
                                         title: 'Personal Code'
                                     })}
-                                    className="rounded-xl hover:bg-indigo-50 text-indigo-600"
+                                    className="text-indigo-600 rounded-xl hover:bg-indigo-50"
                                 >
                                     <ExternalLink size={18} />
                                 </Button>
                             </div>
                             <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4">Referral Code</p>
                             
-                            <div className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100 group-hover:border-indigo-100 transition-colors mb-6">
-                                <span className="text-xl font-black text-zinc-900 tracking-tight">{user?.username}</span>
+                            <div className="flex items-center justify-between p-4 mb-6 transition-colors border rounded-2xl bg-zinc-50 border-zinc-100 group-hover:border-indigo-100">
+                                <span className="text-xl font-black tracking-tight text-zinc-900">{user?.username}</span>
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -515,12 +518,12 @@ export default function DashboardPage() {
             <motion.div variants={itemVariants} className="flex items-center justify-between px-2">
                 <div>
                     <h2 className="text-2xl font-black tracking-tighter text-zinc-900">Recent Partners</h2>
-                    <p className="text-sm font-medium text-zinc-400 mt-1">Monitor your network growth</p>
+                    <p className="mt-1 text-sm font-medium text-zinc-400">Monitor your network growth</p>
                 </div>
             </motion.div>
 
             {/* Partners Table */}
-            <motion.div variants={itemVariants} className="relative rounded-lg bg-white p-6 shadow-sm border border-zinc-100 overflow-hidden group hover:shadow-xl transition-all duration-700">
+            <motion.div variants={itemVariants} className="relative p-6 overflow-hidden transition-all duration-700 bg-white border rounded-lg shadow-sm border-zinc-100 group hover:shadow-xl">
                 <DataTable columns={partnerColumns} url="/users/referrals" searchKey="email" searchPlaceholder="Search partners by email..." />
             </motion.div>
 
@@ -529,14 +532,14 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between px-2">
                     <div>
                         <h2 className="text-2xl font-black tracking-tighter text-zinc-900">Recent Activity</h2>
-                        <p className="text-sm font-medium text-zinc-400 mt-1">Stay informed about your account</p>
+                        <p className="mt-1 text-sm font-medium text-zinc-400">Stay informed about your account</p>
                     </div>
                     <Link 
                         href="/notifications" 
                         className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group"
                     >
                         View All
-                        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight size={14} className="transition-transform group-hover:translate-x-1" />
                     </Link>
                 </div>
 
@@ -559,10 +562,10 @@ export default function DashboardPage() {
                                         <Bell size={20} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-black text-zinc-900 truncate">{notif.title}</h4>
+                                        <h4 className="text-sm font-black truncate text-zinc-900">{notif.title}</h4>
                                         <p className="text-[11px] text-zinc-500 line-clamp-1 mt-1 font-medium">{notif.body}</p>
                                         <div className="flex items-center gap-2 mt-3">
-                                            <div className="h-1 w-1 rounded-full bg-zinc-300" />
+                                            <div className="w-1 h-1 rounded-full bg-zinc-300" />
                                             <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
                                                 {new Date(notif.createdAt).toLocaleDateString()}
                                             </span>
@@ -573,11 +576,11 @@ export default function DashboardPage() {
                         ))
                     ) : (
                         <Card className="col-span-full border-none bg-white p-12 rounded-[2.5rem] shadow-sm border border-zinc-100 flex flex-col items-center justify-center text-center">
-                            <div className="h-16 w-16 rounded-3xl bg-zinc-50 flex items-center justify-center text-zinc-200 mb-4">
+                            <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-3xl bg-zinc-50 text-zinc-200">
                                 <Bell size={32} strokeWidth={1} />
                             </div>
                             <h4 className="text-lg font-black text-zinc-800">Everything up to date</h4>
-                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Check back later for new alerts</p>
+                            <p className="mt-1 text-xs font-bold tracking-widest uppercase text-zinc-400">Check back later for new alerts</p>
                         </Card>
                     )}
                 </div>

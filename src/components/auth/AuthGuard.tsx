@@ -24,6 +24,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (userData?.data) {
             dispatch(setUser(userData.data));
 
+            const isPatron = userData.data.role === ROLES.PATRON;
+            const isPaymentPage = pathname === '/patron/payment';
+
+            // Block unactivated patrons from accessing any dashboard page
+            if (isAuthenticated && isPatron && !userData.data.patronId && !userData.data.patronActivated && !isPaymentPage) {
+                router.push('/patron/payment');
+                return;
+            }
+
             // Mandatory KYC Verification Check (Only for Customers)
             const hasVerifiedLevel2 = userData.data.hasVerifiedLevel2;
             const isCustomer = userData.data.role === ROLES.CUSTOMER;

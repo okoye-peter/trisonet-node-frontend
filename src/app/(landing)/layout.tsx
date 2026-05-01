@@ -2,6 +2,7 @@ import Script from 'next/script';
 import Header from '@/components/landing/Header';
 import Footer from '@/components/landing/Footer';
 import MobileMenu from '@/components/landing/MobileMenu';
+import LandingScripts from '@/components/landing/LandingScripts';
 
 // CSS Imports
 import '@/assets/css/bootstrap.min.css';
@@ -43,19 +44,7 @@ export default function LandingLayout({
             
             <Footer />
 
-            {/* Other JS Imports */}
-            <Script src="/assets/js/swiper-bundle.js" strategy="afterInteractive" />
-            <Script src="/assets/js/isotope.pkgd.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/jquery.meanmenu.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/ajax-form.js" strategy="afterInteractive" />
-            <Script src="/assets/js/wow.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/jquery.scrollUp.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/odometer.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/appair.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/imagesloaded.pkgd.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/jquery.magnific-popup.min.js" strategy="afterInteractive" />
-            <Script src="/assets/js/plugins.js" strategy="afterInteractive" />
-            <Script src="/assets/js/main.js" strategy="afterInteractive" />
+            <LandingScripts />
         </div>
     );
 }

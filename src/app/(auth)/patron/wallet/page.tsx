@@ -5,23 +5,19 @@ import {
     ArrowUpRight,
     TrendingUp,
     Shield,
-    Landmark,
-    Users,
     Wallet,
     Info,
     Lock,
     Unlock,
     Plus
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGetWalletsQuery } from '@/store/api/walletApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { WithdrawFundsModal } from '@/components/dashboard/patron/WithdrawFundsModal';
 import { PagaFundingModal } from '@/components/dashboard/patron/PagaFundingModal';
-import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 
 const containerVariants: Variants = {
@@ -47,7 +43,6 @@ const itemVariants: Variants = {
 };
 
 export default function PatronWalletPage() {
-    const router = useRouter();
     const { user } = useAppSelector((state) => state.auth);
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
     const [isFundingModalOpen, setIsFundingModalOpen] = useState(false);
@@ -56,7 +51,6 @@ export default function PatronWalletPage() {
     const wallets = walletsData?.data || [];
 
     const isTopLevel = user && !user.patronId;
-    const isMember = user && user.patronId;
 
     if (isLoadingWallets) return <LoadingScreen />;
 
@@ -181,14 +175,7 @@ export default function PatronWalletPage() {
                                         </Button>
                                     )}
                                 </div>
-                            ) : (
-                                <Button
-                                    onClick={() => router.push('/patron/members')}
-                                    className="w-full mt-6 h-14 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-900 font-black uppercase tracking-widest transition-all"
-                                >
-                                    <Users size={18} className="mr-2" /> View Organization
-                                </Button>
-                            )}
+                            ) : null}
                         </div>
                     </Card>
                 </motion.div>

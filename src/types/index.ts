@@ -80,6 +80,14 @@ export interface User {
     hasVerifiedLevel2: boolean;
     patronGroupId: string | null;
     pendingPatronType?: string | null;
+    patronActivated?: boolean;
+    patronPlan?: {
+        id: string;
+        name: string;
+        minAmount: number;
+        maxAmount: number;
+        earningPercentage: number | null;
+    } | null;
     wallets?: Wallet[];
 }
 

@@ -41,7 +41,7 @@ export default function EarningsPage() {
             header: "Transaction Details",
             cell: ({ row }) => (
                 <div className="flex flex-col min-w-[350px]">
-                    <span className={`font-bold leading-tight ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
+                    <span className={`font-bold leading-tight lowercase first-letter:uppercase ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
                         {row.original.narration}
                     </span>
                     <span className="text-[10px] text-zinc-400 font-medium truncate mt-1 uppercase tracking-wider">
@@ -55,7 +55,7 @@ export default function EarningsPage() {
             header: "Category",
             cell: ({ row }) => (
                 <div className="min-w-[120px]">
-                    <Badge variant="outline" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase border-zinc-200 text-zinc-600 bg-zinc-50">
+                    <Badge variant="outline" className={`rounded-full px-3 py-0.5 font-bold text-[10px] uppercase border-zinc-200 text-zinc-600 bg-zinc-50 ${row.original.type === 'debit' ? 'text-red-600 border-red-200 bg-red-50' : 'text-emerald-600 border-emerald-200 bg-emerald-50'}`}>
                         {row.original.type}
                     </Badge>
                 </div>
@@ -91,23 +91,23 @@ export default function EarningsPage() {
     ];
 
     return (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12 pb-20">
+        <div className="p-4 pb-20 mx-auto space-y-12 md:p-8 max-w-7xl">
             {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+            <div className="flex flex-col justify-between gap-10 md:flex-row md:items-end">
                 <div className="relative">
-                    <div className="absolute -top-6 -left-6 w-32 h-32 bg-emerald-50/50 rounded-full blur-3xl -z-10" />
+                    <div className="absolute w-32 h-32 rounded-full -top-6 -left-6 bg-emerald-50/50 blur-3xl -z-10" />
                     <div className="flex items-center gap-2 mb-3 text-emerald-600 font-black uppercase tracking-[0.25em] text-[10px] antialiased">
                         <div className="h-[2px] w-10 bg-emerald-600/30 rounded-full" />
                         Financial Growth
                     </div>
-                    <h1 className="text-5xl font-black tracking-tighter text-zinc-900 lg:text-6xl flex items-center gap-5">
+                    <h1 className="flex items-center gap-5 text-5xl font-black tracking-tighter text-zinc-900 lg:text-6xl">
                         My <span className="text-transparent bg-clip-text bg-linear-to-br from-emerald-600 via-teal-600 to-indigo-600">Earnings</span>
                         <div className="h-14 w-14 rounded-[1.25rem] bg-emerald-50 border border-emerald-100/50 flex items-center justify-center shadow-inner">
                             <TrendingUp size={28} className="text-emerald-600" />
                         </div>
                     </h1>
 
-                    <p className="mt-4 text-zinc-500 font-medium max-w-lg text-lg leading-relaxed antialiased italic">
+                    <p className="max-w-lg mt-4 text-lg antialiased italic font-medium leading-relaxed text-zinc-500">
                         Review your historical earnings, partnership bonuses, and platform rewards in one place.
                     </p>
                 </div>
@@ -116,7 +116,7 @@ export default function EarningsPage() {
                     <div className="hidden lg:flex items-center gap-6 px-8 py-4 bg-zinc-50/50 rounded-[2rem] border border-zinc-100/50 backdrop-blur-sm shadow-sm ring-1 ring-zinc-200/5 antialiased">
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.15em] mb-1">Live Sync</span>
-                            <span className="font-bold text-zinc-900 flex items-center gap-2 text-sm">
+                            <span className="flex items-center gap-2 text-sm font-bold text-zinc-900">
                                 <CheckCircle2 size={12} className="text-emerald-500" />
                                 Real-time
                             </span>
@@ -151,42 +151,42 @@ export default function EarningsPage() {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="group p-8 rounded-[2.5rem] bg-white border border-zinc-100 shadow-xl shadow-zinc-200/20 hover:shadow-2xl hover:shadow-emerald-100/40 transition-all duration-500 ease-out hover:-translate-y-1">
                     <div className="flex items-center justify-between mb-6">
-                        <div className="h-14 w-14 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                        <div className="flex items-center justify-center transition-all duration-500 h-14 w-14 rounded-2xl bg-emerald-50 group-hover:scale-110 group-hover:rotate-6">
                             <Coins className="text-emerald-600" size={24} />
                         </div>
                         <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] rounded-lg">ACTIVE</Badge>
                     </div>
-                    <h3 className="text-zinc-400 text-xs font-black uppercase tracking-widest mb-1 antialiased">Primary Driver</h3>
-                    <div className="text-3xl font-black text-zinc-900 tracking-tight">Partnership Rewards</div>
+                    <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-zinc-400">Primary Driver</h3>
+                    <div className="text-3xl font-black tracking-tight text-zinc-900">Partnership Rewards</div>
                 </div>
 
                 <div className="group p-8 rounded-[2.5rem] bg-zinc-950 border border-zinc-800 shadow-xl shadow-zinc-900/40 hover:shadow-2xl hover:shadow-emerald-900/20 transition-all duration-500 ease-out hover:-translate-y-1 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-600/20 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none" />
                     <div className="flex items-center justify-between mb-6">
-                        <div className="h-14 w-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                        <div className="flex items-center justify-center transition-all duration-500 border h-14 w-14 rounded-2xl bg-zinc-900 border-zinc-800 group-hover:scale-110 group-hover:-rotate-6">
                             <BarChart3 className="text-white" size={24} />
                         </div>
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     </div>
-                    <h3 className="text-zinc-500 text-xs font-black uppercase tracking-widest mb-1 antialiased">Platform Activity</h3>
-                    <div className="text-3xl font-black text-white tracking-tight">High Engagement</div>
+                    <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-zinc-500">Platform Activity</h3>
+                    <div className="text-3xl font-black tracking-tight text-white">High Engagement</div>
                 </div>
 
                 <div className="group p-8 rounded-[2.5rem] bg-emerald-600 border border-emerald-500 shadow-xl shadow-emerald-600/20 hover:shadow-2xl hover:shadow-emerald-600/40 transition-all duration-500 ease-out hover:-translate-y-1">
                     <div className="flex items-center justify-between mb-6">
-                        <div className="h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center group-hover:scale-110 transition-all duration-500">
+                        <div className="flex items-center justify-center transition-all duration-500 h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md group-hover:scale-110">
                             <Wallet className="text-white" size={24} />
                         </div>
                     </div>
-                    <div className="flex justify-between items-end">
+                    <div className="flex items-end justify-between">
                         <div>
-                            <h3 className="text-white/60 text-xs font-black uppercase tracking-widest mb-1 antialiased">Earning Wallet</h3>
-                            <div className="text-2xl font-black text-white tracking-tight leading-none mb-1">
+                            <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-white/60">Earning Wallet</h3>
+                            <div className="mb-1 text-2xl font-black leading-none tracking-tight text-white">
                                 {earningWallet?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
-                                <span className="text-white/60 mr-1 text-sm italic"> Gkwth</span>
+                                <span className="mr-1 text-sm italic text-white/60"> Gkwth</span>
                             </div>
                             <p className="text-white/40 text-[10px] font-bold">
                                 Total ≈ ₦{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}

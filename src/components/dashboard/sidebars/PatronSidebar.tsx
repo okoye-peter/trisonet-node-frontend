@@ -48,11 +48,13 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
         }
 
         // Hide Organization link if not the group owner
+        const isMember = !!user?.patronId;
         return items.filter(item => {
             if (item.label === 'Organization') return isGroupOwner;
+            if (item.label === 'Members') return !isMember;
             return true;
         });
-    }, [isGroupOwner, isRestrictedGroupPatron]);
+    }, [isGroupOwner, isRestrictedGroupPatron, user?.patronId]);
 
 
     return (
