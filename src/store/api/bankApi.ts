@@ -5,11 +5,14 @@ export const bankApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getBanks: builder.query<AppResponse<Bank[]>, void>({
             query: () => 'banks',
-            transformResponse: (response: AppResponse<{ success: boolean; data: { banks: Bank[] } }>) => {
-                if (response.data?.success && response.data?.data?.banks) {
+            transformResponse: (response: AppResponse<{ banks?: Bank[] } | Bank[]>) => {
+                // Backend returns { status: 'success', data: { banks: [...] } }
+                // or { status: 'success', data: [] } if service is down
+                const data = response.data;
+                if (data && !Array.isArray(data) && data.banks) {
                     return {
                         ...response,
-                        data: response.data.data.banks
+                        data: data.banks
                     } as AppResponse<Bank[]>;
                 }
                 return response as unknown as AppResponse<Bank[]>;
@@ -25,13 +28,13 @@ export const bankApi = apiSlice.injectEndpoints({
         }),
         getUserBank: builder.query<AppResponse<BankAccountDetail>, void>({
             query: () => 'banks/user',
-            transformResponse: (response: AppResponse<{ success: boolean; data: BankAccountDetail }>) => {
-                if (response.data?.success && response.data?.data) {
-                    return {
-                        ...response,
-                        data: response.data.data
-                    } as AppResponse<BankAccountDetail>;
+            transformResponse: (response: AppResponse<Partial<BankAccountDetail> | unknown[]>) => {
+                // Backend returns { status: 'success', data: { ...details } }
+                const data = response.data;
+                if (data && !Array.isArray(data) && data.isValid !== undefined) {
+                    return response as AppResponse<BankAccountDetail>;
                 }
+                // If it's an empty array or something else unexpected
                 return response as unknown as AppResponse<BankAccountDetail>;
             },
         }),
