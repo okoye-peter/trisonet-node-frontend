@@ -19,19 +19,31 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import type { EarningTransaction } from '@/types';
-import { useGetWalletsQuery, useGetGkwthPricesQuery } from '@/store/api/walletApi';
+import { useGetWalletsQuery, useGetGkwthPricesQuery, useGetEarningConversionInfoQuery } from '@/store/api/walletApi';
+import { useGetUserQuery } from '@/store/api/userApi';
 import { WithdrawalModal } from '@/components/earnings/WithdrawalModal';
+import CustomerConvertEarningsModal from '@/components/earnings/CustomerConvertEarningsModal';
+import { ArrowRightLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function EarningsPage() {
     const { data: walletsResponse } = useGetWalletsQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
+    const { data: userResponse } = useGetUserQuery();
+    const { data: conversionInfoResponse } = useGetEarningConversionInfoQuery(undefined, {
+        skip: (userResponse?.data?.user?.level ?? 0) < 2
+    });
+
     const wallets = walletsResponse?.data || [];
     const earningWallet = wallets.find(w => w.type === 'earning');
     const prices = pricesResponse?.data;
     const purchasePrice = Number(prices?.gkwthPurchasePrice) || 0;
+    const user = userResponse?.data?.user;
+    const conversionInfo = conversionInfoResponse?.data;
     
     const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('desc');
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+    const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
     const [selectedType, setSelectedType] = useState<string>('all');
 
     const columns: ColumnDef<EarningTransaction>[] = [
@@ -148,6 +160,16 @@ export default function EarningsPage() {
                         </Select>
                     </div>
                 </div>
+                
+                {user && user.level >= 2 && (
+                    <Button 
+                        onClick={() => setIsConvertModalOpen(true)}
+                        className="h-14 px-8 rounded-[2rem] bg-zinc-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                        <ArrowRightLeft size={16} />
+                        Convert Assets
+                    </Button>
+                )}
             </div>
 
             {/* Stats Overview */}
@@ -219,11 +241,19 @@ export default function EarningsPage() {
                     </div>
                 </div>
             </div>
-            {/* Modal */}
+            {/* Modals */}
             <WithdrawalModal 
                 open={isWithdrawModalOpen} 
                 onOpenChange={setIsWithdrawModalOpen} 
                 earningWallet={earningWallet} 
+            />
+            
+            <CustomerConvertEarningsModal 
+                open={isConvertModalOpen}
+                onOpenChange={setIsConvertModalOpen}
+                maxAmount={conversionInfo?.maxConvertibleAmount || 0}
+                conversionRate={conversionInfo?.conversionRate || 1}
+                nextAllowedDate={conversionInfo?.nextAllowedConversionDate || null}
             />
         </div>
     );

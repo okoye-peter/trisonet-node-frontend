@@ -101,6 +101,24 @@ export const walletApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User', 'Ward'],
         }),
+        getEarningConversionInfo: builder.query<AppResponse<{ 
+            assetBalance: number; 
+            gkwthBalance: number; 
+            conversionRate: number; 
+            maxConvertibleAmount: number;
+            nextAllowedConversionDate: string | null;
+        }>, void>({
+            query: () => 'earning/conversion-info',
+            providesTags: ['Wallet'],
+        }),
+        convertCustomerEarnings: builder.mutation<AppResponse<any>, { amount: number }>({
+            query: (body) => ({
+                url: 'earning/convert',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Wallet'],
+        }),
     }),
 });
 
@@ -117,5 +135,7 @@ export const {
     useLazyCheckFundingStatusQuery,
     useCheckFundingStatusQuery,
     useInitiateIndirectGkwthFundingMutation,
-    useVerifyWardSlotPurchaseMutation
+    useVerifyWardSlotPurchaseMutation,
+    useGetEarningConversionInfoQuery,
+    useConvertCustomerEarningsMutation
 } = walletApi;

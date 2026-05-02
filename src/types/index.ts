@@ -77,6 +77,7 @@ export interface User {
     unblockingCode: string | null;
     createdAt: string;
     updatedAt: string;
+    level: number;
     hasVerifiedLevel2: boolean;
     patronGroupId: string | null;
     pendingPatronType?: string | null;
