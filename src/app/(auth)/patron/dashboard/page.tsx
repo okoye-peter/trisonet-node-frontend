@@ -9,9 +9,7 @@ import {
     Wallet,
     ArrowUpRight,
     Copy,
-    CheckCircle2,
     Clock,
-    LayoutGrid,
     History,
     CreditCard,
     Zap,
@@ -23,7 +21,6 @@ import { toast } from 'sonner';
 import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useMemo, useState } from 'react';
-import type { PatronGroupTransaction } from '@/types';
 import { CreateOrganizationForm } from '@/components/dashboard/patron/CreateOrganizationForm';
 import { FundOrganizationModal } from '@/components/dashboard/patron/FundOrganizationModal';
 import { ROLES } from '@/types';
@@ -52,7 +49,8 @@ const itemVariants: Variants = {
 };
 
 export default function PatronDashboardPage() {
-    const { user } = useAppSelector((state) => state.auth);
+    const user = useAppSelector((state) => state.auth.user);
+    console.log('data',user )
     const [page, setPage] = useState(1);
     
     const { data: dashboardData, isLoading, refetch } = useGetPatronDashboardQuery({ page });
@@ -166,7 +164,7 @@ export default function PatronDashboardPage() {
                             Managing <span className="text-transparent bg-clip-text bg-linear-to-r from-indigo-400 to-purple-400">{patronData?.patronGroup?.name || 'Organization'}</span>
                         </h1>
                         <p className="mt-4 text-white/50 font-medium text-lg leading-relaxed max-w-lg">
-                            Welcome back, {user?.name.split(' ')[0]}. Your organization&lsquo;s financial ecosystem is thriving. Monitor members and manage distributions from here.
+                            Welcome back, {user?.name?.split(' ')[0] || 'Patron'}. Your organization&lsquo;s financial ecosystem is thriving. Monitor members and manage distributions from here.
                         </p>
                     </div>
 

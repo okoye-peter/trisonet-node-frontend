@@ -39,9 +39,10 @@ type AddMemberValues = z.infer<typeof addMemberSchema>;
 interface AddMemberModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    isCoPatron?: boolean;
 }
 
-export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
+export function AddMemberModal({ open, onOpenChange, isCoPatron = false }: AddMemberModalProps) {
     const [addMember, { isLoading }] = useAddPatronMemberMutation();
 
     const form = useForm<AddMemberValues>({
@@ -56,7 +57,7 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
 
     const onSubmit = async (values: AddMemberValues) => {
         try {
-            await addMember(values).unwrap();
+            await addMember({...values, isCoPatron }).unwrap();
             toast.success("Member added successfully!");
             onOpenChange(false);
             form.reset();
@@ -72,9 +73,9 @@ export function AddMemberModal({ open, onOpenChange }: AddMemberModalProps) {
                 <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
                     <DialogHeader className="relative z-10">
-                        <DialogTitle className="text-3xl font-black tracking-tighter">Add New Member</DialogTitle>
+                        <DialogTitle className="text-3xl font-black tracking-tighter">Add New {isCoPatron ? 'Co-Patron' : 'Member'}</DialogTitle>
                         <DialogDescription className="text-indigo-100/70 font-medium">
-                            Enroll a new patron member into your organization. They will receive their login credentials via SMS.
+                            Enroll a new {isCoPatron ? 'co-patron' : 'member'} into your organization. They will receive their login credentials via SMS.
                         </DialogDescription>
                     </DialogHeader>
                 </div>

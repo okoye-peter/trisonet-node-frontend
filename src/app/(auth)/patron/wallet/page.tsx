@@ -9,8 +9,10 @@ import {
     Info,
     Lock,
     Unlock,
-    Plus
+    Plus,
+    History
 } from 'lucide-react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGetWalletsQuery } from '@/store/api/walletApi';
@@ -54,8 +56,11 @@ export default function PatronWalletPage() {
 
     if (isLoadingWallets) return <LoadingScreen />;
 
-    // For members, we show their direct wallet and the patronage wallet of the patron they are under
-    const directWallet = wallets.find(w => w.type === 'direct' && !w.isParentWallet);
+    // Patron Rule: with patronId -> direct, without patronId -> indirect
+    const withdrawableWallet = user?.patronId 
+        ? wallets.find(w => w.type === 'direct' && !w.isParentWallet)
+        : wallets.find(w => w.type === 'indirect');
+
     const patronageWallet = wallets.find(w => w.isParentWallet) || wallets.find(w => w.type === 'patronage');
     const isParentPatronage = patronageWallet && patronageWallet.isParentWallet;
 
@@ -79,6 +84,11 @@ export default function PatronWalletPage() {
                         Monitor your earnings and manage your sponsorship funds.
                     </p>
                 </div>
+                <Link href="/patron/transactions">
+                    <Button variant="outline" className="h-12 px-6 rounded-2xl border-zinc-200 hover:bg-zinc-50 font-black text-[10px] uppercase tracking-widest transition-all">
+                        <History size={16} className="mr-2" /> View Transactions
+                    </Button>
+                </Link>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
@@ -91,7 +101,9 @@ export default function PatronWalletPage() {
                                     <Unlock size={12} />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Withdrawable</span>
                                 </div>
-                                <h3 className="text-2xl font-black text-zinc-900 tracking-tight">Direct Wallet</h3>
+                                <h3 className="text-2xl font-black text-zinc-900 tracking-tight">
+                                    {withdrawableWallet?.type === 'indirect' ? 'Indirect Wallet' : 'Direct Wallet'}
+                                </h3>
                                 <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Earnings & Commissions</p>
                             </div>
                             <div className="h-14 w-14 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400">
@@ -102,7 +114,7 @@ export default function PatronWalletPage() {
                         <div className="mt-auto">
                             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">Available Balance</p>
                             <h2 className="text-4xl sm:text-5xl font-black text-zinc-900 tracking-tighter mt-2">
-                                ₦{(directWallet?.amount || 0).toLocaleString()}
+                                ₦{(withdrawableWallet?.amount || 0).toLocaleString()}
                             </h2>
 
                             <div className="mt-8 p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
@@ -186,7 +198,7 @@ export default function PatronWalletPage() {
             <WithdrawFundsModal
                 open={isWithdrawModalOpen}
                 onOpenChange={setIsWithdrawModalOpen}
-                wallets={wallets.filter(w => !w.isParentWallet && (isTopLevel || w.type === 'direct'))}
+                wallets={withdrawableWallet ? [withdrawableWallet] : []}
             />
 
             <PagaFundingModal

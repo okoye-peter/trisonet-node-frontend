@@ -6,7 +6,8 @@ import type {
     PatronMembersResponse,
     PatronGroupTransaction,
     PagaVirtualAccountDetails,
-    PatronPlanDetail
+    PatronPlanDetail,
+    PatronTransactionsResponse
 } from '@/types';
 
 export const patronApi = apiSlice.injectEndpoints({
@@ -35,9 +36,9 @@ export const patronApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['User'],
         }),
-        addPatronMember: builder.mutation<AppResponse<User>, { name: string; email: string; phone: string; password?: string }>({
-            query: (body) => ({
-                url: 'patrons/members',
+        addPatronMember: builder.mutation<AppResponse<User>, { name: string; email: string; phone: string; password?: string; isCoPatron?: boolean }>({
+            query: ({ isCoPatron, ...body }) => ({
+                url: isCoPatron ? 'patrons/add-co-patron' : 'patrons/members',
                 method: 'POST',
                 body,
             }),
@@ -75,6 +76,36 @@ export const patronApi = apiSlice.injectEndpoints({
                 method: 'POST',
             }),
         }),
+        getPatronTransactions: builder.query<AppResponse<PatronTransactionsResponse>, { page?: number; limit?: number } | void>({
+            query: (params) => ({
+                url: 'patrons/transactions',
+                params: params || {},
+            }),
+            providesTags: ['Wallet'],
+        }),
+        getPatronEarnings: builder.query<AppResponse<{ 
+            assetBalance: number; 
+            gkwthBalance: number; 
+            conversionRate: number; 
+            maxConvertibleAmount: number;
+            nextAllowedConversionDate: string | null;
+            transactions: any[]; 
+            meta: any 
+        }>, { page?: number } | void>({
+            query: (params) => ({
+                url: 'patrons/earnings',
+                params: params || {},
+            }),
+            providesTags: ['Wallet'],
+        }),
+        convertPatronEarnings: builder.mutation<AppResponse<{ convertedAmount: number; conversionRate: number }>, { amount: number }>({
+            query: (body) => ({
+                url: 'patrons/convert-earnings',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['Wallet'],
+        }),
     }),
 });
 
@@ -90,4 +121,7 @@ export const {
     useCheckPatronFundingStatusQuery,
     useLazyCheckPatronFundingStatusQuery,
     useSendPatronWithdrawalOtpMutation,
+    useGetPatronTransactionsQuery,
+    useGetPatronEarningsQuery,
+    useConvertPatronEarningsMutation,
 } = patronApi;

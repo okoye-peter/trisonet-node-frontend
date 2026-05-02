@@ -420,9 +420,11 @@ export interface PagaVirtualAccountDetails {
 export interface PatronDashboardResponse {
     patronGroup: PatronGroup | null;
     members: (User & { _count: { patronees: number } })[];
+    coPatrons: User[];
     transactions: PatronGroupTransaction[];
     meta: {
         totalMembers: number;
+        totalPatrons: number;
         totalBeneficiaries: number;
         walletBalance: number;
         members: {
@@ -470,4 +472,25 @@ export interface PatronPlanDetail {
     returns: number;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface PatronTransaction {
+    id: string;
+    type: string;
+    category: string;
+    amount: number;
+    description: string;
+    status: 'success' | 'pending' | 'failed';
+    createdAt: string;
+    reference: string | null;
+}
+
+export interface PatronTransactionsResponse {
+    transactions: PatronTransaction[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
 }

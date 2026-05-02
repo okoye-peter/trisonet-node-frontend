@@ -7,7 +7,8 @@ import {
     UserPlus,
     Wallet,
     LayoutGrid,
-    Building2
+    Building2,
+    TrendingUp
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
@@ -40,6 +41,7 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
             { icon: Building2, label: 'Organization', href: '/patron/organization' },
             { icon: UserPlus, label: 'Beneficiaries', href: '/patron/beneficiaries' },
             { icon: Wallet, label: 'Wallet', href: '/patron/wallet' },
+            { icon: TrendingUp, label: 'Earnings', href: '/patron/earnings' },
         ];
 
         // If a group patron hasn't created their group, restrict them to the dashboard only
@@ -52,6 +54,7 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
         return items.filter(item => {
             if (item.label === 'Organization') return isGroupOwner;
             if (item.label === 'Members') return !isMember;
+            if (item.label === 'Earnings') return !isMember;
             return true;
         });
     }, [isGroupOwner, isRestrictedGroupPatron, user?.patronId]);

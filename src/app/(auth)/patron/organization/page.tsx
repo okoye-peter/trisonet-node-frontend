@@ -56,13 +56,13 @@ const itemVariants: Variants = {
     }
 };
 
-const memberColumns: ColumnDef<UserType & { _count: { patronees: number } }>[] = [
+const coPatronColumns: ColumnDef<UserType>[] = [
     {
         accessorKey: "name",
-        header: "Member Name",
+        header: "Partner Name",
         cell: ({ row }) => (
             <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl bg-linear-to-br from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-[10px] shadow-lg shadow-indigo-100">
+                <div className="h-9 w-9 rounded-xl bg-linear-to-br from-orange-500 to-rose-500 flex items-center justify-center font-bold text-white text-[10px] shadow-lg shadow-rose-100">
                     {row.original.name[0]}
                 </div>
                 <div>
@@ -73,17 +73,17 @@ const memberColumns: ColumnDef<UserType & { _count: { patronees: number } }>[] =
         ),
     },
     {
-        id: "beneficiaries",
-        header: "Beneficiaries",
+        accessorKey: "phone",
+        header: "Phone",
         cell: ({ row }) => (
-            <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md text-[10px]">
-                {row.original._count.patronees} Slots
+            <span className="text-[10px] font-bold text-zinc-600">
+                {row.original.phone}
             </span>
         )
     },
     {
         accessorKey: "createdAt",
-        header: "Joined",
+        header: "Added",
         cell: ({ row }) => (
             <span className="text-[10px] text-zinc-500">
                 {new Date(row.original.createdAt).toLocaleDateString()}
@@ -103,51 +103,44 @@ const PLANS = [
 
 export default function PatronOrganizationPage() {
     const [page, setPage] = useState(1);
-    const [activeTab, setActiveTab] = useState<'members' | 'transactions'>('members');
+    const [activeTab, setActiveTab] = useState<'copatrons' | 'transactions'>('copatrons');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
     const { data: dashboardData, isLoading, isError, refetch } = useGetPatronDashboardQuery({ page });
-    
+
     const patronGroup = dashboardData?.data?.patronGroup;
     const meta = dashboardData?.data?.meta;
-    const members = dashboardData?.data?.members || [];
+    const coPatrons = dashboardData?.data?.coPatrons || [];
     const transactions = dashboardData?.data?.transactions || [];
 
     const stats = useMemo(() => [
-        { 
-            label: 'Organization Wallet', 
-            value: `₦${(meta?.walletBalance || 0).toLocaleString()}`, 
+        {
+            label: 'Organization Wallet',
+            value: `₦${(meta?.walletBalance || 0).toLocaleString()}`,
             icon: Wallet,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50'
         },
-        { 
-            label: 'Patron Members', 
-            value: meta?.totalMembers || 0, 
+        {
+            label: 'Patron Members',
+            value: meta?.totalPatrons || 0,
             icon: Users,
             color: 'text-indigo-600',
             bg: 'bg-indigo-50'
         },
-        { 
-            label: 'Total Beneficiaries', 
-            value: meta?.totalBeneficiaries || 0, 
+        {
+            label: 'Total Beneficiaries',
+            value: meta?.totalBeneficiaries || 0,
             icon: ShieldCheck,
             color: 'text-purple-600',
             bg: 'bg-purple-50'
         },
-        { 
-            label: 'Total Strength', 
-            value: (meta?.totalMembers || 0) + (meta?.totalBeneficiaries || 0), 
-            icon: TrendingUp,
-            color: 'text-orange-600',
-            bg: 'bg-orange-50'
-        },
     ], [meta]);
 
-    
+
     const isUnfunded = patronGroup && !patronGroup.isFunded;
-    
+
     if (isLoading) return <LoadingScreen />;
     if (isError) return <div>Error loading dashboard</div>;
 
@@ -167,13 +160,13 @@ export default function PatronOrganizationPage() {
             className="space-y-10"
         >
             {isUnfunded && (
-                <FundOrganizationModal 
+                <FundOrganizationModal
                     initialName={patronGroup.name || ''}
                     initialPlan={patronGroup.planName || 'Bronze'}
                     onSuccess={refetch}
                 />
             )}
-            
+
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
                 <div>
@@ -190,9 +183,9 @@ export default function PatronOrganizationPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="rounded-2xl border-zinc-200 hover:bg-zinc-50 h-14 px-8 font-black text-xs uppercase tracking-widest transition-all">
+                    {/* <Button variant="outline" className="rounded-2xl border-zinc-200 hover:bg-zinc-50 h-14 px-8 font-black text-xs uppercase tracking-widest transition-all">
                         Edit Profile
-                    </Button>
+                    </Button> */}
                 </div>
             </div>
 
@@ -290,19 +283,20 @@ export default function PatronOrganizationPage() {
                     <motion.div variants={itemVariants} className="space-y-6">
                         <div className="flex items-center justify-between px-2">
                             <div className="flex items-center gap-6">
-                                <button 
-                                    onClick={() => setActiveTab('members')}
+                                
+                                <button
+                                    onClick={() => setActiveTab('copatrons')}
                                     className={cn(
                                         "text-xl font-black tracking-tighter transition-all relative pb-2",
-                                        activeTab === 'members' ? "text-zinc-900" : "text-zinc-300 hover:text-zinc-400"
+                                        activeTab === 'copatrons' ? "text-zinc-900" : "text-zinc-300 hover:text-zinc-400"
                                     )}
                                 >
-                                    Patron Members
-                                    {activeTab === 'members' && (
-                                        <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-600 rounded-full" />
+                                    Organization Partners
+                                    {activeTab === 'copatrons' && (
+                                        <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-orange-600 rounded-full" />
                                     )}
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setActiveTab('transactions')}
                                     className={cn(
                                         "text-xl font-black tracking-tighter transition-all relative pb-2",
@@ -318,12 +312,12 @@ export default function PatronOrganizationPage() {
                         </div>
 
                         <div className="rounded-[2rem] bg-white p-8 shadow-sm border border-zinc-100 overflow-hidden">
-                            {activeTab === 'members' ? (
-                                <DataTable 
-                                    columns={memberColumns} 
-                                    data={members} 
+                            {activeTab === 'copatrons' ? (
+                                <DataTable
+                                    columns={coPatronColumns}
+                                    data={coPatrons}
                                     searchKey="name"
-                                    searchPlaceholder="Filter members..."
+                                    searchPlaceholder="Filter partners..."
                                 />
                             ) : (
                                 <div className="space-y-4">
@@ -370,13 +364,13 @@ export default function PatronOrganizationPage() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <Button 
+                                    <Button
                                         onClick={() => setIsAddModalOpen(true)}
                                         className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-950/20 transition-all active:scale-95"
                                     >
                                         <UserPlus size={18} className="mr-3" /> Create New Patron
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={() => setIsCreditModalOpen(true)}
                                         className="w-full h-14 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-purple-950/20 transition-all active:scale-95"
                                     >
@@ -410,14 +404,15 @@ export default function PatronOrganizationPage() {
             </div>
 
             {/* Modals */}
-            
-            <AddMemberModal 
-                open={isAddModalOpen} 
-                onOpenChange={setIsAddModalOpen} 
+
+            <AddMemberModal
+                open={isAddModalOpen}
+                isCoPatron
+                onOpenChange={setIsAddModalOpen}
             />
 
-            <CreditMemberModal 
-                open={isCreditModalOpen} 
+            <CreditMemberModal
+                open={isCreditModalOpen}
                 onOpenChange={setIsCreditModalOpen}
                 currentBalance={meta?.walletBalance || 0}
             />

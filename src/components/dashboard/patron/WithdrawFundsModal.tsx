@@ -194,7 +194,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                                         <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Source Wallet</FormLabel>
                                         <SearchableSelect 
                                             items={wallets.map(w => ({
-                                                label: `${w.type === 'direct' ? 'Direct Wallet' : 'Patronage Wallet'} (₦${w.amount.toLocaleString()})`,
+                                                label: `${w.type === 'direct' ? 'Wallet' : w.type === 'indirect' ? 'Gkwth Wallet' : 'Patronage Wallet'} (${w.amount.toLocaleString()})`,
                                                 value: w.id?.toString() || ""
                                             }))}
                                             value={field.value}

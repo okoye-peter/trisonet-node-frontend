@@ -68,7 +68,7 @@ export default function EarningsPage() {
                 <div className={`font-black min-w-[120px] flex items-center gap-1 ${row.original.type === 'debit' ? 'text-red-600' : 'text-emerald-600'}`}>
                     <div>
                         {row.original.type === 'debit' ? '-' : '+'}{Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        <span className="text-zinc-400 text-[10px] font-bold ml-1">gkwth</span>
+                        <span className="text-zinc-400 text-[10px] font-bold ml-1">assets</span>
                     </div>
                     <span className="text-[10px] text-zinc-400 font-medium ml-2">
                         ≈ ₦{(Number(row.original.amount) * purchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -186,7 +186,7 @@ export default function EarningsPage() {
                             <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-white/60">Earning Wallet</h3>
                             <div className="mb-1 text-2xl font-black leading-none tracking-tight text-white">
                                 {earningWallet?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
-                                <span className="mr-1 text-sm italic text-white/60"> Gkwth</span>
+                                <span className="mr-1 text-sm italic text-white/60"> Asset</span>
                             </div>
                             <p className="text-white/40 text-[10px] font-bold">
                                 Total ≈ ₦{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}

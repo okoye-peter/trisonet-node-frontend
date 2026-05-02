@@ -3,7 +3,7 @@ import type { User, UpdatePasswordRequest, UpdateProfileRequest, UpdateBankReque
 
 export const userApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
-        getUser: builder.query<AppResponse<User>, void>({
+        getUser: builder.query<AppResponse<{ user: User }>, void>({
             query: () => 'users/me',
             providesTags: ['User'],
         }),
