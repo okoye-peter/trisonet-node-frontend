@@ -495,3 +495,22 @@ export interface PatronTransactionsResponse {
         totalPages: number;
     };
 }
+
+export interface ConvertEarningsResponse {
+    convertedAmount: number;
+    conversionRate: number;
+}
+
+export interface GuardianWardSlotPurchase {
+    id: string;
+    type: 'limited' | 'unlimited';
+    quantityPurchased: number | null;
+    quantityLeft: number | null;
+    userId: string;
+    status: 'pending' | 'success' | 'failed';
+    price: number;
+    charges: number | null;
+    reference: string | null;
+    createdAt: string;
+    updatedAt: string;
+}

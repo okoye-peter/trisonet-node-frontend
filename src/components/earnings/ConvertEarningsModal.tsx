@@ -32,7 +32,7 @@ const formSchema = z.object({
     }),
 });
 
-interface CustomerConvertEarningsModalProps {
+interface ConvertEarningsModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     maxAmount: number;
@@ -40,13 +40,13 @@ interface CustomerConvertEarningsModalProps {
     nextAllowedDate: string | null;
 }
 
-export default function CustomerConvertEarningsModal({ 
+export default function ConvertEarningsModal({ 
     open, 
     onOpenChange, 
     maxAmount,
     conversionRate,
     nextAllowedDate
-}: CustomerConvertEarningsModalProps) {
+}: ConvertEarningsModalProps) {
     const [convertEarnings, { isLoading }] = useConvertCustomerEarningsMutation();
     
     const form = useForm<z.infer<typeof formSchema>>({
@@ -69,7 +69,7 @@ export default function CustomerConvertEarningsModal({
 
         const amount = Number(values.amount);
         if (amount > maxAmount) {
-            form.setError("amount", { message: `Limit exceeded. Max: ${maxAmount.toFixed(2)}` });
+            form.setError("amount", { message: `Limit exceeded. Max: ${maxAmount.toLocaleString()}` });
             return;
         }
 
@@ -78,8 +78,9 @@ export default function CustomerConvertEarningsModal({
             toast.success("Assets converted successfully");
             form.reset();
             onOpenChange(false);
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Conversion failed");
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || "Conversion failed");
         }
     }
 
@@ -89,7 +90,7 @@ export default function CustomerConvertEarningsModal({
                 <DialogHeader className="p-8 pb-4">
                     <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900">Convert Assets</DialogTitle>
                     <DialogDescription className="text-zinc-500 font-medium text-sm">
-                        Convert up to 50% of your earnings into GKWTH every 7 days.
+                        Convert your earnings into GKWTH assets.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -125,7 +126,7 @@ export default function CustomerConvertEarningsModal({
                                 name="amount"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Asset Amount to Convert (Max 50%)</FormLabel>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Asset Amount to Convert</FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input 

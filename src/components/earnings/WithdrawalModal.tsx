@@ -33,7 +33,7 @@ import { RootState } from '@/store';
 import { Wallet } from '@/types';
 
 const withdrawalSchema = z.object({
-    amount: z.number().min(100, 'Minimum withdrawal amount is ₦100'),
+    amount: z.number().min(0.01, 'Amount must be greater than 0'),
     pin: z.string().length(4, 'PIN must be 4 digits'),
 });
 
@@ -77,6 +77,10 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
     console.log('bankResponse', bankResponse)
 
     const onSubmit = async (values: WithdrawalFormValues) => {
+        console.log('data', {
+            earningWallet,
+            user
+        })
         if (!earningWallet || !user) return;
 
         if (values.amount > maxWithdrawal) {
@@ -125,10 +129,10 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                     <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 rotate-3">
                                         <WalletIcon size={24} strokeWidth={2.5} />
                                     </div>
-                                    Withdraw Funds
+                                    Convert Asset To Gkwth
                                 </DialogTitle>
                                 <DialogDescription className="font-bold text-zinc-500 text-sm mt-2">
-                                    Transfer your earnings directly to your registered bank account.
+                                    Convert you Asset to Gkwth so you can withdraw it.
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -137,8 +141,8 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                 <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={18} />
                                 <p className="text-xs font-bold text-amber-900/80 dark:text-amber-400/80 leading-relaxed">
                                     <span className="text-amber-600 uppercase tracking-wider block mb-1 font-black">Important Policy</span>
-                                    You can only withdraw <span className="text-amber-600 font-black italic">50% of your total balance</span>. 
-                                    Furthermore, withdrawals are limited to a <span className="text-amber-600 font-black italic">7-day interval</span> from your last withdrawal.
+                                    You can only convert <span className="text-amber-600 font-black italic">50% of your total balance</span>. 
+                                    Furthermore, conversion are limited to a <span className="text-amber-600 font-black italic">7-day interval</span> from your last conversion.
                                 </p>
                             </div>
 
@@ -178,11 +182,17 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                         <div className="relative group">
                                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-sm group-focus-within:text-emerald-500 transition-colors italic">Gkwth</span>
                                             <Input
+                                                step={0.1}
                                                 type="number"
                                                 {...form.register('amount', { valueAsNumber: true })}
                                                 className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-3 pr-16 font-black text-xl text-zinc-900 dark:text-zinc-100 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"
                                             />
-                                            {form.watch('amount') > 0 && (
+                                            {form.formState.errors.amount && (
+                                                <p className="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-tight">
+                                                    {form.formState.errors.amount.message}
+                                                </p>
+                                            )}
+                                            {form.watch('amount') > 0 && !form.formState.errors.amount && (
                                                 <motion.p 
                                                     initial={{ opacity: 0, y: -5 }}
                                                     animate={{ opacity: 1, y: 0 }}
@@ -207,6 +217,11 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                                 className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-11 pr-4 font-black tracking-[0.5em] text-xl focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"
                                             />
                                         </div>
+                                        {form.formState.errors.pin && (
+                                            <p className="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-tight">
+                                                {form.formState.errors.pin.message}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
 

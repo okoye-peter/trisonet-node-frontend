@@ -22,7 +22,7 @@ import type { EarningTransaction } from '@/types';
 import { useGetWalletsQuery, useGetGkwthPricesQuery, useGetEarningConversionInfoQuery } from '@/store/api/walletApi';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { WithdrawalModal } from '@/components/earnings/WithdrawalModal';
-import CustomerConvertEarningsModal from '@/components/earnings/CustomerConvertEarningsModal';
+import ConvertEarningsModal from '@/components/earnings/ConvertEarningsModal';
 import { ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -30,9 +30,7 @@ export default function EarningsPage() {
     const { data: walletsResponse } = useGetWalletsQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const { data: userResponse } = useGetUserQuery();
-    const { data: conversionInfoResponse } = useGetEarningConversionInfoQuery(undefined, {
-        skip: (userResponse?.data?.user?.level ?? 0) < 2
-    });
+    const { data: conversionInfoResponse } = useGetEarningConversionInfoQuery();
 
     const wallets = walletsResponse?.data || [];
     const earningWallet = wallets.find(w => w.type === 'earning');
@@ -161,15 +159,13 @@ export default function EarningsPage() {
                     </div>
                 </div>
                 
-                {user && user.level >= 2 && (
-                    <Button 
-                        onClick={() => setIsConvertModalOpen(true)}
-                        className="h-14 px-8 rounded-[2rem] bg-zinc-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 transition-all active:scale-95 flex items-center gap-2"
-                    >
-                        <ArrowRightLeft size={16} />
-                        Convert Assets
-                    </Button>
-                )}
+                <Button 
+                    onClick={() => setIsConvertModalOpen(true)}
+                    className="h-14 px-8 rounded-[2rem] bg-zinc-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 transition-all active:scale-95 flex items-center gap-2"
+                >
+                    <ArrowRightLeft size={16} />
+                    Convert Assets
+                </Button>
             </div>
 
             {/* Stats Overview */}
@@ -205,7 +201,7 @@ export default function EarningsPage() {
                     </div>
                     <div className="flex items-end justify-between">
                         <div>
-                            <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-white/60">Earning Wallet</h3>
+                            <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-white/60">Business Asset</h3>
                             <div className="mb-1 text-2xl font-black leading-none tracking-tight text-white">
                                 {earningWallet?.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '0.00'}
                                 <span className="mr-1 text-sm italic text-white/60"> Asset</span>
@@ -219,7 +215,7 @@ export default function EarningsPage() {
                             className="h-12 px-4 py-1 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn text-sm!"
                             title="Withdraw Funds"
                         >
-                            Withdraw
+                            Convert
                         </button>
                     </div>
                 </div>
@@ -248,7 +244,7 @@ export default function EarningsPage() {
                 earningWallet={earningWallet} 
             />
             
-            <CustomerConvertEarningsModal 
+            <ConvertEarningsModal 
                 open={isConvertModalOpen}
                 onOpenChange={setIsConvertModalOpen}
                 maxAmount={conversionInfo?.maxConvertibleAmount || 0}

@@ -24,7 +24,7 @@ import api from '@/lib/axios';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/features/authSlice';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
-import { ROLES } from '@/types';
+import { ROLES, User } from '@/types';
 
 
 const loginSchema = z.object({
@@ -52,6 +52,8 @@ export default function LoginPage() {
         },
     });
 
+    const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
+
     async function onSubmit(values: LoginFormValues) {
         setIsLoading(true);
         dispatch(loginStart());
@@ -59,13 +61,17 @@ export default function LoginPage() {
             const response = await api.post('/auth/login', values);
 
             const { user, accessToken, refreshToken } = response.data.data;
+
+            // Store user locally to ensure redirection uses correct role
+            setLoggedInUser(user);
+
             dispatch(loginSuccess({ user, accessToken, refreshToken }));
             toast.success('Successfully logged in!');
             setShowWelcomeVideo(true);
 
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };
-            const message = err.response?.data?.message || 'Failed to login. Please check your credentials.';
+            const message = err.response?.data?.message || 'Failed to login. Please try again.';
             dispatch(loginFailure(message));
             toast.error(message);
         } finally {
@@ -78,7 +84,10 @@ export default function LoginPage() {
             <WelcomeVideo 
                 onEnded={() => {
                     sessionStorage.setItem('hasSeenWelcome', 'true');
-                    if (user?.role === ROLES.PATRON) {
+                    // Use loggedInUser from local state or fallback to store user
+                    const currentUser = loggedInUser || user;
+                    
+                    if (currentUser?.role === ROLES.PATRON) {
                         router.push('/patron/dashboard');
                     } else {
                         router.push('/dashboard');

@@ -42,6 +42,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
             if (isAuthenticated && isCustomer && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
                 router.push('/dashboard');
+                return;
+            }
+
+            // Safety: Block customers from accessing any patron routes
+            const isPatronPage = pathname?.startsWith('/patron');
+            if (isAuthenticated && isCustomer && isPatronPage) {
+                router.push('/dashboard');
+                return;
             }
         }
 

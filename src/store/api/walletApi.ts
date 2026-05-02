@@ -1,5 +1,5 @@
 import { apiSlice, type AppResponse } from './apiSlice';
-import type { Wallet, WalletTransfer, PaginatedResult, Loan } from '@/types';
+import type { Wallet, WalletTransfer, PaginatedResult, Loan, ConvertEarningsResponse, GuardianWardSlotPurchase } from '@/types';
 
 export const walletApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -93,7 +93,7 @@ export const walletApi = apiSlice.injectEndpoints({
                 body,
             }),
         }),
-        verifyWardSlotPurchase: builder.mutation<AppResponse<any>, { reference: string }>({
+        verifyWardSlotPurchase: builder.mutation<AppResponse<GuardianWardSlotPurchase>, { reference: string }>({
             query: (body) => ({
                 url: 'payment/wards/purchase/verify',
                 method: 'POST',
@@ -108,12 +108,12 @@ export const walletApi = apiSlice.injectEndpoints({
             maxConvertibleAmount: number;
             nextAllowedConversionDate: string | null;
         }>, void>({
-            query: () => 'earning/conversion-info',
+            query: () => 'earnings/conversion-info',
             providesTags: ['Wallet'],
         }),
-        convertCustomerEarnings: builder.mutation<AppResponse<any>, { amount: number }>({
+        convertCustomerEarnings: builder.mutation<AppResponse<ConvertEarningsResponse>, { amount: number }>({
             query: (body) => ({
-                url: 'earning/convert',
+                url: 'earnings/convert',
                 method: 'POST',
                 body,
             }),

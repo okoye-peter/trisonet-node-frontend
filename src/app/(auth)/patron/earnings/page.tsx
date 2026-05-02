@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useGetPatronEarningsQuery } from '@/store/api/patronApi';
 import LoadingScreen from '@/components/LoadingScreen';
-import ConvertEarningsModal from '@/components/dashboard/patron/ConvertEarningsModal';
+import ConvertEarningsModal from '@/components/earnings/ConvertEarningsModal';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -130,7 +130,7 @@ export default function PatronEarningsPage() {
                                 <div className="flex justify-between items-center mt-2">
                                     <p className="text-xs font-bold text-zinc-400">1 GKWTH = {conversionRate} Asset</p>
                                     <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-md">
-                                        Limit: {maxConvertibleAmount.toLocaleString()} (50%)
+                                        Limit: {maxConvertibleAmount.toLocaleString()}
                                     </p>
                                 </div>
                             </div>
