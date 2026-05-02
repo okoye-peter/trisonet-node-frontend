@@ -29,7 +29,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             const isPaymentPage = pathname === '/patron/payment';
 
             // Block unactivated patrons from accessing any dashboard page
-            if (isAuthenticated && isPatron && (user.patronId || !user.patronActivated) && !isPaymentPage) {
+            if (isAuthenticated && isPatron && (!user.patronId && !user.patronActivated) && !isPaymentPage) {
                 router.push('/patron/payment');
                 return;
             }

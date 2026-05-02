@@ -77,8 +77,9 @@ export default function ConvertEarningsModal({
             toast.success("Assets converted successfully");
             form.reset();
             onOpenChange(false);
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Conversion failed");
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || "Conversion failed");
         }
     }
 

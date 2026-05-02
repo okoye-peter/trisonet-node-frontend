@@ -100,7 +100,7 @@ export const patronApi = apiSlice.injectEndpoints({
         }),
         convertPatronEarnings: builder.mutation<AppResponse<{ convertedAmount: number; conversionRate: number }>, { amount: number }>({
             query: (body) => ({
-                url: 'patrons/convert-earnings',
+                url: 'earnings/convert',
                 method: 'POST',
                 body,
             }),

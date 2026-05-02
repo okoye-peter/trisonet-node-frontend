@@ -123,7 +123,7 @@ export default function EarningsPage() {
                 </div>
 
                 <div className="flex gap-4">
-                    <div className="hidden lg:flex items-center gap-6 px-8 py-4 bg-zinc-50/50 rounded-[2rem] border border-zinc-100/50 backdrop-blur-sm shadow-sm ring-1 ring-zinc-200/5 antialiased">
+                    {/* <div className="hidden lg:flex items-center gap-6 px-8 py-4 bg-zinc-50/50 rounded-[2rem] border border-zinc-100/50 backdrop-blur-sm shadow-sm ring-1 ring-zinc-200/5 antialiased">
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.15em] mb-1">Live Sync</span>
                             <span className="flex items-center gap-2 text-sm font-bold text-zinc-900">
@@ -131,7 +131,7 @@ export default function EarningsPage() {
                                 Real-time
                             </span>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="flex items-center gap-2 px-6 py-4 bg-white rounded-[2rem] border border-zinc-100 shadow-sm">
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Type</span>
                         <Select value={selectedType} onValueChange={(v: string | null) => v && setSelectedType(v)}>
@@ -210,13 +210,13 @@ export default function EarningsPage() {
                                 Total ≈ ₦{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}
                             </p>
                         </div>
-                        <button 
+                        {/* <button 
                             onClick={() => setIsWithdrawModalOpen(true)}
                             className="h-12 px-4 py-1 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn text-sm!"
                             title="Withdraw Funds"
                         >
                             Convert
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
