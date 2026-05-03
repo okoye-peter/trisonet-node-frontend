@@ -118,7 +118,7 @@ export default function EarningsPage() {
                     </h1>
 
                     <p className="max-w-lg mt-4 text-lg antialiased italic font-medium leading-relaxed text-zinc-500">
-                        Review your historical earnings, partnership bonuses, and platform rewards in one place.
+                        Review your daily assets earnings and conversion
                     </p>
                 </div>
 

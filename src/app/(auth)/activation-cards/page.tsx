@@ -199,7 +199,10 @@ const ActivationCards = () => {
     const [isVerifying, setIsVerifying] = useState(false)
     const [isTimeout, setIsTimeout] = useState(false)
 
-    const { data: cardsResponse, isLoading: isCardsLoading, refetch: refetchCards } = useGetPimCardsQuery({ page: 1, limit: 100 })
+    const [currentPage, setCurrentPage] = useState(1)
+    const [limit] = useState(10)
+
+    const { data: cardsResponse, isLoading: isCardsLoading, isFetching: isCardsFetching, refetch: refetchCards } = useGetPimCardsQuery({ page: currentPage, limit })
     const { data: summaryResponse, isLoading: isSummaryLoading, refetch: refetchSummary } = useGetPimCardsSummaryQuery()
     const [purchaseCard, { isLoading: isPurchasing }] = usePurchasePimCardMutation()
     const [verifyPayment] = useVerifyCardPurchasePaymentMutation()
@@ -211,8 +214,10 @@ const ActivationCards = () => {
     }, [])
 
     const cards = cardsResponse?.data?.data ?? []
+    const meta = cardsResponse?.data?.meta
     const summary = summaryResponse?.data ?? null
     const loading = isCardsLoading || isSummaryLoading
+    const isFetching = isCardsFetching
     const error = null // Error handling is now integrated in the hooks or toast
 
     const fetchData = useCallback(async () => {
@@ -267,7 +272,7 @@ const ActivationCards = () => {
 
 
     const { data: userResponse } = useGetUserQuery()
-    const user = userResponse?.data ?? null
+    const user = userResponse?.data?.user ?? null
 
     const pricePerCard = summary?.price ?? 0
     const subtotal = quantity ? (user?.username === 'dev_user' ? 100 : quantity * pricePerCard) : 0
@@ -630,7 +635,7 @@ const ActivationCards = () => {
                             </div>
                             {!loading && (
                                 <Badge variant="secondary" className="rounded-full font-black text-xs px-3">
-                                    {cards.length} card{cards.length !== 1 ? 's' : ''}
+                                    {meta?.totalItems ?? 0} card{(meta?.totalItems ?? 0) !== 1 ? 's' : ''}
                                 </Badge>
                             )}
                         </div>
@@ -732,6 +737,66 @@ const ActivationCards = () => {
                             </Table>
                         )}
                     </CardContent>
+
+                    {/* Pagination Footer */}
+                    {meta && meta.totalPages > 1 && (
+                        <div className="p-6 border-t border-muted/10 bg-muted/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                                Page <span className="text-primary">{meta.currentPage}</span> of {meta.totalPages}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setCurrentPage(p => Math.max(1, p - 1))
+                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                    }}
+                                    disabled={!meta.hasPreviousPage || isFetching}
+                                    className="rounded-xl font-bold h-9 px-4 border-muted-foreground/20"
+                                >
+                                    Previous
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                    {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === meta.totalPages || Math.abs(p - meta.currentPage) <= 1)
+                                        .map((p, i, arr) => (
+                                            <React.Fragment key={p}>
+                                                {i > 0 && arr[i - 1] !== p - 1 && <span className="text-muted-foreground text-xs mx-1">...</span>}
+                                                <Button
+                                                    variant={p === meta.currentPage ? 'default' : 'ghost'}
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setCurrentPage(p)
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                                    }}
+                                                    disabled={isFetching}
+                                                    className={cn(
+                                                        "h-9 w-9 p-0 rounded-xl font-black text-xs",
+                                                        p === meta.currentPage ? "shadow-lg shadow-primary/20" : "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    {p}
+                                                </Button>
+                                            </React.Fragment>
+                                        ))
+                                    }
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        setCurrentPage(p => Math.min(meta.totalPages, p + 1))
+                                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                                    }}
+                                    disabled={!meta.hasNextPage || isFetching}
+                                    className="rounded-xl font-bold h-9 px-4 border-muted-foreground/20"
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </Card>
             </motion.div>
 
