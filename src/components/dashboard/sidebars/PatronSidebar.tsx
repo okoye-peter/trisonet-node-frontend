@@ -8,7 +8,9 @@ import {
     Wallet,
     LayoutGrid,
     Building2,
-    TrendingUp
+    TrendingUp,
+    User,
+    History
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
@@ -37,11 +39,13 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
     const sidebarItems: SidebarItem[] = useMemo(() => {
         const items = [
             { icon: LayoutGrid, label: 'Dashboard', href: '/patron/dashboard' },
+            { icon: User, label: 'Profile Settings', href: '/profile' },
             { icon: Users, label: 'Members', href: '/patron/members' },
             { icon: Building2, label: 'Organization', href: '/patron/organization' },
             { icon: UserPlus, label: 'Beneficiaries', href: '/patron/beneficiaries' },
             { icon: Wallet, label: 'Wallet', href: '/patron/wallet' },
             { icon: TrendingUp, label: 'Earnings', href: '/patron/earnings' },
+            { icon: History, label: 'Withdrawals', href: '/patron/withdrawals' },
         ];
 
         // If a group patron hasn't created their group, restrict them to the dashboard only

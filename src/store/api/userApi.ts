@@ -49,6 +49,13 @@ export const userApi = apiSlice.injectEndpoints({
                 body,
             }),
         }),
+        verifyWithdrawalPinOtp: builder.mutation<AppResponse<void>, { otp: string }>({
+            query: (body) => ({
+                url: 'users/verify-withdrawal-pin-otp',
+                method: 'POST',
+                body,
+            }),
+        }),
         getUserByTransferId: builder.query<AppResponse<User>, string>({
             query: (transferId) => `users/lookup/${transferId}`,
         }),
@@ -67,6 +74,7 @@ export const {
     useSendOtpMutation, 
     useGetUserByTransferIdQuery,
     useSendWithdrawalPinOtpMutation,
+    useVerifyWithdrawalPinOtpMutation,
     useResetWithdrawalPinMutation,
     useGetUserDashboardStatsQuery
 } = userApi;

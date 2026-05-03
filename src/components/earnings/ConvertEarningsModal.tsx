@@ -30,6 +30,7 @@ const formSchema = z.object({
     amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
         message: "Amount must be a positive number",
     }),
+    pin: z.string().length(4, "Pin must be 4 digits"),
 });
 
 interface ConvertEarningsModalProps {
@@ -53,6 +54,7 @@ export default function ConvertEarningsModal({
         resolver: zodResolver(formSchema),
         defaultValues: {
             amount: "",
+            pin: "",
         },
     });
 
@@ -74,7 +76,7 @@ export default function ConvertEarningsModal({
         }
 
         try {
-            await convertEarnings({ amount }).unwrap();
+            await convertEarnings({ amount, pin: values.pin }).unwrap();
             toast.success("Assets converted successfully");
             form.reset();
             onOpenChange(false);
@@ -156,6 +158,29 @@ export default function ConvertEarningsModal({
                                             <p className="text-[10px] font-bold text-zinc-400">Convertible Limit: {maxAmount.toLocaleString()}</p>
                                             <FormMessage className="text-[10px] font-black uppercase" />
                                         </div>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="pin"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Withdrawal Pin</FormLabel>
+                                        <FormControl>
+                                            <Input 
+                                                type="password"
+                                                placeholder="••••" 
+                                                {...field} 
+                                                disabled={isLocked}
+                                                className={cn(
+                                                    "h-14 px-6 rounded-2xl bg-zinc-50 border-none focus-visible:ring-2 focus-visible:ring-zinc-900 font-black text-lg placeholder:text-zinc-300",
+                                                    isLocked && "opacity-50 cursor-not-allowed"
+                                                )}
+                                            />
+                                        </FormControl>
+                                        <FormMessage className="text-[10px] font-black uppercase ml-1" />
                                     </FormItem>
                                 )}
                             />

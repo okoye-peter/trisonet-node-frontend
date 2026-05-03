@@ -14,6 +14,10 @@ import { toast } from "sonner"
 import {
     useUpdateProfileMutation,
     useUpdateBankDetailsMutation,
+    useUpdatePasswordMutation,
+    useSendWithdrawalPinOtpMutation,
+    useVerifyWithdrawalPinOtpMutation,
+    useResetWithdrawalPinMutation
 } from '@/store/api/userApi'
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +25,7 @@ import api from '@/lib/axios';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 
 
-type TabType = 'personal' | 'bank';
+type TabType = 'personal' | 'bank' | 'security';
 
 interface PersonalInfoTabProps {
     user: UserType | null;
@@ -432,6 +436,296 @@ function BankTab({ user }: BankTabProps) {
 
 
 
+function SecurityTab() {
+    const [activeSecurityTab, setActiveSecurityTab] = useState<'password' | 'pin'>('pin');
+
+    return (
+        <div className="space-y-8">
+            <div className="flex p-1 bg-zinc-50 rounded-2xl w-full max-w-sm">
+                <button
+                    onClick={() => setActiveSecurityTab('pin')}
+                    className={cn(
+                        "flex-1 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl",
+                        activeSecurityTab === 'pin' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                    )}
+                >
+                    Withdrawal PIN
+                </button>
+                <button
+                    onClick={() => setActiveSecurityTab('password')}
+                    className={cn(
+                        "flex-1 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl",
+                        activeSecurityTab === 'password' ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-400 hover:text-zinc-600"
+                    )}
+                >
+                    Password
+                </button>
+            </div>
+
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeSecurityTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    {activeSecurityTab === 'password' ? <PasswordSection /> : <PinSection />}
+                </motion.div>
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function PasswordSection() {
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        password: '',
+        confirmPassword: ''
+    })
+
+    const [updatePassword, { isLoading: isPending }] = useUpdatePasswordMutation();
+
+    const handleUpdate = async () => {
+        if (!passwordData.currentPassword || !passwordData.password || !passwordData.confirmPassword) {
+            toast.error("Validation failed", { description: "All fields are required" });
+            return;
+        }
+
+        if (passwordData.password !== passwordData.confirmPassword) {
+            toast.error("Validation failed", { description: "Passwords do not match" });
+            return;
+        }
+
+        try {
+            await updatePassword(passwordData).unwrap();
+            toast.success("Password updated successfully");
+            setPasswordData({ currentPassword: '', password: '', confirmPassword: '' });
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
+            toast.error("Password update failed", { description: rtkError?.data?.message || "Something went wrong" });
+        }
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="grid gap-6 sm:grid-cols-2">
+                <div className="space-y-2.5">
+                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Current Password</Label>
+                    <Input
+                        type="password"
+                        className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    />
+                </div>
+                <div className="space-y-2.5">
+                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">New Password</Label>
+                    <Input
+                        type="password"
+                        className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                        value={passwordData.password}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, password: e.target.value }))}
+                    />
+                </div>
+                <div className="space-y-2.5 sm:col-span-2">
+                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Confirm New Password</Label>
+                    <Input
+                        type="password"
+                        className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    />
+                </div>
+            </div>
+            <Button
+                className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                onClick={handleUpdate}
+                disabled={isPending}
+            >
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update Password'}
+            </Button>
+        </div>
+    );
+}
+
+function PinSection() {
+    const [pinData, setPinData] = useState({ otp: '', newPin: '', confirmPin: '' });
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+
+    const [sendOtp, { isLoading: isSendingOtp }] = useSendWithdrawalPinOtpMutation();
+    const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyWithdrawalPinOtpMutation();
+    const [resetPin, { isLoading: isResettingPin }] = useResetWithdrawalPinMutation();
+
+    const handleSendOtp = async () => {
+        try {
+            await sendOtp().unwrap();
+            setIsOtpSent(true);
+            toast.success("Verification code sent", { description: "Please check your phone or email for the code." });
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
+            toast.error("Failed to send OTP", { description: rtkError?.data?.message || "Something went wrong" });
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!pinData.otp) {
+            toast.error("Verification error", { description: "Please enter the code sent to you." });
+            return;
+        }
+        
+        try {
+            await verifyOtp({ otp: pinData.otp }).unwrap();
+            setIsVerified(true);
+            toast.success("Identity verified", { description: "You can now reset your withdrawal PIN." });
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
+            toast.error("Verification failed", { description: rtkError?.data?.message || "Invalid or expired OTP" });
+        }
+    };
+
+    const handleResetPin = async () => {
+        if (!pinData.otp || !pinData.newPin || !pinData.confirmPin) {
+            toast.error("Validation failed", { description: "All fields are required" });
+            return;
+        }
+        if (pinData.newPin !== pinData.confirmPin) {
+            toast.error("Validation failed", { description: "PINs do not match" });
+            return;
+        }
+        if (pinData.newPin.length < 4) {
+            toast.error("Validation failed", { description: "PIN must be at least 4 digits" });
+            return;
+        }
+        try {
+            await resetPin({ otp: pinData.otp, newPin: pinData.newPin }).unwrap();
+            toast.success("Withdrawal PIN reset successfully");
+            setPinData({ otp: '', newPin: '', confirmPin: '' });
+            setIsOtpSent(false);
+            setIsVerified(false);
+        } catch (error: unknown) {
+            const rtkError = error as { data?: { message?: string } };
+            toast.error("Reset failed", { description: rtkError?.data?.message || "Could not reset withdrawal PIN" });
+        }
+    };
+
+    return (
+        <div className="min-h-[300px]">
+            <AnimatePresence mode="wait">
+                {!isOtpSent ? (
+                    <motion.div
+                        key="step-otp-request"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-6"
+                    >
+                        <div className="p-8 rounded-[2rem] bg-indigo-50/50 border border-indigo-100/50 space-y-4">
+                            <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100">
+                                <Shield size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-zinc-900 tracking-tight">Security Check</h3>
+                                <p className="text-sm text-zinc-500 font-medium mt-1 leading-relaxed">
+                                    To protect your account, we need to verify your identity before you can change your withdrawal PIN.
+                                </p>
+                            </div>
+                            <Button
+                                className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95 w-full"
+                                onClick={handleSendOtp}
+                                disabled={isSendingOtp}
+                            >
+                                {isSendingOtp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Request Verification Code'}
+                            </Button>
+                        </div>
+                    </motion.div>
+                ) : !isVerified ? (
+                    <motion.div
+                        key="step-otp-verify"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-8"
+                    >
+                        <div className="space-y-2.5">
+                            <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Verification Code</Label>
+                            <Input
+                                className="h-16 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-black text-2xl tracking-[0.5em] text-zinc-900"
+                                placeholder="000000"
+                                maxLength={6}
+                                value={pinData.otp}
+                                onChange={(e) => setPinData(prev => ({ ...prev, otp: e.target.value.replace(/\D/g, '') }))}
+                            />
+                        </div>
+                        <div className="flex gap-4">
+                            <Button
+                                className="h-14 px-10 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                onClick={handleVerifyOtp}
+                                disabled={isVerifyingOtp || pinData.otp.length < 6}
+                            >
+                                {isVerifyingOtp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Verification'}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-xs transition-all text-zinc-400"
+                                onClick={() => setIsOtpSent(false)}
+                            >
+                                Back
+                            </Button>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="step-pin-reset"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="space-y-8"
+                    >
+                        <div className="p-6 rounded-[2rem] bg-emerald-50 border border-emerald-100 flex items-center gap-4">
+                            <CheckCircle2 size={20} className="text-emerald-500" />
+                            <p className="text-xs font-bold text-emerald-800">Identity verified. You can now set your new 4-digit withdrawal PIN.</p>
+                        </div>
+                        <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="space-y-2.5">
+                                <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">New 4-Digit PIN</Label>
+                                <Input
+                                    type="password"
+                                    className="h-16 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900 text-xl tracking-widest"
+                                    placeholder="••••"
+                                    maxLength={4}
+                                    value={pinData.newPin}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, newPin: e.target.value.replace(/\D/g, '') }))}
+                                />
+                            </div>
+                            <div className="space-y-2.5">
+                                <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Confirm New PIN</Label>
+                                <Input
+                                    type="password"
+                                    className="h-16 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900 text-xl tracking-widest"
+                                    placeholder="••••"
+                                    maxLength={4}
+                                    value={pinData.confirmPin}
+                                    onChange={(e) => setPinData(prev => ({ ...prev, confirmPin: e.target.value.replace(/\D/g, '') }))}
+                                />
+                            </div>
+                        </div>
+                        <Button
+                            className="h-14 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                            onClick={handleResetPin}
+                            disabled={isResettingPin}
+                        >
+                            {isResettingPin ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update Withdrawal PIN'}
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+
 export default function ProfilePage() {
     const { user } = useAppSelector((state) => state.auth);
 
@@ -457,6 +751,7 @@ export default function ProfilePage() {
     const tabs = [
         { id: 'personal', label: 'Personal Info', icon: User },
         { id: 'bank', label: 'Bank', icon: Landmark },
+        { id: 'security', label: 'Security', icon: Shield },
     ];
 
     return (
@@ -551,6 +846,8 @@ export default function ProfilePage() {
 
 
                                     {activeTab === 'bank' && <BankTab user={user} key={user?.id ?? 'loading-bank'} />}
+
+                                    {activeTab === 'security' && <SecurityTab />}
 
                                 </CardContent>
                             </Card>

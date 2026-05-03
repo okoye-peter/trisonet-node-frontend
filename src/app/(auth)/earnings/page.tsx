@@ -177,7 +177,7 @@ export default function EarningsPage() {
                         </div>
                         <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-black text-[10px] rounded-lg">ACTIVE</Badge>
                     </div>
-                    <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-zinc-400">Primary Driver</h3>
+                    <h3 className="mb-1 text-xs antialiased font-black tracking-widest uppercase text-zinc-400">Investment Rewards</h3>
                     <div className="text-3xl font-black tracking-tight text-zinc-900">Partnership Rewards</div>
                 </div>
 

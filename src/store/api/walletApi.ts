@@ -111,7 +111,7 @@ export const walletApi = apiSlice.injectEndpoints({
             query: () => 'earnings/conversion-info',
             providesTags: ['Wallet'],
         }),
-        convertCustomerEarnings: builder.mutation<AppResponse<ConvertEarningsResponse>, { amount: number }>({
+        convertCustomerEarnings: builder.mutation<AppResponse<ConvertEarningsResponse>, { amount: number; pin: string }>({
             query: (body) => ({
                 url: 'earnings/convert',
                 method: 'POST',

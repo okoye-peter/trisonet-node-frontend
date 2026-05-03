@@ -114,7 +114,7 @@ export default function PatronWalletPage() {
                         <div className="mt-auto">
                             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">Available Balance</p>
                             <h2 className="text-4xl sm:text-5xl font-black text-zinc-900 tracking-tighter mt-2">
-                                ₦{(withdrawableWallet?.amount || 0).toLocaleString()}
+                                {withdrawableWallet?.type == 'direct' && '₦'} {(withdrawableWallet?.amount || 0).toLocaleString()} {withdrawableWallet?.type == 'indirect' && 'gkwth'}
                             </h2>
 
                             <div className="mt-8 p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
