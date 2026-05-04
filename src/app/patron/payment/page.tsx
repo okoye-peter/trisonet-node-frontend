@@ -289,11 +289,19 @@ export default function PatronPaymentPage() {
                                         </div>
 
                                         <div className="flex justify-between items-start pt-4 border-t border-zinc-200">
-                                            <div className="space-y-0.5">
-                                                <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
-                                                    <Building2 size={10} /> Account Name
-                                                </Label>
-                                                <p className="font-black text-zinc-900 text-sm">{virtualAccount.account_name}</p>
+                                            <div className="space-y-4">
+                                                <div className="space-y-0.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                                                        <Building2 size={10} /> Bank Name
+                                                    </Label>
+                                                    <p className="font-black text-zinc-900 text-sm uppercase">{virtualAccount.bank_name}</p>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
+                                                        <BadgeCheck size={10} /> Account Name
+                                                    </Label>
+                                                    <p className="font-black text-zinc-900 text-sm">{virtualAccount.account_name}</p>
+                                                </div>
                                             </div>
                                             <div className="space-y-0.5 text-right">
                                                 <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center justify-end gap-1.5">
