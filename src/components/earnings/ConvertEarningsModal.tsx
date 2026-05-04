@@ -30,7 +30,7 @@ const formSchema = z.object({
     amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
         message: "Amount must be a positive number",
     }),
-    pin: z.string().length(4, "Pin must be 4 digits"),
+    pin: z.string().length(4, "Sorry, that’s not your transaction PIM. Please check and try again."),
 });
 
 interface ConvertEarningsModalProps {
@@ -90,14 +90,14 @@ export default function ConvertEarningsModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[450px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white">
                 <DialogHeader className="p-8 pb-4">
-                    <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900">Convert Assets</DialogTitle>
-                    <DialogDescription className="text-zinc-500 font-medium text-sm">
-                        Convert your earnings into GKWTH assets.
+                    <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900">Convert Business Assets</DialogTitle>
+                    <DialogDescription className="text-sm font-medium text-zinc-500">
+                        Convert your business assets into GKWTH.
                     </DialogDescription>
                 </DialogHeader>
 
                 {isLocked && (
-                    <div className="mx-8 p-4 rounded-2xl bg-amber-50 border border-amber-100 flex items-start gap-3">
+                    <div className="flex items-start gap-3 p-4 mx-8 border rounded-2xl bg-amber-50 border-amber-100">
                         <Calendar className="text-amber-600 shrink-0 mt-0.5" size={16} />
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Cooldown Active</p>
@@ -109,11 +109,11 @@ export default function ConvertEarningsModal({
                 )}
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-8 pt-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 pt-4 space-y-6">
                         <div className="grid gap-4">
-                            <div className="p-4 rounded-3xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
+                            <div className="flex items-center justify-between p-4 border rounded-3xl bg-zinc-50 border-zinc-100">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center text-zinc-400 shadow-sm">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-white shadow-sm rounded-2xl text-zinc-400">
                                         <TrendingUp size={18} />
                                     </div>
                                     <div>
@@ -140,7 +140,7 @@ export default function ConvertEarningsModal({
                                                         isLocked && "opacity-50 cursor-not-allowed"
                                                     )}
                                                 />
-                                                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                                <div className="absolute flex items-center gap-2 -translate-y-1/2 right-6 top-1/2">
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Asset</span>
                                                     {!isLocked && (
                                                         <button 
@@ -154,8 +154,8 @@ export default function ConvertEarningsModal({
                                                 </div>
                                             </div>
                                         </FormControl>
-                                        <div className="flex justify-between items-center px-1">
-                                            <p className="text-[10px] font-bold text-zinc-400">Convertible Limit: {maxAmount.toLocaleString()}</p>
+                                        <div className="flex items-center justify-between px-1">
+                                            <p className="text-[10px] font-bold text-zinc-400">Assets available for conversion to gkwth: {maxAmount.toLocaleString()}</p>
                                             <FormMessage className="text-[10px] font-black uppercase" />
                                         </div>
                                     </FormItem>
@@ -186,13 +186,13 @@ export default function ConvertEarningsModal({
                             />
 
                             <div className="flex items-center justify-center py-2">
-                                <div className="h-8 w-8 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-300 border border-zinc-100">
+                                <div className="flex items-center justify-center w-8 h-8 border rounded-full bg-zinc-50 text-zinc-300 border-zinc-100">
                                     <ArrowRight className="rotate-90" size={14} />
                                 </div>
                             </div>
 
-                            <div className="p-6 rounded-3xl bg-zinc-900 text-white relative overflow-hidden group">
-                                <div className="absolute -right-4 -top-4 text-white/5 transition-transform group-hover:scale-110 duration-500">
+                            <div className="relative p-6 overflow-hidden text-white rounded-3xl bg-zinc-900 group">
+                                <div className="absolute transition-transform duration-500 -right-4 -top-4 text-white/5 group-hover:scale-110">
                                     <Wallet size={120} />
                                 </div>
                                 <div className="relative z-10">
@@ -201,7 +201,7 @@ export default function ConvertEarningsModal({
                                         <h3 className="text-3xl font-black tracking-tighter">
                                             {expectedGkwth.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                                         </h3>
-                                        <span className="text-xs font-black uppercase tracking-widest text-zinc-500">GKWTH</span>
+                                        <span className="text-xs font-black tracking-widest uppercase text-zinc-500">GKWTH</span>
                                     </div>
                                 </div>
                             </div>

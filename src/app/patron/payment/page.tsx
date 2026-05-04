@@ -187,7 +187,7 @@ export default function PatronPaymentPage() {
                     <div className="bg-[#6639ff] px-8 py-6">
                         <p className="text-white font-black text-xl tracking-tight">Activation Payment</p>
                         <p className="text-white/60 text-xs font-medium uppercase tracking-widest mt-1">
-                            Secure transfer via Paga
+                            Secure transfer
                         </p>
                     </div>
 
