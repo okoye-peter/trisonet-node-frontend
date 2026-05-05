@@ -85,10 +85,10 @@ export default function RegisterPage() {
                                 <FormControl>
                                     <div className="relative group">
                                         <User className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
-                                        <Input 
-                                            placeholder="John Doe" 
-                                            className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
-                                            {...field} 
+                                        <Input
+                                            placeholder="John Doe"
+                                            className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
+                                            {...field}
                                         />
                                     </div>
                                 </FormControl>
@@ -105,10 +105,10 @@ export default function RegisterPage() {
                                 <FormControl>
                                     <div className="relative group">
                                         <Mail className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
-                                        <Input 
-                                            placeholder="name@company.com" 
-                                            className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
-                                            {...field} 
+                                        <Input
+                                            placeholder="name@company.com"
+                                            className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
+                                            {...field}
                                         />
                                     </div>
                                 </FormControl>
@@ -165,9 +165,9 @@ export default function RegisterPage() {
                             </FormItem>
                         )}
                     />
-                    <Button 
-                        type="submit" 
-                        className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20 mt-4" 
+                    <Button
+                        type="submit"
+                        className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20 mt-4"
                         disabled={isLoading}
                     >
                         {isLoading ? (

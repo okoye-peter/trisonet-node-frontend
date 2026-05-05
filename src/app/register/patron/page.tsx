@@ -39,13 +39,14 @@ const registerPatronSchema = z.object({
     email: z.string().email({ message: 'Please enter a valid email address.' }),
     phone: z.string().min(10, { message: 'Phone number must be at least 10 digits.' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-    confirmPassword: z.string().min(6, { message: 'Please confirm your password.' }),
+    // confirmPassword: z.string().min(6, { message: 'Please confirm your password.' }),
     patronType: z.enum(['individual', 'group']),
     planId: z.string().min(1, { message: 'Please select a plan.' }),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-});
+})
+// .refine((data) => data.password === data.confirmPassword, {
+//     message: "Passwords don't match",
+//     path: ["confirmPassword"],
+// });
 
 type RegisterPatronFormValues = z.infer<typeof registerPatronSchema>;
 
@@ -65,7 +66,7 @@ export default function RegisterPatronPage() {
             email: '',
             phone: '',
             password: '',
-            confirmPassword: '',
+            // confirmPassword: '',
             patronType: 'individual',
             planId: '',
         },
@@ -160,8 +161,8 @@ export default function RegisterPatronPage() {
                             <FormItem>
                                 <FormLabel className="text-[#040021] font-semibold">Patron Plan <span className="text-red-500">*</span></FormLabel>
                                 <Select
-                                    value={field.value}
-                                    onValueChange={(v) => handlePlanChange(v, field.onChange)}
+                                    value={field.value ?? ''}
+                                    onValueChange={(v) => handlePlanChange(v ?? '', field.onChange)}
                                     disabled={plansLoading}
                                 >
                                     <FormControl>
@@ -190,7 +191,7 @@ export default function RegisterPatronPage() {
                                         <div className="flex items-center gap-2 mb-3">
                                             <BadgeCheck className="w-4 h-4 text-[#6639ff]" />
                                             <span className="text-xs font-bold text-[#6639ff] uppercase tracking-wider">Plan Summary</span>
-                                            
+
                                             <p className='ml-auto text-xs text-[#6639ff]'>with service charge of 50,000</p>
                                         </div>
                                         <p className="text-sm font-bold text-[#040021] mb-2">{selectedPlan.name}</p>
@@ -302,7 +303,7 @@ export default function RegisterPatronPage() {
                             </FormItem>
                         )}
                     />
-                    <FormField
+                    {/* <FormField
                         control={form.control}
                         name="confirmPassword"
                         render={({ field }) => (
@@ -322,7 +323,7 @@ export default function RegisterPatronPage() {
                                 <FormMessage />
                             </FormItem>
                         )}
-                    />
+                    /> */}
                     <Button
                         type="submit"
                         className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20 mt-4"

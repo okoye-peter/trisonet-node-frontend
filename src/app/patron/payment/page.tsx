@@ -210,11 +210,15 @@ export default function PatronPaymentPage() {
                                         <div className="relative">
                                             <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300 pointer-events-none" size={18} />
                                             <Input
-                                                type="number"
-                                                placeholder={plan ? `${plan.minAmount.toLocaleString()} – ${plan.maxAmount.toLocaleString()}` : 'Enter amount'}
+                                                type="text"
+                                                placeholder={plan ? `₦${plan.minAmount.toLocaleString()} – ₦${plan.maxAmount.toLocaleString()}` : 'Enter amount'}
                                                 className="h-14 rounded-2xl bg-zinc-50 border-none pl-12 pr-4 font-black text-xl text-zinc-900 placeholder:text-zinc-300 focus-visible:ring-2 focus-visible:ring-[#6639ff]/30"
-                                                value={amount}
-                                                onChange={(e) => { setAmount(e.target.value); setAmountError(''); }}
+                                                value={amount ? `₦${Number(amount).toLocaleString()}` : ''}
+                                                onChange={(e) => {
+                                                    const rawValue = e.target.value.replace(/\D/g, '');
+                                                    setAmount(rawValue);
+                                                    setAmountError('');
+                                                }}
                                             />
                                         </div>
                                         {amountError && (

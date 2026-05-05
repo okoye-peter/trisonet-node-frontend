@@ -7,6 +7,7 @@ import api from '@/lib/axios';
 import { loginSuccess } from '@/store/features/authSlice';
 import LoadingScreen from '@/components/LoadingScreen';
 import { toast } from 'sonner';
+import { ROLES } from '@/types';
 
 const HandoffContent = () => {
     const searchParams = useSearchParams();
@@ -36,7 +37,10 @@ const HandoffContent = () => {
 
                     // Small delay to ensure state is set before redirect
                     setTimeout(() => {
-                        router.push('/dashboard');
+                        if(user.role == ROLES.CUSTOMER)
+                            router.push('/dashboard');
+                        else if(user.role == ROLES.PATRON)
+                            router.push('/patron/dashboard');
                     }, 500);
                 } else {
                     throw new Error('Invalid response from server');
