@@ -86,7 +86,7 @@ export default function WalletsPage() {
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: userResponse } = useGetUserQuery();
-    const profile = userResponse?.data || user;
+    const profile = userResponse?.data?.user || user;
 
     const { data: userBankResponse, isLoading: isUserBankLoading } = useGetUserBankQuery(undefined, {
         skip: !profile?.bank || !profile?.accountNumber
