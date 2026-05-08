@@ -146,6 +146,14 @@ export default function ConvertEarningsModal({
                                         <FormControl>
                                             <div className="relative">
                                                 <Input 
+                                                    type="number"
+                                                    step="any"
+                                                    inputMode="decimal"
+                                                    onKeyDown={(e) => {
+                                                        if (['e', 'E', '+', '-'].includes(e.key)) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                     placeholder="0.00" 
                                                     {...field} 
                                                     disabled={isLocked}

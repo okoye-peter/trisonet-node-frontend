@@ -184,6 +184,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                             <Input
                                                 step={0.1}
                                                 type="number"
+                                                inputMode="decimal"
                                                 {...form.register('amount', { valueAsNumber: true })}
                                                 className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-3 pr-16 font-black text-xl text-zinc-900 dark:text-zinc-100 focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"
                                             />
@@ -212,6 +213,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                             <Input
                                                 type="password"
                                                 maxLength={4}
+                                                inputMode="numeric"
                                                 {...form.register('pin')}
                                                 placeholder="****"
                                                 className="h-14 rounded-2xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-11 pr-4 font-black tracking-[0.5em] text-xl focus:ring-emerald-500/10 focus:border-emerald-500/50 transition-all"

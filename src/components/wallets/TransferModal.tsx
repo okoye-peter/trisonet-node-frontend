@@ -161,6 +161,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                             </div>
                                             <Input
                                                 type='number'
+                                                inputMode='numeric'
                                                 {...form.register('receiverTransferId')}
                                                 placeholder="Enter account number"
                                                 className="h-14 rounded-xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-11 pr-4 font-bold focus:ring-indigo-500/10"
@@ -199,6 +200,8 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                 </span>
                                                 <Input
                                                     type="number"
+                                                    inputMode="decimal"
+                                                    step="any"
                                                     {...form.register('amount', { valueAsNumber: true })}
                                                     className={cn(
                                                         "h-14 rounded-xl border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 pr-4 font-black text-xl text-zinc-900 dark:text-zinc-100",
@@ -252,6 +255,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                             <Input
                                                 type="password"
                                                 maxLength={4}
+                                                inputMode="numeric"
                                                 {...form.register('pin')}
                                                 placeholder="****"
                                                 className="h-14 rounded-xl border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 pl-11 pr-4 font-black tracking-[0.5em] text-xl"
