@@ -369,7 +369,7 @@ export default function WalletsPage() {
                     <div className="absolute bottom-0 left-0 p-12 opacity-10 blur-3xl bg-emerald-500 w-96 h-96 rounded-full -ml-48 -mb-48 animate-pulse" />
 
                     <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-                        <span className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Total Direct Balance</span>
+                        <span className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Total Wallet Balance</span>
                         <div className="flex flex-col items-center gap-2">
                             <div className="flex items-center gap-4">
                                 <span className="text-4xl md:text-6xl font-black text-zinc-500">₦</span>

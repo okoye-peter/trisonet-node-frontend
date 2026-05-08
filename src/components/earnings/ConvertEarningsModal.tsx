@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useConvertCustomerEarningsMutation } from '@/store/api/walletApi';
+import { useConvertCustomerEarningsMutation, useGetWalletsQuery } from '@/store/api/walletApi';
 import { toast } from 'sonner';
 import { Loader2, TrendingUp, ArrowRight, Wallet, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -49,6 +49,8 @@ export default function ConvertEarningsModal({
     nextAllowedDate
 }: ConvertEarningsModalProps) {
     const [convertEarnings, { isLoading }] = useConvertCustomerEarningsMutation();
+    const { data: walletsResponse } = useGetWalletsQuery();
+    const earningWallet = walletsResponse?.data?.find(w => w.type === 'earning');
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -88,7 +90,7 @@ export default function ConvertEarningsModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[450px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden bg-white">
+            <DialogContent className="sm:max-w-[450px] rounded-[2.5rem] border-none shadow-2xl p-0 bg-white">
                 <DialogHeader className="p-8 pb-4">
                     <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900">Convert Business Assets</DialogTitle>
                     <DialogDescription className="text-sm font-medium text-zinc-500">
@@ -107,6 +109,18 @@ export default function ConvertEarningsModal({
                         </div>
                     </div>
                 )}
+                
+                <div className="flex items-center justify-between px-8 py-2">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Total Business Asset Balance</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-black text-zinc-900 tracking-tight">
+                                {earningWallet?.amount.toLocaleString() ?? '0.00'}
+                            </span>
+                            <span className="text-sm font-bold text-zinc-400">Assets</span>
+                        </div>
+                    </div>
+                </div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 pt-4 space-y-6">
@@ -146,7 +160,7 @@ export default function ConvertEarningsModal({
                                                         <button 
                                                             type="button"
                                                             onClick={() => form.setValue("amount", maxAmount.toString())}
-                                                            className="text-[10px] font-black uppercase tracking-widest text-zinc-900 hover:opacity-70 transition-opacity"
+                                                            className="px-3 py-1 rounded-lg bg-zinc-900 text-[10px] font-black uppercase tracking-widest text-white hover:bg-zinc-800 transition-all shadow-sm active:scale-95"
                                                         >
                                                             Max
                                                         </button>
@@ -167,10 +181,13 @@ export default function ConvertEarningsModal({
                                 name="pin"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Withdrawal Pin</FormLabel>
+                                        <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Transaction Pin</FormLabel>
                                         <FormControl>
                                             <Input 
                                                 type="password"
+                                                maxLength={4}
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
                                                 placeholder="••••" 
                                                 {...field} 
                                                 disabled={isLocked}

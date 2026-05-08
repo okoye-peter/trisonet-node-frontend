@@ -56,7 +56,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     const [transferData, setTransferData] = useState<{ reference: string } | null>(null);
 
     const { data: walletsResponse } = useGetWalletsQuery();
-    const wallets = walletsResponse?.data || [];
+    const wallets = (walletsResponse?.data || []).filter(w => w.type !== 'earning');
 
     const [transfer, { isLoading: isTransferring }] = useTransferMutation();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
