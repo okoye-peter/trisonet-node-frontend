@@ -84,7 +84,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
         if (!earningWallet || !user) return;
 
         if (values.amount > maxWithdrawal) {
-            toast.error(`You can only withdraw up to 50% of your balance (Max: ${maxWithdrawal.toLocaleString()} gkwth)`);
+            toast.error(`You can only withdraw up to 50% of your balance (Max: ${maxWithdrawal.toLocaleString()} Assets)`);
             return;
         }
 
@@ -129,10 +129,10 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                     <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 rotate-3">
                                         <WalletIcon size={24} strokeWidth={2.5} />
                                     </div>
-                                    Convert Asset To Gkwth
+                                    Withdraw Business Assets
                                 </DialogTitle>
                                 <DialogDescription className="font-bold text-zinc-500 text-sm mt-2">
-                                    Convert you Asset to Gkwth so you can withdraw it.
+                                    Withdraw your business assets directly to your bank account.
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -141,8 +141,8 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                 <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={18} />
                                 <p className="text-xs font-bold text-amber-900/80 dark:text-amber-400/80 leading-relaxed">
                                     <span className="text-amber-600 uppercase tracking-wider block mb-1 font-black">Important Policy</span>
-                                    You can only convert <span className="text-amber-600 font-black italic">50% of your total balance</span>. 
-                                    Furthermore, conversion are limited to a <span className="text-amber-600 font-black italic">7-day interval</span> from your last conversion.
+                                    You can only withdraw <span className="text-amber-600 font-black italic">50% of your total balance</span>. 
+                                    Furthermore, withdrawals are limited to a <span className="text-amber-600 font-black italic">7-day interval</span> from your last withdrawal.
                                 </p>
                             </div>
 
@@ -176,11 +176,11 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                         <div className="flex justify-between items-end">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount</Label>
                                             <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-full">
-                                                Max: {maxWithdrawal.toLocaleString()} gkwth
+                                                Max: {maxWithdrawal.toLocaleString()} Assets
                                             </span>
                                         </div>
                                         <div className="relative group">
-                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-sm group-focus-within:text-emerald-500 transition-colors italic">Gkwth</span>
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 font-black text-sm group-focus-within:text-emerald-500 transition-colors italic">Assets</span>
                                             <Input
                                                 step={0.1}
                                                 type="number"
@@ -269,7 +269,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                 <div className="text-center space-y-2">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Withdrawal Amount</p>
                                     <h3 className="text-4xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 italic">
-                                        {form.getValues('amount').toLocaleString()} <span className="text-sm font-bold text-zinc-400">gkwth</span>
+                                        {form.getValues('amount').toLocaleString()} <span className="text-sm font-bold text-zinc-400">Assets</span>
                                     </h3>
                                     <p className="text-xl font-black text-emerald-600">
                                         ≈ ₦{(form.getValues('amount') * purchasePrice).toLocaleString()}

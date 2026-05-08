@@ -33,6 +33,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCameraMode, setIsCameraMode] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const isNigerian = user?.country?.toLowerCase() === 'nigeria';
     
     const [mounted, setMounted] = useState(false);
     
@@ -99,7 +100,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (bvn.length !== 11) {
+        if (isNigerian && bvn.length !== 11) {
             toast.error('Invalid BVN. Must be 11 digits.');
             return;
         }
@@ -114,10 +115,13 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         try {
             const formData = new FormData();
             formData.append('name', name);
-            formData.append('bvn', bvn);
+            if (isNigerian) {
+                formData.append('bvn', bvn);
+            }
             formData.append('image', passportImage);
 
-            const response = await api.post('/kyc/verify', formData, {
+            const endpoint = isNigerian ? '/kyc/verify' : '/kyc/face-verify';
+            const response = await api.post(endpoint, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -191,8 +195,12 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                         <Fingerprint size={28} strokeWidth={2.5} />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black tracking-tight text-zinc-900 leading-tight">Identity Verification</h3>
-                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">KYC Level 1</p>
+                                        <h3 className="text-2xl font-black tracking-tight text-zinc-900 leading-tight">
+                                            {isNigerian ? "Identity Verification" : "Facial Verification"}
+                                        </h3>
+                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">
+                                            {isNigerian ? "KYC Level 1" : "Global KYC"}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -218,29 +226,31 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     </div>
                                 </div>
 
-                                {/* BVN Section */}
-                                <div className="space-y-3">
-                                    <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
-                                        Bank Verification Number (BVN)
-                                    </label>
-                                    <div className="relative group">
-                                        <div className="absolute inset-y-0 left-4 flex items-center text-zinc-400 group-hover:text-indigo-600 transition-colors">
-                                            <AlertCircle size={18} />
+                                {/* BVN Section (Nigeria only) */}
+                                {isNigerian && (
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
+                                            Bank Verification Number (BVN)
+                                        </label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 left-4 flex items-center text-zinc-400 group-hover:text-indigo-600 transition-colors">
+                                                <AlertCircle size={18} />
+                                            </div>
+                                            <Input
+                                                type="text"
+                                                maxLength={11}
+                                                placeholder="Enter 11-digit BVN"
+                                                value={bvn}
+                                                onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
+                                                className="h-14 pl-12 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 transition-all text-lg font-bold tracking-widest placeholder:tracking-normal placeholder:font-medium"
+                                                required
+                                            />
                                         </div>
-                                        <Input
-                                            type="text"
-                                            maxLength={11}
-                                            placeholder="Enter 11-digit BVN"
-                                            value={bvn}
-                                            onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
-                                            className="h-14 pl-12 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 transition-all text-lg font-bold tracking-widest placeholder:tracking-normal placeholder:font-medium"
-                                            required
-                                        />
+                                        <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
+                                            * Your BVN is required for identity verification and anti-fraud measures.
+                                        </p>
                                     </div>
-                                    <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
-                                        * Your BVN is required for identity verification and anti-fraud measures.
-                                    </p>
-                                </div>
+                                )}
 
                                 {/* ID Upload Section */}
                                 <div className="space-y-4">
@@ -391,7 +401,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting || bvn.length !== 11 || !passportImage}
+                                        disabled={isSubmitting || (isNigerian && bvn.length !== 11) || !passportImage}
                                         className="flex-2 h-16 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
                                     >
                                         {isSubmitting ? (

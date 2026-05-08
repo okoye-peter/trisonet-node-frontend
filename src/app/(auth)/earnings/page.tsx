@@ -159,13 +159,22 @@ export default function EarningsPage() {
                     </div>
                 </div>
                 
-                <Button 
-                    onClick={() => setIsConvertModalOpen(true)}
-                    className="h-14 px-8 rounded-[2rem] bg-zinc-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 transition-all active:scale-95 flex items-center gap-2"
-                >
-                    <ArrowRightLeft size={16} />
-                    Convert Assets
-                </Button>
+                <div className="flex gap-4">
+                    <Button 
+                        onClick={() => setIsConvertModalOpen(true)}
+                        className="h-14 px-8 rounded-[2rem] bg-zinc-900 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-zinc-800 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                        <ArrowRightLeft size={16} />
+                        Convert Assets
+                    </Button>
+                    {/* <Button 
+                        onClick={() => setIsWithdrawModalOpen(true)}
+                        className="h-14 px-8 rounded-[2rem] bg-emerald-600 text-white font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2"
+                    >
+                        <Wallet size={16} />
+                        Withdraw Assets
+                    </Button> */}
+                </div>
             </div>
 
             {/* Stats Overview */}
@@ -210,13 +219,13 @@ export default function EarningsPage() {
                                 Total ≈ ₦{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}
                             </p>
                         </div>
-                        {/* <button 
+                        <button 
                             onClick={() => setIsWithdrawModalOpen(true)}
-                            className="h-12 px-4 py-1 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn text-sm!"
+                            className="h-12 px-4 py-1 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn text-sm font-black uppercase tracking-wider italic"
                             title="Withdraw Funds"
                         >
-                            Convert
-                        </button> */}
+                            Withdraw
+                        </button>
                     </div>
                 </div>
             </div>
