@@ -15,14 +15,13 @@ import {
     Receipt,
     Wallet,
     Briefcase,
-    TrendingUp,
-    Bell
+    TrendingUp
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import { BaseSidebar } from './BaseSidebar';
 import { SidebarItem, SidebarProps } from './types';
-import { ROLES } from '@/types';
+
 
 export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
     const { user } = useAppSelector((state) => state.auth);

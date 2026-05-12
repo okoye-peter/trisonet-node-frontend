@@ -38,7 +38,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             const hasVerifiedLevel2 = user.hasVerifiedLevel2;
             const isCustomer = user.role === ROLES.CUSTOMER;
             const isDashboard = pathname === '/dashboard';
-            const isAuthPage = ['/login', '/register', '/forgot-password'].includes(pathname);
+            const isAuthPage = pathname?.startsWith('/login') || 
+                             pathname?.startsWith('/register') || 
+                             pathname?.startsWith('/forgot-password');
 
             if (isAuthenticated && isCustomer && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
                 router.push('/dashboard');
@@ -66,7 +68,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             const { isAuthenticated: currentAuth, token: currentToken } = store.getState().auth;
 
             if (!currentAuth && !currentToken) {
-                if (pathname !== '/login' && pathname !== '/register' && pathname !== '/forgot-password') {
+                const isPublicPage = pathname?.startsWith('/login') || 
+                                   pathname?.startsWith('/register') || 
+                                   pathname?.startsWith('/forgot-password');
+                if (!isPublicPage) {
                     router.push('/login');
                 }
             }

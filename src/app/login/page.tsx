@@ -184,6 +184,9 @@ export default function LoginPage() {
                     <span className="bg-white px-4 text-[#8f98a8] font-medium tracking-widest">Or secure access</span>
                 </div>
             </div>
+            <div className="flex justify-center">
+                <Link href="/register/patron" className=' text-[#6639ff] hover:text-[#371e87] text-sm font-semibold'>Register as a patron </Link>
+            </div>
         </AuthLayout>
     );
 }

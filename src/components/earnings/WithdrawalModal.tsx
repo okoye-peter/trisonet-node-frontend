@@ -74,8 +74,6 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
         }
     }, [open, form]);
 
-    console.log('bankResponse', bankResponse)
-
     const onSubmit = async (values: WithdrawalFormValues) => {
         console.log('data', {
             earningWallet,

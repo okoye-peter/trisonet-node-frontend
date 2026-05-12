@@ -33,6 +33,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCameraMode, setIsCameraMode] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
+    const [verificationMethod, setVerificationMethod] = useState<'bvn' | 'nin'>('bvn');
     const isNigerian = user?.country?.toLowerCase() === 'nigeria';
     
     const [mounted, setMounted] = useState(false);
@@ -115,12 +116,21 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         try {
             const formData = new FormData();
             formData.append('name', name);
+            
+            let endpoint = '/kyc/face-verify';
+            
             if (isNigerian) {
-                formData.append('bvn', bvn);
+                if (verificationMethod === 'bvn') {
+                    formData.append('bvn', bvn);
+                    endpoint = '/kyc/verify';
+                } else {
+                    formData.append('nin', bvn); // Using the same 'bvn' state variable for NIN input
+                    endpoint = '/kyc/nin-verify';
+                }
             }
+            
             formData.append('image', passportImage);
 
-            const endpoint = isNigerian ? '/kyc/verify' : '/kyc/face-verify';
             const response = await api.post(endpoint, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -169,11 +179,11 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                         exit={{ opacity: 0 }}
                         onClick={isMandatory ? undefined : handleClose}
                         className={cn(
-                            "fixed inset-0 z-[100010] bg-zinc-900/40 backdrop-blur-md",
+                            "fixed inset-0 z-100010 bg-zinc-900/40 backdrop-blur-md",
                             isMandatory ? "cursor-default" : "cursor-pointer"
                         )}
                     />
-                    <div className="fixed inset-0 z-[100020] flex items-center justify-center p-4 pointer-events-none">
+                    <div className="fixed inset-0 z-100020 flex items-center justify-center p-4 pointer-events-none">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -226,11 +236,52 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     </div>
                                 </div>
 
-                                {/* BVN Section (Nigeria only) */}
+                                 {/* Verification Method Selector (Nigeria only) */}
                                 {isNigerian && (
                                     <div className="space-y-3">
                                         <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
-                                            Bank Verification Number (BVN)
+                                            Verification Method
+                                        </label>
+                                        <div className="flex bg-zinc-100/80 p-1 rounded-2xl border border-zinc-200/50">
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setVerificationMethod('bvn');
+                                                    setBvn('');
+                                                }}
+                                                className={cn(
+                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                    verificationMethod === 'bvn' 
+                                                        ? "bg-white text-indigo-600 shadow-sm" 
+                                                        : "text-zinc-500 hover:text-zinc-700"
+                                                )}
+                                            >
+                                                BVN
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setVerificationMethod('nin');
+                                                    setBvn('');
+                                                }}
+                                                className={cn(
+                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                    verificationMethod === 'nin' 
+                                                        ? "bg-white text-indigo-600 shadow-sm" 
+                                                        : "text-zinc-500 hover:text-zinc-700"
+                                                )}
+                                            >
+                                                NIN
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ID Number Section (Nigeria only) */}
+                                {isNigerian && (
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
+                                            {verificationMethod === 'bvn' ? 'Bank Verification Number (BVN)' : 'National Identification Number (NIN)'}
                                         </label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-4 flex items-center text-zinc-400 group-hover:text-indigo-600 transition-colors">
@@ -239,7 +290,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                             <Input
                                                 type="text"
                                                 maxLength={11}
-                                                placeholder="Enter 11-digit BVN"
+                                                placeholder={verificationMethod === 'bvn' ? "Enter 11-digit BVN" : "Enter 11-digit NIN"}
                                                 value={bvn}
                                                 onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
                                                 className="h-14 pl-12 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 transition-all text-lg font-bold tracking-widest placeholder:tracking-normal placeholder:font-medium"
@@ -247,7 +298,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                             />
                                         </div>
                                         <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
-                                            * Your BVN is required for identity verification and anti-fraud measures.
+                                            * Your {verificationMethod.toUpperCase()} is required for identity verification and anti-fraud measures.
                                         </p>
                                     </div>
                                 )}

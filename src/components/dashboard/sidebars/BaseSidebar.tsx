@@ -7,6 +7,9 @@ import { ChevronRight, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { SidebarItem, SidebarProps } from './types';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { ROLES } from '@/types';
+import { logout } from '@/store/features/authSlice';
 
 interface BaseSidebarProps extends SidebarProps {
     items: SidebarItem[];
@@ -16,6 +19,8 @@ interface BaseSidebarProps extends SidebarProps {
 export function BaseSidebar({ isOpen, onClose, items, isKycVerified = true }: BaseSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const { user } = useAppSelector((state) => state.auth);
     const [openMenus, setOpenMenus] = useState<string[]>([]);
 
     // Automatically open parent menu if a sub-item is active
@@ -36,6 +41,12 @@ export function BaseSidebar({ isOpen, onClose, items, isKycVerified = true }: Ba
         if (href && href !== '#') {
             router.push(href);
         }
+    };
+    
+    const handleUpgrade = () => {
+        dispatch(logout());
+        // Use window.location.href to ensure a fresh state on the public registration page
+        window.location.href = '/register/patron';
     };
 
     return (
@@ -191,16 +202,21 @@ export function BaseSidebar({ isOpen, onClose, items, isKycVerified = true }: Ba
                 </ul>
 
                 {/* Bottom Card */}
-                <div className="mt-10 px-2 pb-4">
-                    <div className="relative rounded-2xl bg-indigo-950 p-4 overflow-hidden group">
-                        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl transition-transform group-hover:scale-110" />
-                        <p className="relative z-10 text-xs font-bold text-indigo-200 uppercase tracking-widest">Plan Details</p>
-                        <p className="relative z-10 mt-1 text-sm font-bold text-white leading-snug">Unlock advanced community features today.</p>
-                        <button disabled className="relative z-10 mt-4 w-full rounded-xl bg-white py-2 text-xs font-black text-indigo-950 shadow-lg hover:bg-zinc-100 transition-colors">
-                            Upgrade Now
-                        </button>
+                {user?.role === ROLES.CUSTOMER && (
+                    <div className="mt-10 px-2 pb-4">
+                        <div className="relative rounded-2xl bg-indigo-950 p-4 overflow-hidden group">
+                            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-20 h-20 bg-indigo-500/20 rounded-full blur-2xl transition-transform group-hover:scale-110" />
+                            <p className="relative z-10 text-xs font-bold text-indigo-200 uppercase tracking-widest">Become a Patron</p>
+                            <p className="relative z-10 mt-1 text-sm font-bold text-white leading-snug">Register a patron account to enjoy full patron features.</p>
+                            <button 
+                                onClick={handleUpgrade}
+                                className="relative z-10 mt-4 w-full rounded-xl bg-white py-2 text-xs font-black text-indigo-950 shadow-lg hover:bg-zinc-100 transition-colors"
+                            >
+                                Register Now
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </aside>
     );
