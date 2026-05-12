@@ -18,5 +18,7 @@ jobs:
           port: ${{ secrets.DEPLOY_PORT }}
           script: |
             cd /var/www/app.trisonet.com
+            pm2 stop trisonet-app
             npm install
             npm run deploy
+            pm2 restart trisonet-app
