@@ -42,6 +42,12 @@ export interface DashboardStats {
     region: Region;
     regionTotalUsers: number;
     assetDepot: number;
+    activation?: {
+        price: number;
+        charge: number;
+        infantFormFee: number;
+        total: number;
+    };
 }
 
 export interface User {
@@ -82,6 +88,7 @@ export interface User {
     patronGroupId: string | null;
     pendingPatronType?: string | null;
     patronActivated?: boolean;
+    isPendingLevel2Migration?: boolean;
     patronPlan?: {
         id: string;
         name: string;
@@ -90,6 +97,16 @@ export interface User {
         earningPercentage: number | null;
     } | null;
     wallets?: Wallet[];
+}
+
+export interface ActivationCandidate {
+    id: string;
+    name: string;
+    username: string;
+    status: boolean;
+    isInfant: boolean;
+    role: number;
+    sponsorId: string | null;
 }
 
 export interface UpdatePasswordRequest {

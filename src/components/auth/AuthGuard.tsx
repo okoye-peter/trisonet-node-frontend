@@ -42,7 +42,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
                              pathname?.startsWith('/register') || 
                              pathname?.startsWith('/forgot-password');
 
-            if (isAuthenticated && isCustomer && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
+            if (isAuthenticated && isCustomer && user.level >= 2 && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
                 router.push('/dashboard');
                 return;
             }

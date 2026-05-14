@@ -590,7 +590,7 @@ export default function DashboardPage() {
                 isOpen={isPimModalOpen} 
                 onClose={() => setIsPimModalOpen(false)} 
                 user={user} 
-                capitalAssetValue={stats.find(s => s.label === 'Capital Asset')?.value as number || 0}
+                capitalAssetValue={(stats.find(s => s.label === 'Capital Asset')?.value ?? 0) >= 1 ? 1 : 0}
             />
 
             <QRCodeModal

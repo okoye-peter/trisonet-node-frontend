@@ -1,5 +1,5 @@
 import { apiSlice, type AppResponse } from './apiSlice';
-import type { User, UpdatePasswordRequest, UpdateProfileRequest, UpdateBankRequest, DashboardStats } from '@/types';
+import type { User, UpdatePasswordRequest, UpdateProfileRequest, UpdateBankRequest, DashboardStats, ActivationCandidate } from '@/types';
 
 export const userApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -63,19 +63,86 @@ export const userApi = apiSlice.injectEndpoints({
             query: () => 'users/dashboard-stats',
             providesTags: ['User', 'Wallet'],
         }),
+        getActivationCandidates: builder.query<AppResponse<ActivationCandidate[]>, void>({
+            query: () => 'users/activation-candidates',
+            providesTags: ['User'],
+        }),
+        initiateActivationPayment: builder.mutation<AppResponse<{ reference: string; amount: number; publicKey: string; email: string; phoneNumber: string }>, { teamMateIds: string[] }>({
+            query: (body) => ({
+                url: 'payment/activation/initiate',
+                method: 'POST',
+                body
+            }),
+        }),
+        generateActivationVirtualAccount: builder.mutation<AppResponse<{ 
+            account_detail: { 
+                account_name: string; 
+                bank_name: string; 
+                account_number: string; 
+                expires_at: string; 
+                reference: string;
+            } 
+        }>, { amount: string; teamMateIds: string[] }>({
+            query: (body) => ({
+                url: 'payment/activation/virtual-account',
+                method: 'POST',
+                body
+            }),
+        }),
+        checkActivationStatus: builder.query<AppResponse<{ status: string }>, string>({
+            query: (reference) => `payment/activation/status/${reference}`,
+        }),
+        submitActivationProof: builder.mutation<AppResponse<any>, FormData>({
+            query: (formData) => ({
+                url: 'payment/activation/proof',
+                method: 'POST',
+                body: formData
+            }),
+        }),
+        activateByCode: builder.mutation<AppResponse<any>, { activation_code: string; teamMateIds: string[] }>({
+            query: (body) => ({
+                url: 'payment/activation/code',
+                method: 'POST',
+                body
+            }),
+        }),
+        sendEmailVerificationOtp: builder.mutation<AppResponse<void>, { email: string }>({
+            query: (body) => ({
+                url: 'users/send-email-verification-otp',
+                method: 'POST',
+                body
+            }),
+        }),
+        verifyEmailOtp: builder.mutation<AppResponse<void>, { otp: string }>({
+            query: (body) => ({
+                url: 'users/verify-email-otp',
+                method: 'POST',
+                body
+            }),
+            invalidatesTags: ['User'],
+        }),
     }),
 });
 
-export const { 
-    useGetUserQuery, 
-    useUpdateProfileMutation, 
+export const {
+    useGetUserQuery,
+    useUpdateProfileMutation,
     useUpdateBankDetailsMutation,
-    useUpdatePasswordMutation, 
-    useSendOtpMutation, 
+    useUpdatePasswordMutation,
+    useSendOtpMutation,
     useGetUserByTransferIdQuery,
     useSendWithdrawalPinOtpMutation,
     useVerifyWithdrawalPinOtpMutation,
     useResetWithdrawalPinMutation,
-    useGetUserDashboardStatsQuery
+    useGetUserDashboardStatsQuery,
+    useGetActivationCandidatesQuery,
+    useInitiateActivationPaymentMutation,
+    useGenerateActivationVirtualAccountMutation,
+    useCheckActivationStatusQuery,
+    useLazyCheckActivationStatusQuery,
+    useSubmitActivationProofMutation,
+    useActivateByCodeMutation,
+    useSendEmailVerificationOtpMutation,
+    useVerifyEmailOtpMutation,
 } = userApi;
 

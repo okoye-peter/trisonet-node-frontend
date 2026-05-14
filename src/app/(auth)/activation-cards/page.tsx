@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, startTransition } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     CreditCard,
@@ -115,71 +116,44 @@ const CardVisual = ({ code, amount }: { code: string; amount: number }) => {
 
     return (
         <div className="relative select-none">
-            {/* Glow blur behind card */}
-            <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-teal-500/30 via-emerald-600/20 to-transparent blur-2xl" />
-
             {/* Main card face */}
-            <div className="relative rounded-3xl overflow-hidden h-52 w-full"
+            <div className="relative rounded-3xl overflow-hidden w-full"
                 style={{
-                    background: 'linear-gradient(135deg, #0f4c3a 0%, #0a3d2e 40%, #072e22 100%)',
-                    boxShadow: '0 30px 60px -10px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08)'
+                    aspectRatio: '1.586 / 1',
+                    boxShadow: '0 30px 60px -10px rgba(0,0,0,.45)',
                 }}
             >
-                {/* Decorative circles */}
-                <div className="absolute -top-8 -right-8 h-40 w-40 rounded-full bg-white/5" />
-                <div className="absolute -bottom-12 -left-4 h-52 w-52 rounded-full bg-white/3" />
-
-                {/* Grid lines */}
-                <div className="absolute inset-0 opacity-[.04]"
-                    style={{ backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 30px,#fff 30px,#fff 31px),repeating-linear-gradient(90deg,transparent,transparent 30px,#fff 30px,#fff 31px)' }}
+                {/* Background Image */}
+                <Image
+                    src="/TRISONET 1.jpg"
+                    alt="Card background"
+                    fill
+                    className="object-cover"
+                    priority
+                    unoptimized
                 />
 
-                {/* Top row */}
-                <div className="absolute top-5 left-6 right-6 flex items-center justify-between">
-                    <span className="text-white/90 font-bold text-lg tracking-widest" style={{ fontFamily: 'serif', fontStyle: 'italic' }}>
-                        TrisoNet
-                    </span>
-                    <span className="text-[10px] font-black text-emerald-400 tracking-[.2em] bg-emerald-400/10 px-2 py-0.5 rounded-full">
-                        PIM
-                    </span>
+                {/* Subtle bottom scrim so text is readable */}
+                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
+
+                {/* Amount — bottom left */}
+                <div className="absolute bottom-4 left-5">
+                    <p className="text-white/50 text-[9px] font-semibold uppercase tracking-widest mb-0.5">Amount</p>
+                    <p className="text-white font-black text-base drop-shadow">{fmt(amount)}</p>
                 </div>
 
-                {/* Chip */}
-                <div className="absolute top-12 left-6">
-                    <div className="h-9 w-12 rounded-md overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, #d4a843 0%, #f0c95c 40%, #c8922a 100%)' }}
-                    >
-                        <div className="h-full w-full grid grid-cols-3 gap-px p-px opacity-80">
-                            {Array.from({ length: 9 }).map((_, i) => (
-                                <div key={i} className="rounded-[1px] bg-yellow-900/30" />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Amount */}
-                <div className="absolute bottom-12 left-6">
-                    <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest mb-0.5">Amount</p>
-                    <p className="text-white font-black text-xl">{fmt(amount)}</p>
-                </div>
-
-                {/* Code bottom-right */}
-                <div className="absolute bottom-5 right-5 flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-white/70 tracking-widest">{code}</span>
+                {/* Code — bottom right */}
+                <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                    <span className="font-mono font-bold text-sm text-white/80 tracking-widest drop-shadow">{code}</span>
                     <button onClick={copy}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                        className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 transition-colors backdrop-blur-sm"
                         title="Copy code"
                     >
                         {copied
                             ? <Check className="h-3 w-3 text-emerald-400" />
-                            : <Copy className="h-3 w-3 text-white/60" />
+                            : <Copy className="h-3 w-3 text-white/70" />
                         }
                     </button>
-                </div>
-
-                {/* Contactless icon top-right corner */}
-                <div className="absolute top-14 right-6 opacity-30">
-                    <Layers className="h-8 w-8 text-white" />
                 </div>
             </div>
         </div>
