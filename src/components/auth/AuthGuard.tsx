@@ -8,6 +8,7 @@ import { setUser } from '@/store/features/authSlice';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { store } from '@/store';
 import { ROLES } from '@/types';
+import { useInactivityLogout } from '@/hooks/useInactivityLogout';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, token, isLoading: authLoading } = useAppSelector((state) => state.auth);
@@ -19,6 +20,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { data: userData, error: userError, isLoading: userQueryLoading } = useGetUserQuery(undefined, {
         skip: !token || !isAuthenticated,
     });
+
+    useInactivityLogout();
 
     useEffect(() => {
         if (userData?.data?.user) {
