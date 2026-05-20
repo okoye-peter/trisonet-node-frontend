@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CreditCard, Send, Ticket, Search, Check } from 'lucide-react';
+import { X, CreditCard, Send, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { ActivationCandidate } from '@/types';
 import { toast } from 'sonner';
-import { useGetActivationCandidatesQuery, useInitiateActivationPaymentMutation, useGenerateActivationVirtualAccountMutation, useLazyCheckActivationStatusQuery, useSubmitActivationProofMutation, useActivateByCodeMutation } from '@/store/api/userApi';
-import { cn } from '@/lib/utils';
+import { useGetActivationCandidatesQuery, useInitiateActivationPaymentMutation, useGenerateActivationVirtualAccountMutation, useLazyCheckActivationStatusQuery, useActivateByCodeMutation } from '@/store/api/userApi';
 
 declare global {
     interface Window {
@@ -40,7 +39,7 @@ interface BuyPimModalProps {
     };
 }
 
-type ModalView = 'selection' | 'code' | 'transfer' | 'card' | 'transfer_details';
+type ModalView = 'selection' | 'code' | 'transfer' | 'card' | 'transfer_details' | 'verifying';
 
 export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimModalProps) {
     const [view, setView] = useState<ModalView>('selection');
@@ -57,9 +56,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
         reference: string;
     } | null>(null);
     const [isPolling, setIsPolling] = useState(false);
-    const [selectedProof, setSelectedProof] = useState<File | null>(null);
     const [checkStatus] = useLazyCheckActivationStatusQuery();
-    const [submitProof, { isLoading: isSubmittingProof }] = useSubmitActivationProofMutation();
 
     const { data: candidatesResponse } = useGetActivationCandidatesQuery(undefined, {
         skip: !isOpen || !isMultiple
@@ -136,11 +133,11 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                         payment_reference: reference,
                         funding_sources: 'CARD',
                         callback_url: window.location.origin + '/dashboard',
-                        onSuccess: (response: any) => {
+                        onSuccess: () => {
                             toast.success('Payment successful! Your account is being activated.');
                             window.location.reload();
                         },
-                        onError: (error: any) => {
+                        onError: (error: unknown) => {
                             console.error('Paga error callback:', error);
                             toast.error('Payment failed. Please try again.');
                         },
@@ -165,9 +162,10 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                         });
                     }, 500);
 
-                } catch (e: any) {
+                } catch (e: unknown) {
                     console.error('Paga error during openCheckout:', e);
-                    toast.error('Error opening payment gateway: ' + (e.message || e));
+                    const msg = e instanceof Error ? e.message : String(e);
+                    toast.error('Error opening payment gateway: ' + msg);
                 }
             };
 
@@ -224,12 +222,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
     const handleSentMoney = async () => {
         if (!transferDetails?.reference) return;
 
+        setView('verifying');
         setIsPolling(true);
-        toast.info('Verifying your payment... please wait.');
 
         let totalTime = 0;
-        let delay = 2000; // Start with 2s
-        const maxTime = 120000; // 2 minutes
+        let delay = 2000;
+        const maxTime = 120000;
 
         const poll = async () => {
             if (totalTime >= maxTime) {
@@ -253,29 +251,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
             setTimeout(() => {
                 totalTime += delay;
-                delay = Math.min(delay * 1.5, 30000); // Exponential backoff up to 30s
+                delay = Math.min(delay * 1.5, 30000);
                 poll();
             }, delay);
         };
 
         poll();
-    };
-
-    const handleUploadProof = async () => {
-        if (!selectedProof || !transferDetails?.reference) return;
-
-        const formData = new FormData();
-        formData.append('prove', selectedProof);
-        formData.append('reference', transferDetails.reference);
-
-        try {
-            await submitProof(formData).unwrap();
-            toast.success('Proof of payment submitted successfully! We will verify it shortly.');
-            resetAndClose();
-        } catch (err: unknown) {
-            const apiErr = err as { data?: { message?: string } };
-            toast.error(apiErr.data?.message || 'Failed to submit proof of payment');
-        }
     };
 
     const handleActivateByCode = async () => {
@@ -319,6 +300,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                             {view === 'transfer' && 'Activation by Transfer'}
                             {view === 'transfer_details' && 'Transfer Details'}
                             {view === 'card' && 'Pay With Card'}
+                            {view === 'verifying' && 'Verifying Payment'}
                         </h2>
                         <button onClick={resetAndClose} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
                             <X size={20} className="text-zinc-500" />
@@ -633,7 +615,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                         <span className="text-sm font-medium text-purple-600">Account Number</span>
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-bold text-zinc-900 tracking-wider text-lg">{transferDetails.account_number}</span>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(transferDetails.account_number);
                                                     toast.success('Account number copied!');
@@ -660,57 +642,35 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     </p>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">
-                                        Upload Proof of Payment (Optional)
-                                    </label>
-                                    <div className="relative group">
-                                        <input 
-                                            type="file" 
-                                            accept="image/*"
-                                            onChange={(e) => setSelectedProof(e.target.files?.[0] || null)}
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        />
-                                        <div className={cn(
-                                            "w-full h-14 border-2 border-dashed rounded-2xl flex items-center px-4 transition-all",
-                                            selectedProof ? "border-purple-500 bg-purple-50" : "border-zinc-200 hover:border-purple-300 bg-zinc-50"
-                                        )}>
-                                            <div className="p-2 bg-white rounded-xl shadow-sm border border-zinc-100 mr-3">
-                                                <Ticket size={18} className={selectedProof ? "text-purple-600" : "text-zinc-400"} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className={cn(
-                                                    "text-sm font-bold truncate",
-                                                    selectedProof ? "text-purple-700" : "text-zinc-500"
-                                                )}>
-                                                    {selectedProof ? selectedProof.name : "Select receipt image"}
-                                                </p>
-                                                <p className="text-[10px] text-zinc-400 font-medium">JPG, PNG or WEBP</p>
-                                            </div>
-                                            {selectedProof && (
-                                                <Check size={18} className="text-purple-600" />
-                                            )}
-                                        </div>
-                                    </div>
+                                <Button
+                                    onClick={handleSentMoney}
+                                    disabled={isPolling}
+                                    className="w-full h-12 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold disabled:opacity-50"
+                                >
+                                    I have sent the money
+                                </Button>
+                            </div>
+                        )}
+
+                        {view === 'verifying' && (
+                            <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                                <div className="relative flex items-center justify-center h-24 w-24">
+                                    <div className="absolute inset-0 rounded-full bg-purple-100 animate-ping opacity-60" />
+                                    <div className="absolute inset-2 rounded-full bg-purple-200 animate-pulse" />
+                                    <Loader2 size={36} className="relative z-10 text-purple-600 animate-spin" />
                                 </div>
 
-                                <div className="flex gap-3">
-                                    <Button 
-                                        onClick={handleSentMoney}
-                                        disabled={isPolling || isSubmittingProof}
-                                        className="flex-1 h-12 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold disabled:opacity-50"
-                                    >
-                                        {isPolling ? 'Verifying...' : 'I have sent the money'}
-                                    </Button>
-                                    {selectedProof && (
-                                        <Button 
-                                            onClick={handleUploadProof}
-                                            disabled={isSubmittingProof || isPolling}
-                                            className="flex-1 h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold disabled:opacity-50"
-                                        >
-                                            {isSubmittingProof ? 'Uploading...' : 'Submit Proof'}
-                                        </Button>
-                                    )}
+                                <div className="text-center space-y-2">
+                                    <h3 className="text-xl font-black text-zinc-900">Verifying Payment</h3>
+                                    <p className="text-sm text-zinc-500 max-w-xs leading-relaxed">
+                                        We&apos;re confirming your transfer. This usually takes a few seconds.
+                                    </p>
+                                </div>
+
+                                <div className="w-full p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                                    <p className="text-xs text-amber-700 font-medium text-center leading-relaxed">
+                                        <span className="font-bold">Please wait</span> — do not close this window while we verify your payment.
+                                    </p>
                                 </div>
                             </div>
                         )}

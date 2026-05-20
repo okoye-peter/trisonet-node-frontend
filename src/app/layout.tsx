@@ -25,7 +25,7 @@ export default function RootLayout({
                 <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
                 <Script src="https://checkout.paga.com/checkout/inline-js" strategy="beforeInteractive" />
             </head>
-            <body className="antialiased" style={{ fontFamily: "'Roboto', sans-serif" }}>
+            <body className="antialiased" style={{ fontFamily: "'Roboto', sans-serif" }} suppressHydrationWarning>
                 <Providers>
                     {children}
                 </Providers>

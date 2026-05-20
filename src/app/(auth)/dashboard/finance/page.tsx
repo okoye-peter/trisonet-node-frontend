@@ -18,6 +18,7 @@ import FinanceVideo from '@/components/dashboard/FinanceVideo';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAppSelector } from '@/store/hooks';
 
 const financeModules = [
     { label: 'Transfers', href: '/wallets/transfers', icon: ArrowRightLeft, desc: 'Send and receive funds', color: 'text-blue-500', bg: 'bg-blue-50' },
@@ -29,7 +30,15 @@ const financeModules = [
 ];
 
 export default function FinanceOverviewPage() {
-    const [showVideo, setShowVideo] = useState(true);
+    const { user } = useAppSelector((state) => state.auth);
+    const [showVideo, setShowVideo] = useState(() => user?.level === 2);
+
+    const filteredModules = financeModules.filter(module => {
+        if (user?.level === 1) {
+            return module.label !== 'Earnings';
+        }
+        return true;
+    });
 
     if (showVideo) {
         return <FinanceVideo onEnded={() => setShowVideo(false)} />;
@@ -67,7 +76,7 @@ export default function FinanceOverviewPage() {
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 pt-6">
-                {financeModules.map((module) => (
+                {filteredModules.map((module) => (
                     <Link key={module.label} href={module.href}>
                         <Card className="group relative border-none bg-white p-2 rounded-[2rem] shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer">
                             <CardContent className="p-8">
@@ -96,17 +105,19 @@ export default function FinanceOverviewPage() {
                 ))}
             </div>
 
-            {/* Re-play Video Option */}
-            <div className="flex justify-center pt-10">
-                <Button 
-                    variant="ghost"
-                    onClick={() => setShowVideo(true)}
-                    className="group rounded-2xl px-8 py-6 h-auto text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all gap-3"
-                >
-                    <Sparkles size={18} className="transition-transform group-hover:rotate-12" />
-                    <span className="text-xs font-black uppercase tracking-widest leading-none">Re-play Experience Video</span>
-                </Button>
-            </div>
+            {/* Re-play Video Option — level 2 only */}
+            {user?.level === 2 && (
+                <div className="flex justify-center pt-10">
+                    <Button
+                        variant="ghost"
+                        onClick={() => setShowVideo(true)}
+                        className="group rounded-2xl px-8 py-6 h-auto text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all gap-3"
+                    >
+                        <Sparkles size={18} className="transition-transform group-hover:rotate-12" />
+                        <span className="text-xs font-black uppercase tracking-widest leading-none">Re-play Experience Video</span>
+                    </Button>
+                </div>
+            )}
         </motion.div>
     );
 }

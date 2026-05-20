@@ -42,7 +42,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import LoadingScreen from '@/components/LoadingScreen'
-import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, useVerifyCardPurchasePaymentMutation, type PaymentAccountDetail } from '@/store/api/pimCardApi'
+import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, useVerifyCardPurchasePaymentMutation, type PaymentAccountDetail, type PimCard } from '@/store/api/pimCardApi'
 import { useGetUserQuery } from '@/store/api/userApi'
 import { toast } from 'sonner'
 
@@ -169,6 +169,8 @@ const ActivationCards = () => {
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
     const [paymentDetails, setPaymentDetails] = useState<PaymentAccountDetail | null>(null)
     const [copiedCode, setCopiedCode] = useState<string | null>(null)
+    const [selectedCard, setSelectedCard] = useState<PimCard | null>(null)
+    const [isUsersModalOpen, setIsUsersModalOpen] = useState(false)
 
     const [isVerifying, setIsVerifying] = useState(false)
     const [isTimeout, setIsTimeout] = useState(false)
@@ -633,7 +635,7 @@ const ActivationCards = () => {
                             <Table className="min-w-[600px]">
                                 <TableHeader className="bg-muted/20">
                                     <TableRow className="hover:bg-transparent border-none whitespace-nowrap">
-                                        {['Code', 'Amount', 'Used', 'Available', 'Status', 'Date'].map(h => (
+                                        {['Code', 'Amount', 'Used', 'Available', 'Status', 'Date', ''].map(h => (
                                             <TableHead key={h} className={cn(
                                                 'font-black text-[10px] uppercase tracking-widest py-4',
                                                 h === 'Code' && 'pl-4 sm:pl-7',
@@ -641,7 +643,8 @@ const ActivationCards = () => {
                                                 h === 'Used' && 'text-center',
                                                 h === 'Available' && 'text-center',
                                                 h === 'Status' && 'text-center',
-                                                h === 'Date' && 'text-right pr-4 sm:pr-7 hidden md:table-cell',
+                                                h === 'Date' && 'text-right hidden md:table-cell',
+                                                h === '' && 'pr-4 sm:pr-7'
                                             )}>
                                                 {h}
                                             </TableHead>
@@ -681,13 +684,13 @@ const ActivationCards = () => {
 
                                             {/* Used */}
                                             <TableCell className="text-center">
-                                                <span className="font-bold text-sm text-amber-600">{card._count?.usersWithCard || 0}</span>
+                                                <span className="font-bold text-sm text-amber-600">{card.usersWithCard ? card.usersWithCard.length : (card._count?.usersWithCard || 0)}</span>
                                             </TableCell>
 
                                             {/* Available */}
                                             <TableCell className="text-center">
                                                 <span className="font-bold text-sm text-emerald-600">
-                                                    {card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.usersWithCard || 0)) : 0}
+                                                    {card.slotsLeft !== undefined ? card.slotsLeft : (card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.usersWithCard || 0)) : 0)}
                                                 </span>
                                             </TableCell>
 
@@ -702,8 +705,23 @@ const ActivationCards = () => {
                                             </TableCell>
 
                                             {/* Date */}
-                                            <TableCell className="pr-4 sm:pr-7 text-right text-xs text-muted-foreground font-medium hidden md:table-cell">
+                                            <TableCell className="text-right text-xs text-muted-foreground font-medium hidden md:table-cell">
                                                 {fmtDate(card.createdAt)}
+                                            </TableCell>
+
+                                            {/* Actions */}
+                                            <TableCell className="pr-4 sm:pr-7 text-right">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    className="rounded-xl hover:bg-muted/50"
+                                                    onClick={() => {
+                                                        setSelectedCard(card)
+                                                        setIsUsersModalOpen(true)
+                                                    }}
+                                                >
+                                                    View Users
+                                                </Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -889,6 +907,62 @@ const ActivationCards = () => {
                             )}
                         </div>
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Users Modal */}
+            <Dialog open={isUsersModalOpen} onOpenChange={setIsUsersModalOpen}>
+                <DialogContent className="sm:max-w-[600px] rounded-3xl border-none shadow-2xl p-6">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-black">Users on Card {selectedCard?.code}</DialogTitle>
+                        <DialogDescription>
+                            List of users who used this card for activation and the amount deducted for each.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="rounded-2xl bg-muted/40 p-4">
+                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Total Amount</p>
+                                <p className="font-bold text-lg">{fmt(selectedCard?.amount)}</p>
+                            </div>
+                            <div className="rounded-2xl bg-muted/40 p-4">
+                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Amount Left</p>
+                                <p className="font-bold text-lg text-emerald-600">{fmt(selectedCard?.amountLeft)}</p>
+                            </div>
+                        </div>
+
+                        {selectedCard?.usersWithCard && selectedCard.usersWithCard.length > 0 ? (
+                            <div className="space-y-3">
+                                {selectedCard.usersWithCard.map(u => (
+                                    <div key={u.id} className="flex items-center justify-between p-4 rounded-2xl border border-muted/20 bg-muted/5">
+                                        <div>
+                                            <p className="font-bold">{u.name}</p>
+                                            <p className="text-xs text-muted-foreground">@{u.username || 'unknown'}</p>
+                                            {u.isInfant && !u.sponsorId && (
+                                                <Badge variant="outline" className="mt-2 text-[10px] bg-amber-50 text-amber-700 border-amber-200">
+                                                    Independent Infant (Form Fee Added)
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Amount Used</p>
+                                            <p className="font-black text-primary">{fmt(u.amountUsed)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-10 text-center text-muted-foreground">
+                                <p className="text-sm font-medium">No users have activated with this card yet.</p>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" className="rounded-xl w-full" onClick={() => setIsUsersModalOpen(false)}>
+                            Close
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

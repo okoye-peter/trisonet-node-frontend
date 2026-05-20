@@ -43,12 +43,13 @@ export default function DashboardContainer({ forcedLevel }: DashboardContainerPr
     useEffect(() => {
         const hasSeen = sessionStorage.getItem('hasSeenWelcome');
         const timer = setTimeout(() => {
-            if (!hasSeen) {
+            if (!hasSeen && user?.level === 2) {
                 setShowWelcome(true);
             }
             setWelcomeReady(true);
         }, 0);
         return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading } = useQuery<{ data: DashboardStats }>({

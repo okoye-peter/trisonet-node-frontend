@@ -67,7 +67,17 @@ export default function LoginPage() {
 
             dispatch(loginSuccess({ user, accessToken, refreshToken }));
             toast.success('Successfully logged in!');
-            setShowWelcomeVideo(true);
+
+            if (user.level === 2) {
+                setShowWelcomeVideo(true);
+            } else {
+                sessionStorage.setItem('hasSeenWelcome', 'true');
+                if (user.role === ROLES.PATRON) {
+                    router.push('/patron/dashboard');
+                } else {
+                    router.push('/dashboard');
+                }
+            }
 
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };

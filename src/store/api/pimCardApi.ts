@@ -13,6 +13,18 @@ export interface PimCard {
     approvedBy: string | null;
     createdAt: string;
     updatedAt: string;
+    amountLeft?: number;
+    slotsLeft?: number;
+    usersWithCard?: {
+        id: string;
+        name: string;
+        username: string | null;
+        isInfant: boolean;
+        sponsorId: string | null;
+        birthDate: string | null;
+        createdAt: string;
+        amountUsed: number;
+    }[];
     _count?: {
         usersWithCard: number;
     };

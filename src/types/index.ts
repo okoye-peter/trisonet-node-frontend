@@ -42,6 +42,7 @@ export interface DashboardStats {
     region: Region;
     regionTotalUsers: number;
     assetDepot: number;
+    hasPendingActivation: boolean;
     activation?: {
         price: number;
         charge: number;

@@ -17,7 +17,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from '@tanstack/react-query';
@@ -30,6 +29,11 @@ import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import PIMCardModal from '@/components/dashboard/PIMCardModal';
+import Level1ProgressCard from '@/components/dashboard/Level1ProgressCard';
+import DistributionCodeCard from '@/components/dashboard/DistributionCodeCard';
+import ActivationActionCard from '@/components/dashboard/ActivationActionCard';
+import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
+import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
@@ -172,6 +176,7 @@ export default function DashboardPage() {
     });
 
     const [isPimModalOpen, setIsPimModalOpen] = useState(false);
+    const [isBuyPimModalOpen, setIsBuyPimModalOpen] = useState(false);
 
     const { refetch: refetchUser } = useGetUserQuery();
     const { data: notificationResponse } = useGetNotificationsQuery({ limit: 5 });
@@ -306,19 +311,27 @@ export default function DashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* <Button 
-                        onClick={() => setIsKYCModalOpen(true)}
-                        size="lg" 
-                        className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        <UserCheck className="w-4 h-4 mr-2" /> Verify Identity
-                        <ArrowUpRight className="w-4 h-4 ml-2 opacity-50" />
-                    </Button> */}
                 </div>
             </motion.div>
 
             {/* Main Stats Grid */}
             <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Level 1 Only: Progress Card */}
+                {user?.level === 1 && (
+                    <div className="sm:col-span-2 lg:col-span-2">
+                        <Level1ProgressCard totalSales={dashboardStats?.totalSales ?? 0} />
+                    </div>
+                )}
+
+                {/* Level 1 Only: Activation Action */}
+                {user?.level === 1 && !user?.status && (
+                    <div className="sm:col-span-2 lg:col-span-2">
+                        <ActivationActionCard 
+                            onActivate={() => setIsBuyPimModalOpen(true)} 
+                            pendingReview={!!dashboardStats?.hasPendingActivation}
+                        />
+                    </div>
+                )}
                 {stats.map((stat, i) => (
                     <Card 
                         key={i} 
@@ -394,125 +407,111 @@ export default function DashboardPage() {
             {/* Sub-actions Section */}
             <div className="grid gap-6 lg:grid-cols-4">
                 {/* Earning Wallet - Premium Feature Card */}
-                <motion.div variants={itemVariants} className="lg:col-span-2">
-                    <Card className="group relative overflow-hidden border-none bg-linear-to-br from-indigo-950 via-purple-900 to-indigo-900 text-white rounded-3xl shadow-2xl h-full min-h-[220px]">
-                        {/* Animated Background Elements */}
-                        <div className="absolute top-0 right-0 -mt-20 -mr-20 rounded-full w-80 h-80 bg-purple-500/20 blur-3xl animate-pulse" />
-                        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 rounded-full w-80 h-80 bg-indigo-500/20 blur-3xl animate-pulse" />
-                        
-                        <CardContent className="relative z-10 flex flex-col justify-between h-full p-8">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center justify-center text-indigo-200 border h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md border-white/20">
-                                        <Wallet size={28} />
+                {user?.level === 2 && (
+                    <motion.div variants={itemVariants} className="lg:col-span-2">
+                        <Card className="group relative overflow-hidden border-none bg-linear-to-br from-indigo-950 via-purple-900 to-indigo-900 text-white rounded-3xl shadow-2xl h-full min-h-[220px]">
+                            {/* Animated Background Elements */}
+                            <div className="absolute top-0 right-0 -mt-20 -mr-20 rounded-full w-80 h-80 bg-purple-500/20 blur-3xl animate-pulse" />
+                            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 rounded-full w-80 h-80 bg-indigo-500/20 blur-3xl animate-pulse" />
+                            
+                            <CardContent className="relative z-10 flex flex-col justify-between h-full p-8">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-center text-indigo-200 border h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md border-white/20">
+                                            <Wallet size={28} />
+                                        </div>
+                                        <div>
+                                            {/* <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300/80">Earning Wallet</p> */}
+                                            <h3 className="text-sm font-bold text-white/50">BUSINESS ASSET</h3>
+                                        </div>
                                     </div>
-                                    <div>
-                                        {/* <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-300/80">Earning Wallet</p> */}
-                                        <h3 className="text-sm font-bold text-white/50">BUSINESS ASSET</h3>
+                                    <div className="flex gap-2">
+                                        <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 ring-1 ring-emerald-500/30">
+                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                            Live
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-400 ring-1 ring-emerald-500/30">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                        Live
-                                    </span>
-                                </div>
-                            </div>
 
-                            <div className="mt-10 mb-8">
+                                <div className="mt-10 mb-8">
+                                    <div className="flex items-center gap-3">
+                                        <Image src={"/assets/img/diamond-removebg-preview.png"} alt="asset" width={100} height={100} />
+                                        <h2 className="text-6xl font-black tracking-tighter">
+                                            
+                                            <CountUp 
+                                                end={Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0)} 
+                                                duration={2.5} 
+                                                separator="," 
+                                                decimals={2} 
+                                            />
+                                        </h2>
+                                        <span className="text-3xl font-bold text-indigo-300 mb-1.5">Asset</span>
+                                    </div>
+                                    <p className="mt-2 text-xs font-bold text-white/40">
+                                        Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </p>
+                                </div>
+
                                 <div className="flex items-center gap-3">
-                                    <Image src={"/assets/img/diamond-removebg-preview.png"} alt="asset" width={100} height={100} />
-                                    <h2 className="text-6xl font-black tracking-tighter">
-                                        
-                                        <CountUp 
-                                            end={Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0)} 
-                                            duration={2.5} 
-                                            separator="," 
-                                            decimals={2} 
-                                        />
-                                    </h2>
-                                    <span className="text-3xl font-bold text-indigo-300 mb-1.5">Asset</span>
+                                    <Link href={'/earnings'} className="py-3 px-8 rounded-2xl bg-white text-indigo-950 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-[1.03] active:scale-[0.98]">
+                                        Convert
+                                    </Link>
+                                    <Link href={'/earnings'} className="py-3 px-6 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest backdrop-blur-sm transition-all">
+                                        Details
+                                    </Link>
                                 </div>
-                                <p className="mt-2 text-xs font-bold text-white/40">
-                                    Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </p>
-                            </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
 
-                            <div className="flex items-center gap-3">
-                                <Link href={'/earnings'} className="py-3 px-8 rounded-2xl bg-white text-indigo-950 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-[1.03] active:scale-[0.98]">
-                                    Convert
-                                </Link>
-                                <Link href={'/earnings'} className="py-3 px-6 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-white/10 font-black text-[10px] uppercase tracking-widest backdrop-blur-sm transition-all">
-                                    Details
-                                </Link>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-
-                {/* Global Countdown */}
-                <motion.div variants={itemVariants} className="lg:col-span-2 relative group overflow-hidden rounded-3xl p-1 bg-linear-to-br from-indigo-600 to-indigo-900 shadow-2xl shadow-indigo-100 transition-transform hover:scale-[1.01]">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] transition-transform duration-1000 group-hover:scale-150" />
-                    <Card className="flex flex-col justify-between h-full p-6 text-white bg-transparent border-none">
-                        <CardContent className="p-0">
-                            <div className="flex items-center gap-3.5 mb-8">
-                                <div className="p-3 border rounded-2xl bg-white/10 backdrop-blur-sm border-white/10">
-                                    <Clock size={20} className="text-white" />
+                {/* Global Countdown - Only for Level 2 or can be for all */}
+                {user?.level === 2 && (
+                    <motion.div variants={itemVariants} className="lg:col-span-2 relative group overflow-hidden rounded-3xl p-1 bg-linear-to-br from-indigo-600 to-indigo-900 shadow-2xl shadow-indigo-100 transition-transform hover:scale-[1.01]">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] transition-transform duration-1000 group-hover:scale-150" />
+                        <Card className="flex flex-col justify-between h-full p-6 text-white bg-transparent border-none">
+                            <CardContent className="p-0">
+                                <div className="flex items-center gap-3.5 mb-8">
+                                    <div className="p-3 border rounded-2xl bg-white/10 backdrop-blur-sm border-white/10">
+                                        <Clock size={20} className="text-white" />
+                                    </div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Global Countdown</span>
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Global Countdown</span>
-                            </div>
-                            <h2 className="text-4xl font-black leading-none tracking-tighter">
-                                <CountUp end={dashboardStats ? (dashboardStats?.region.max - (dashboardStats?.regionTotalUsers ?? 0)) : 0} duration={3} separator="," decimals={2} />
-                            </h2>
-                            <p className="mt-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">Calculated per region</p>
-                        </CardContent>
-                    </Card>
-                </motion.div>
+                                <h2 className="text-4xl font-black leading-none tracking-tighter">
+                                    <CountUp end={dashboardStats ? (dashboardStats?.region.max - (dashboardStats?.regionTotalUsers ?? 0)) : 0} duration={3} separator="," decimals={2} />
+                                </h2>
+                                <p className="mt-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">Calculated per region</p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
 
-                {/* Personal Referral Code */}
-                {/* <motion.div variants={itemVariants}>
-                    <Card className="flex flex-col h-full overflow-hidden transition-all duration-500 bg-white border-none shadow-sm group rounded-3xl hover:shadow-xl">
-                        <CardContent className="flex flex-col h-full p-6">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center justify-center w-12 h-12 text-indigo-600 rounded-2xl bg-indigo-50">
-                                    <QrCode size={24} />
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setQrCodeConfig({
-                                        isOpen: true,
-                                        url: window.location.origin + '/register?ref=' + user?.username,
-                                        title: 'Personal Code'
-                                    })}
-                                    className="text-indigo-600 rounded-xl hover:bg-indigo-50"
-                                >
-                                    <ExternalLink size={18} />
-                                </Button>
-                            </div>
-                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-4">Referral Code</p>
-                            
-                            <div className="flex items-center justify-between p-4 mb-6 transition-colors border rounded-2xl bg-zinc-50 border-zinc-100 group-hover:border-indigo-100">
-                                <span className="text-xl font-black tracking-tight text-zinc-900">{user?.username}</span>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                        const url = window.location.origin + '/register?ref=' + user?.username;
-                                        navigator.clipboard.writeText(url);
-                                        toast.success('Copied to clipboard!');
-                                    }}
-                                    className="h-8 rounded-xl bg-white text-[10px] font-black uppercase tracking-widest text-zinc-900 shadow-xs border border-zinc-100 hover:bg-zinc-900 hover:text-white transition-all transform active:scale-95"
-                                >
-                                    <Copy size={12} className="mr-1" /> Copy
-                                </Button>
-                            </div>
-                            
-                            <p className="mt-auto text-[10px] font-medium text-zinc-400">Share this code to build your partner network and earn rewards.</p>
-                        </CardContent>
-                    </Card>
-                </motion.div> */}
+                {/* Distribution Code Card - Mainly for Level 1 but available to all */}
+                {(user?.level === 1 || user?.level === 2) && (
+                    <motion.div variants={itemVariants} className="lg:col-span-2">
+                        <DistributionCodeCard 
+                            username={user?.username || ''} 
+                            onShowQR={() => setQrCodeConfig({
+                                isOpen: true,
+                                url: window.location.origin + '/register?ref=' + user?.username,
+                                title: 'Personal Code'
+                            })} 
+                        />
+                    </motion.div>
+                )}
             </div>
+
+            {/* School Fees Marquee (Dummy Data for Demo) */}
+            <motion.div variants={itemVariants}>
+                <SchoolFeesMarquee 
+                    transactions={[
+                        { name: 'Oluwaseun A.', amount: 45000 },
+                        { name: 'Chidi E.', amount: 25000 },
+                        { name: 'Amina S.', amount: 60000 },
+                        { name: 'Ibrahim M.', amount: 35000 },
+                    ]} 
+                />
+            </motion.div>
 
             {/* Partners Section Header */}
             <motion.div variants={itemVariants} className="flex items-center justify-between px-2">
@@ -598,6 +597,15 @@ export default function DashboardPage() {
                 onClose={() => setQrCodeConfig({ ...qrCodeConfig, isOpen: false })}
                 url={qrCodeConfig.url}
                 title={qrCodeConfig.title}
+            />
+
+            <BuyPimModal
+                isOpen={isBuyPimModalOpen}
+                onClose={() => {
+                    setIsBuyPimModalOpen(false);
+                    refetchStats();
+                }}
+                activationData={dashboardStats?.activation}
             />
 
         </motion.div>

@@ -9,6 +9,12 @@ import { BottomNav } from './BottomNav';
 import { cn } from '@/lib/utils';
 import FinanceVideo from './FinanceVideo';
 import KYCModal from './KYCModal';
+import EmailVerificationModal from './EmailVerificationModal';
+import MigrationRequestModal from './MigrationRequestModal';
+import Level1StatusModal from './Level1StatusModal';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/axios';
+import type { DashboardStats } from '@/types';
 import { useAppSelector } from '@/store/hooks';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useLogout } from '@/hooks/useLogout';
@@ -20,10 +26,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [showFinanceVideo, setShowFinanceVideo] = useState(false);
     const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
+    const [isLevel1StatusModalOpen, setIsLevel1StatusModalOpen] = useState(false);
+    const [hasSeenLevel1Modal, setHasSeenLevel1Modal] = useState(false);
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
     const { refetch: refetchUser } = useGetUserQuery();
     const logout = useLogout();
+
+    const { data: dashboardStatsResponse } = useQuery<{ data: DashboardStats }>({
+        queryKey: ['userDashboardStats', user?.id],
+        queryFn: async () => {
+            const res = await api.get('/users/dashboard-stats');
+            return res.data;
+        },
+        enabled: !!user?.id
+    });
+    const dashboardStats = dashboardStatsResponse?.data;
 
     const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
 
@@ -32,10 +52,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const financePaths = ['/wallets', '/transactions', '/earnings', '/vtu', '/dashboard/finance'];
         const isFinanceSection = financePaths.some(path => pathname?.startsWith(path));
 
-        if (isFinanceSection && !hasSeenInCurrentVisit && !showFinanceVideo) {
+        if (isFinanceSection && !hasSeenInCurrentVisit && !showFinanceVideo && user?.level === 2) {
             setTimeout(() => setShowFinanceVideo(true), 0);
         }
-    }, [pathname, showFinanceVideo, hasSeenInCurrentVisit]);
+    }, [pathname, showFinanceVideo, hasSeenInCurrentVisit, user?.level]);
 
     const { data: dashboardData } = useGetPatronDashboardQuery(undefined, { skip: user?.role !== ROLES.PATRON });
     const { data: plansResponse } = useGetPatronPlansQuery(undefined, { skip: user?.role !== ROLES.PATRON });
@@ -65,8 +85,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, [user, patronData, plans, pathname]);
 
     useEffect(() => {
-        // Auto-show KYC modal if user is a customer and not verified Level 2
-        if (user && user.hasVerifiedLevel2 === false && user.role === ROLES.CUSTOMER) {
+        // Auto-show KYC modal if user is a customer, has Level 2 status, and is not verified
+        if (user && user.level === 2 && user.hasVerifiedLevel2 === false && user.role === ROLES.CUSTOMER) {
             const triggerKYC = () => {
                 const timer = setTimeout(() => {
                     setIsKYCModalOpen(true);
@@ -102,6 +122,85 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             };
         }
     }, [user, pathname, showFinanceVideo]);
+
+    useEffect(() => {
+        // Auto-show Email Verification modal if user is a customer, has Level 1 status, and has not verified email
+        if (user && user.level === 1 && user.status === true && user.emailVerifiedAt === null && user.role === ROLES.CUSTOMER) {
+            const triggerEmail = () => {
+                const timer = setTimeout(() => {
+                    setIsEmailModalOpen(true);
+                }, 1500);
+                return timer;
+            };
+
+            let timer: NodeJS.Timeout;
+
+            // Coordination logic
+            const checkAndTrigger = () => {
+                const isDashboard = pathname === '/dashboard';
+                const hasSeenWelcome = typeof window !== 'undefined' && sessionStorage.getItem('hasSeenWelcome') === 'true';
+                
+                // If on finance section, wait for FinanceVideo to finish
+                if (showFinanceVideo) return;
+
+                // If on dashboard home, wait for WelcomeVideo to finish
+                if (isDashboard && !hasSeenWelcome) return;
+
+                timer = triggerEmail();
+            };
+
+            checkAndTrigger();
+
+            // Listen for events that might clear the way for Email Verification
+            const handleVideoEnd = () => checkAndTrigger();
+            window.addEventListener('welcomeVideoEnded', handleVideoEnd);
+
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener('welcomeVideoEnded', handleVideoEnd);
+            };
+        }
+    }, [user, pathname, showFinanceVideo]);
+
+    useEffect(() => {
+        // Show MigrationRequestModal for level=1 users pending Level 2 migration,
+        // or Level1StatusModal for all other level=1 users. Once per login/reload.
+        if (user && user.level === 1 && user.role === ROLES.CUSTOMER && !hasSeenLevel1Modal) {
+            const triggerLevel1Modal = () => {
+                const timer = setTimeout(() => {
+                    if (user.isPendingLevel2Migration) {
+                        setIsMigrationModalOpen(true);
+                    } else {
+                        setIsLevel1StatusModalOpen(true);
+                    }
+                    setHasSeenLevel1Modal(true);
+                }, 1500);
+                return timer;
+            };
+
+            let timer: NodeJS.Timeout;
+
+            const checkAndTrigger = () => {
+                const isDashboard = pathname === '/dashboard';
+                const hasSeenWelcome = typeof window !== 'undefined' && sessionStorage.getItem('hasSeenWelcome') === 'true';
+
+                if (showFinanceVideo) return;
+                if (isDashboard && !hasSeenWelcome) return;
+
+                timer = triggerLevel1Modal();
+            };
+
+            checkAndTrigger();
+
+            const handleVideoEnd = () => checkAndTrigger();
+            window.addEventListener('welcomeVideoEnded', handleVideoEnd);
+
+            return () => {
+                clearTimeout(timer);
+                window.removeEventListener('welcomeVideoEnded', handleVideoEnd);
+            };
+        }
+    }, [user, pathname, showFinanceVideo, hasSeenLevel1Modal]);
 
     const handleFinanceVideoEnded = () => {
         setShowFinanceVideo(false);
@@ -171,7 +270,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <BottomNav />
 
             <KYCModal 
-                key={user?.id ?? 'kyc-modal'}
+                key={user?.id ? `kyc-${user.id}` : 'kyc-modal'}
                 isOpen={isKYCModalOpen}
                 isMandatory={user?.hasVerifiedLevel2 === false}
                 onClose={() => setIsKYCModalOpen(false)}
@@ -179,6 +278,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 onSuccess={() => {
                     refetchUser();
                 }}
+            />
+
+            <EmailVerificationModal
+                key={user?.id ? `email-${user.id}` : 'email-modal'}
+                isOpen={isEmailModalOpen}
+                isMandatory={user?.emailVerifiedAt === null}
+                onClose={() => setIsEmailModalOpen(false)}
+                onLogout={logout}
+                onSuccess={() => {
+                    refetchUser();
+                }}
+            />
+
+            <MigrationRequestModal
+                key={user?.id ? `migration-${user.id}` : 'migration-modal'}
+                isOpen={isMigrationModalOpen}
+                onClose={() => setIsMigrationModalOpen(false)}
+            />
+
+            <Level1StatusModal
+                key={user?.id ? `level1-status-${user.id}` : 'level1-status-modal'}
+                isOpen={isLevel1StatusModalOpen}
+                onClose={() => setIsLevel1StatusModalOpen(false)}
+                totalSales={dashboardStats?.totalSales ?? 0}
             />
         </div>
     );
