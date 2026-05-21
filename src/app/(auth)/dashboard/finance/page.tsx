@@ -31,7 +31,8 @@ const financeModules = [
 
 export default function FinanceOverviewPage() {
     const { user } = useAppSelector((state) => state.auth);
-    const [showVideo, setShowVideo] = useState(() => user?.level === 2);
+    // Auto-show is handled by DashboardLayout; this state is only for the Re-play button.
+    const [showVideo, setShowVideo] = useState(false);
 
     const filteredModules = financeModules.filter(module => {
         if (user?.level === 1) {

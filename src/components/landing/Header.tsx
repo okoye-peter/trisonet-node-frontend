@@ -75,7 +75,7 @@ export default function Header() {
                                 <div className="menu-bg-1">
                                     <Image src="/assets/img/shape/menu-bg-1.png" alt="" width={200} height={100} priority />
                                 </div>
-                                <div className="main-menu main-menu-1 p-relative z-10">
+                                <div className="z-10 main-menu main-menu-1 p-relative">
                                     <nav id="mobile-menu">
                                         <ul>
                                             <li><Link href="/">Home</Link></li>
@@ -87,11 +87,11 @@ export default function Header() {
                                         </ul>
                                     </nav>
                                 </div>
-                                <div className="header__search p-relative z-10">
+                                <div className="z-10 header__search p-relative">
                                     <button className="side-toggle d-lg-none" aria-label="Toggle Menu"><i className="fal fa-bars"></i></button>
                                 </div>
-                                <div className="header__btn d-none d-xl-inline-block p-relative z-10">
-                                    <Link href="/login" className="grb-btn">Get Reserved<i className="fas fa-arrow-right"></i></Link>
+                                <div className="z-10 header__btn d-none d-xl-inline-block p-relative">
+                                    <Link href="/login" className="grb-btn">Login<i className="fas fa-arrow-right"></i></Link>
                                 </div>
                             </div>
                         </div>

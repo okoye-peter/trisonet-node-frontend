@@ -30,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
     const [isLevel1StatusModalOpen, setIsLevel1StatusModalOpen] = useState(false);
     const [hasSeenLevel1Modal, setHasSeenLevel1Modal] = useState(false);
+    const [welcomeVideoDone, setWelcomeVideoDone] = useState(false);
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
     const { refetch: refetchUser } = useGetUserQuery();
@@ -46,6 +47,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const dashboardStats = dashboardStatsResponse?.data;
 
     const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
+
+    useEffect(() => {
+        const handler = () => setWelcomeVideoDone(true);
+        window.addEventListener('welcomeVideoEnded', handler);
+        return () => window.removeEventListener('welcomeVideoEnded', handler);
+    }, []);
 
     useEffect(() => {
         // Finance-related path prefixes
@@ -99,29 +106,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             // Coordination logic
             const checkAndTrigger = () => {
                 const isDashboard = pathname === '/dashboard';
-                const hasSeenWelcome = typeof window !== 'undefined' && sessionStorage.getItem('hasSeenWelcome') === 'true';
-                
                 // If on finance section, wait for FinanceVideo to finish
                 if (showFinanceVideo) return;
 
-                // If on dashboard home, wait for WelcomeVideo to finish
-                if (isDashboard && !hasSeenWelcome) return;
+                // For level 2 on dashboard home, wait for WelcomeVideo to finish
+                if (isDashboard && user?.level === 2 && !welcomeVideoDone) return;
 
                 timer = triggerKYC();
             };
 
             checkAndTrigger();
 
-            // Listen for events that might clear the way for KYC
-            const handleVideoEnd = () => checkAndTrigger();
-            window.addEventListener('welcomeVideoEnded', handleVideoEnd);
-
-            return () => {
-                clearTimeout(timer);
-                window.removeEventListener('welcomeVideoEnded', handleVideoEnd);
-            };
+            return () => clearTimeout(timer);
         }
-    }, [user, pathname, showFinanceVideo]);
+    }, [user, pathname, showFinanceVideo, welcomeVideoDone]);
 
     useEffect(() => {
         // Auto-show Email Verification modal if user is a customer, has Level 1 status, and has not verified email
@@ -138,29 +136,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             // Coordination logic
             const checkAndTrigger = () => {
                 const isDashboard = pathname === '/dashboard';
-                const hasSeenWelcome = typeof window !== 'undefined' && sessionStorage.getItem('hasSeenWelcome') === 'true';
-                
                 // If on finance section, wait for FinanceVideo to finish
                 if (showFinanceVideo) return;
 
-                // If on dashboard home, wait for WelcomeVideo to finish
-                if (isDashboard && !hasSeenWelcome) return;
+                // For level 2 on dashboard home, wait for WelcomeVideo to finish
+                if (isDashboard && user?.level === 2 && !welcomeVideoDone) return;
 
                 timer = triggerEmail();
             };
 
             checkAndTrigger();
 
-            // Listen for events that might clear the way for Email Verification
-            const handleVideoEnd = () => checkAndTrigger();
-            window.addEventListener('welcomeVideoEnded', handleVideoEnd);
-
-            return () => {
-                clearTimeout(timer);
-                window.removeEventListener('welcomeVideoEnded', handleVideoEnd);
-            };
+            return () => clearTimeout(timer);
         }
-    }, [user, pathname, showFinanceVideo]);
+    }, [user, pathname, showFinanceVideo, welcomeVideoDone]);
 
     useEffect(() => {
         // Show MigrationRequestModal for level=1 users pending Level 2 migration,
@@ -182,25 +171,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             const checkAndTrigger = () => {
                 const isDashboard = pathname === '/dashboard';
-                const hasSeenWelcome = typeof window !== 'undefined' && sessionStorage.getItem('hasSeenWelcome') === 'true';
 
                 if (showFinanceVideo) return;
-                if (isDashboard && !hasSeenWelcome) return;
+                // Level 1 users don't see the welcome video, so no need to wait for it
+                if (isDashboard && user?.level === 2 && !welcomeVideoDone) return;
 
                 timer = triggerLevel1Modal();
             };
 
             checkAndTrigger();
 
-            const handleVideoEnd = () => checkAndTrigger();
-            window.addEventListener('welcomeVideoEnded', handleVideoEnd);
-
-            return () => {
-                clearTimeout(timer);
-                window.removeEventListener('welcomeVideoEnded', handleVideoEnd);
-            };
+            return () => clearTimeout(timer);
         }
-    }, [user, pathname, showFinanceVideo, hasSeenLevel1Modal]);
+    }, [user, pathname, showFinanceVideo, welcomeVideoDone, hasSeenLevel1Modal]);
 
     const handleFinanceVideoEnded = () => {
         setShowFinanceVideo(false);

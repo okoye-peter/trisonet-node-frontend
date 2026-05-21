@@ -183,26 +183,19 @@ export default function DashboardPage() {
     const unreadCount = notificationResponse?.data?.unreadCount || 0;
     const latestNotifications = notificationResponse?.data?.notifications || [];
 
-    // Check sessionStorage on mount — only show welcome video on first visit per session.
-    // This prevents the video from blocking the dashboard on every refresh.
+    // Show the welcome video on every page load/refresh, but only for level 2 users.
     useEffect(() => {
-        const hasSeen = sessionStorage.getItem('hasSeenWelcome');
-        
-        // Use a timeout to avoid the synchronous re-render warning (cascading renders)
-        // This moves the state update to the next tick, ensuring the initial mount completes first.
         const timer = setTimeout(() => {
-            if (!hasSeen) {
+            if (user?.level === 2) {
                 setShowWelcome(true);
             }
             setWelcomeReady(true);
         }, 0);
 
         return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    useEffect(() => {
-        // Auto-show welcome video or other dashboard specific logic
-    }, [user]);
     const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading, refetch: refetchStats } = useQuery<{ data: DashboardStats }>({
         queryKey: ['userDashboardStats', user?.id],
         queryFn: async () => {
@@ -273,9 +266,7 @@ export default function DashboardPage() {
 
     if (showWelcome) {
         return <WelcomeVideo onEnded={() => {
-            sessionStorage.setItem('hasSeenWelcome', 'true');
             setShowWelcome(false);
-            // Dispatch custom event to notify layout
             window.dispatchEvent(new Event('welcomeVideoEnded'));
         }} />;
     }
