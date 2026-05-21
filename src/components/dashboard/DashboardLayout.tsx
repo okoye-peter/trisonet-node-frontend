@@ -301,7 +301,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 key={user?.id ? `level1-status-${user.id}` : 'level1-status-modal'}
                 isOpen={isLevel1StatusModalOpen}
                 onClose={() => setIsLevel1StatusModalOpen(false)}
-                totalSales={dashboardStats?.totalSales ?? 0}
+                totalSales={dashboardStats?.migrationSales ?? 0}
             />
         </div>
     );

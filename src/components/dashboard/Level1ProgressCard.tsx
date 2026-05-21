@@ -18,10 +18,9 @@ interface Level1ProgressCardProps {
 export default function Level1ProgressCard({ totalSales, isPendingLevel2Migration }: Level1ProgressCardProps) {
     const { target } = NEW_REFERRAL_SYSTEM;
 
-    // Current progress: how many sales since migration start vs target
-    const currentProgress = totalSales % target;
-    const progressPercent = Math.min(Math.round((currentProgress / target) * 100), 100);
-    const leftToTarget = target - currentProgress;
+    const currentProgress = Math.min(totalSales, target);
+    const progressPercent = Math.round((currentProgress / target) * 100);
+    const leftToTarget = Math.max(target - totalSales, 0);
 
     return (
         <Card className="relative overflow-hidden border-none bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 group">

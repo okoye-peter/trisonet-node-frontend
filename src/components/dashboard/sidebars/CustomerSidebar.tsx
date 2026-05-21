@@ -53,7 +53,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
             // { icon: Bell, label: 'Notifications', href: '/notifications', badge: unreadCount },
             { icon: User, label: 'Profile', href: '/profile' },
-            { icon: MessageSquare, label: 'Talkzone', href: '/talkzone' },
+            { icon: MessageSquare, label: 'Inbox', href: '/talkzone' },
             { icon: Newspaper, label: 'Gists Zone', href: '/gists-zone' },
             { icon: Film, label: 'Reels', href: '/dashboard/reels' },
             { icon: Trophy, label: 'Winning Range', href: '/competitions/stats' },

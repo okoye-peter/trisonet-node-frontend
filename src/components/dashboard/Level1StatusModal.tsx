@@ -24,11 +24,10 @@ export default function Level1StatusModal({
         () => false
     );
 
-    // Progress Calculations
     const target = 10;
-    const currentProgress = totalSales % target;
-    const progressPercent = Math.min(Math.round((currentProgress / target) * 100), 100);
-    const leftToTarget = target - currentProgress;
+    const currentProgress = Math.min(totalSales, target);
+    const progressPercent = Math.round((currentProgress / target) * 100);
+    const leftToTarget = Math.max(target - totalSales, 0);
 
     if (!mounted) return null;
 
