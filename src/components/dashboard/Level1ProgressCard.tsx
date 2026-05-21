@@ -3,14 +3,13 @@
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Target, TrendingUp, Users } from 'lucide-react';
-import { MAX_ASSET_DEPOT } from '@/lib/constants';
 
 interface Level1ProgressCardProps {
     totalSales: number;
     assetDepotTarget?: number;
 }
 
-export default function Level1ProgressCard({ totalSales, assetDepotTarget = MAX_ASSET_DEPOT }: Level1ProgressCardProps) {
+export default function Level1ProgressCard({ totalSales, assetDepotTarget = 10 }: Level1ProgressCardProps) {
     // Current progress: how many they have vs target
     const currentProgress = totalSales % assetDepotTarget;
     const progressPercent = Math.min(Math.round((currentProgress / assetDepotTarget) * 100), 100);

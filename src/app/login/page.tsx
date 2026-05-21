@@ -194,8 +194,9 @@ export default function LoginPage() {
                     <span className="bg-white px-4 text-[#8f98a8] font-medium tracking-widest">Or secure access</span>
                 </div>
             </div>
-            <div className="flex justify-center">
-                <Link href="/register/patron" className=' text-[#6639ff] hover:text-[#371e87] text-sm font-semibold'>Register as a patron </Link>
+            <div className="flex flex-col items-center gap-3">
+                <Link href="/register/patron" className='text-[#6639ff] hover:text-[#371e87] text-sm font-semibold'>Register as a patron</Link>
+                <a href="https://app.trisonet.com/login" className='text-zinc-500 hover:text-zinc-800 text-sm font-medium'>Login as an Infant or Coordinator</a>
             </div>
         </AuthLayout>
     );
