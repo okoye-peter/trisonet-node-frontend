@@ -245,12 +245,12 @@ function RegisterForm() {
                         name="referral_id"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-[#040021] font-semibold">Referral Username (Optional)</FormLabel>
+                                <FormLabel className="text-[#040021] font-semibold">Distribution code</FormLabel>
                                 <FormControl>
                                     <div className="relative group">
                                         <Hash className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
-                                            placeholder="Referral Username"
+                                            placeholder="Distribution code"
                                             readOnly={!!ref}
                                             className={`pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all ${
                                                 !!ref ? 'cursor-not-allowed opacity-70 bg-zinc-100' : ''
@@ -263,7 +263,7 @@ function RegisterForm() {
                             </FormItem>
                         )}
                     />
-                    <FormField
+                    {/* <FormField
                         control={form.control}
                         name="activation_code"
                         render={({ field }) => (
@@ -282,7 +282,7 @@ function RegisterForm() {
                                 <FormMessage />
                             </FormItem>
                         )}
-                    />
+                    /> */}
                     <FormField
                         control={form.control}
                         name="password"

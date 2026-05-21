@@ -2,18 +2,26 @@
 
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { Target, TrendingUp, Users } from 'lucide-react';
+import { Target, Users } from 'lucide-react';
+
+// Migration constants for the new referral system
+const NEW_REFERRAL_SYSTEM = {
+    start_date: '2026-04-01',
+    target: 10,
+} as const;
 
 interface Level1ProgressCardProps {
     totalSales: number;
-    assetDepotTarget?: number;
+    isPendingLevel2Migration?: boolean;
 }
 
-export default function Level1ProgressCard({ totalSales, assetDepotTarget = 10 }: Level1ProgressCardProps) {
-    // Current progress: how many they have vs target
-    const currentProgress = totalSales % assetDepotTarget;
-    const progressPercent = Math.min(Math.round((currentProgress / assetDepotTarget) * 100), 100);
-    const leftToTarget = assetDepotTarget - currentProgress;
+export default function Level1ProgressCard({ totalSales, isPendingLevel2Migration }: Level1ProgressCardProps) {
+    const { target } = NEW_REFERRAL_SYSTEM;
+
+    // Current progress: how many sales since migration start vs target
+    const currentProgress = totalSales % target;
+    const progressPercent = Math.min(Math.round((currentProgress / target) * 100), 100);
+    const leftToTarget = target - currentProgress;
 
     return (
         <Card className="relative overflow-hidden border-none bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 group">
@@ -29,7 +37,9 @@ export default function Level1ProgressCard({ totalSales, assetDepotTarget = 10 }
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Level 1 Status</p>
-                            <h3 className="text-sm font-bold text-zinc-900">Migration Progress</h3>
+                            {isPendingLevel2Migration && (
+                                <h3 className="text-sm font-bold text-zinc-900">Migration in Queue</h3>
+                            )}
                         </div>
                     </div>
                     
@@ -60,7 +70,7 @@ export default function Level1ProgressCard({ totalSales, assetDepotTarget = 10 }
                     
                     <p className="text-[10px] font-medium text-zinc-500 flex items-center gap-1.5">
                         <Users size={12} className="opacity-70" />
-                        Partnerships needed to activate Level 2
+                        {isPendingLevel2Migration ? "Migration currently in queue..." : "Partnerships needed to activate Migration."}
                     </p>
                 </div>
             </CardContent>

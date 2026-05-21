@@ -319,7 +319,7 @@ export default function DashboardPage() {
                 {/* Level 1 Only: Progress Card */}
                 {user?.level === 1 && (
                     <div className="sm:col-span-2 lg:col-span-2">
-                        <Level1ProgressCard totalSales={dashboardStats?.totalSales ?? 0} />
+                        <Level1ProgressCard totalSales={dashboardStats?.totalSales ?? 0} isPendingLevel2Migration={!!user?.isPendingLevel2Migration} />
                     </div>
                 )}
 

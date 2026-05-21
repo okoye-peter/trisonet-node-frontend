@@ -38,6 +38,8 @@ export interface Region {
 
 export interface DashboardStats {
     totalSales: number;
+    migrationSales: number;
+    isPendingLevel2Migration: boolean;
     wallets: Wallet[];
     region: Region;
     regionTotalUsers: number;
