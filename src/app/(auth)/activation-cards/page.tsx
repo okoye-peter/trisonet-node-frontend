@@ -13,7 +13,6 @@ import {
     Wallet,
     Copy,
     Check,
-    Layers,
     AlertCircle,
     RefreshCw,
     Sparkles,
@@ -81,17 +80,15 @@ const fmt = (n: number | undefined | null) =>
 const fmtDate = (iso: string | undefined | null) =>
     iso ? new Date(iso).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
 
-const statusLabel = (status: number, amount: number = 0, pricePerUser: number = 0, numUsers: number = 0) => {
-    const slots = pricePerUser > 0 ? Math.floor(amount / pricePerUser) - numUsers : 0
-    if (status === 1 && slots <= 0) return 'Used'
+const statusLabel = (status: number, slotsLeft: number = 0) => {
+    if (status === 1 && slotsLeft <= 0) return 'Used'
     if (status === 0) return 'Pending'
     if (status === 1) return 'Approved'
     return 'Cancelled'
 }
 
-const statusClass = (status: number, amount: number = 0, pricePerUser: number = 0, numUsers: number = 0) => {
-    const slots = pricePerUser > 0 ? Math.floor(amount / pricePerUser) - numUsers : 0
-    if (status === 1 && slots <= 0) return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/40 dark:text-zinc-400'
+const statusClass = (status: number, slotsLeft: number = 0) => {
+    if (status === 1 && slotsLeft <= 0) return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/40 dark:text-zinc-400'
     if (status === 0) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
     if (status === 1) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
     return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
@@ -698,9 +695,9 @@ const ActivationCards = () => {
                                             <TableCell className="text-center">
                                                 <Badge className={cn(
                                                     'rounded-full px-3 py-1 font-bold text-[10px] uppercase tracking-wide border-none',
-                                                    statusClass(card.status, card.amount, card.pricePerUser, card._count?.usersWithCard || 0)
+                                                    statusClass(card.status, card.slotsLeft !== undefined ? card.slotsLeft : (card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.usersWithCard || 0)) : 0))
                                                 )}>
-                                                    {statusLabel(card.status, card.amount, card.pricePerUser, card._count?.usersWithCard || 0)}
+                                                    {statusLabel(card.status, card.slotsLeft !== undefined ? card.slotsLeft : (card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.usersWithCard || 0)) : 0))}
                                                 </Badge>
                                             </TableCell>
 
