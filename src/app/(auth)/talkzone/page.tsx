@@ -80,6 +80,8 @@ export default function TalkzonePage() {
 
     const messageEndRef = useRef<HTMLDivElement | null>(null);
     const socketRef = useRef<Socket | null>(null);
+    const dispatchRef = useRef(dispatch);
+    dispatchRef.current = dispatch;
 
     const { data: friendsData, isLoading: loadingFriends } = useGetUserFriendsQuery(undefined, {
         skip: !token
@@ -138,7 +140,7 @@ export default function TalkzonePage() {
         socketRef.current = socket;
 
         const handleInvalidate = () => {
-            dispatch(chatApi.util.invalidateTags(['Chat']));
+            dispatchRef.current(chatApi.util.invalidateTags(['Chat']));
         };
 
         socket.on('UserSendMessagesEvent', handleInvalidate);
@@ -164,8 +166,9 @@ export default function TalkzonePage() {
             socket.off('join-chat-group', handleInvalidate);
             socket.off('exit-chat-group', handleInvalidate);
             socket.disconnect();
+            socketRef.current = null;
         };
-    }, [token, dispatch]);
+    }, [token]);
 
     useEffect(() => {
         if (selectedFriendId) {
