@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Loader2, UserCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ import { ROLES, User } from '@/types';
 
 
 const loginSchema = z.object({
-    email: z.string().email({ message: 'Please enter a valid email address.' }),
+    emailOrUsername: z.string().min(1, { message: 'Email or username is required.' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
@@ -47,7 +47,7 @@ export default function LoginPage() {
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            email: '',
+            emailOrUsername: '',
             password: '',
         },
     });
@@ -116,15 +116,15 @@ export default function LoginPage() {
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                         control={form.control}
-                        name="email"
+                        name="emailOrUsername"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-[#040021] font-semibold">Email Address</FormLabel>
+                                <FormLabel className="text-[#040021] font-semibold">Email or Username</FormLabel>
                                 <FormControl>
                                     <div className="relative group">
-                                        <Mail className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                        <UserCircle className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
-                                            placeholder="Enter email address"
+                                            placeholder="Enter email or username"
                                             className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
                                             {...field}
                                         />
