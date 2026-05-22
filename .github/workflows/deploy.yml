@@ -23,6 +23,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             npm install
+            rm -f .next/lock
             npm run build
             chown -R apiuser:apiuser .next
             cp -r .next/static .next/standalone/.next/static
