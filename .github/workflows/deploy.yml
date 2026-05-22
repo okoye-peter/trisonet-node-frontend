@@ -19,7 +19,8 @@ jobs:
           script: |
             git config --global --add safe.directory /var/www/app.trisonet.com
             cd /var/www/app.trisonet.com
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             npm install
             npm run build
             chown -R apiuser:apiuser .next
