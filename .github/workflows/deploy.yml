@@ -26,4 +26,4 @@ jobs:
             chown -R apiuser:apiuser .next
             cp -r .next/static .next/standalone/.next/static
             cp -r public .next/standalone/public
-            su - apiuser -c "pm2 restart trisonet-app"
+            su - apiuser -c "pm2 restart trisonet-app && pm2 save"
