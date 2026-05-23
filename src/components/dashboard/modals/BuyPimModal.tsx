@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Send, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,14 @@ declare global {
     interface Window {
         PagaCheckout: {
             setOptions: (options: {
+                publicKey: string;
                 amount: number;
+                currency?: string;
                 email?: string;
                 phoneNumber?: string;
-                publicKey: string;
-                referenceNumber: string;
-                paymentMethods?: string[];
+                payment_reference: string;
+                funding_sources?: string;
+                callback_url?: string;
                 onSuccess?: (response: unknown) => void;
                 onError?: (error: unknown) => void;
                 onClose?: () => void;
@@ -41,6 +43,29 @@ interface BuyPimModalProps {
 
 type ModalView = 'selection' | 'code' | 'transfer' | 'card' | 'transfer_details' | 'verifying';
 
+const PAGA_SCRIPT_URL = 'https://checkout.paga.com/checkout/inline-js';
+
+function loadScript(src: string, id?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (id && document.getElementById(id)) { resolve(); return; }
+        const s = document.createElement('script');
+        if (id) s.id = id;
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error(`Failed to load: ${src}`));
+        document.body.appendChild(s);
+    });
+}
+
+async function loadPagaScript(): Promise<void> {
+    if (window.PagaCheckout) return;
+    // 1. Load Paga's inline-js (exposes `PagaCheckout` as a global class declaration)
+    await loadScript(PAGA_SCRIPT_URL, 'js-script');
+    // 2. Load same-origin bridge script that can access the class and pins it to window
+    await loadScript('/paga-bridge.js');
+    if (!window.PagaCheckout) throw new Error('PagaCheckout not defined after load');
+}
+
 export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimModalProps) {
     const [view, setView] = useState<ModalView>('selection');
     const [activationCode, setActivationCode] = useState('');
@@ -57,6 +82,11 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
     } | null>(null);
     const [isPolling, setIsPolling] = useState(false);
     const [checkStatus] = useLazyCheckActivationStatusQuery();
+
+    // Preload Paga script as soon as the modal is opened
+    useEffect(() => {
+        if (isOpen) loadPagaScript().catch(() => {});
+    }, [isOpen]);
 
     const { data: candidatesResponse } = useGetActivationCandidatesQuery(undefined, {
         skip: !isOpen || !isMultiple
@@ -107,91 +137,44 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
             const { reference, amount, publicKey, email, phoneNumber } = res.data;
 
-            const initPaga = () => {
-                const getPagaCheckout = () => {
-                    try {
-                        return new Function('return typeof PagaCheckout !== "undefined" ? PagaCheckout : null')();
-                    } catch {
-                        return null;
+            await loadPagaScript();
+
+            window.PagaCheckout.setOptions({
+                publicKey,
+                amount: Number(Number(amount).toFixed(2)),
+                currency: 'NGN',
+                phoneNumber,
+                email,
+                payment_reference: reference,
+                funding_sources: 'CARD',
+                onSuccess: () => {
+                    toast.success('Payment successful! Your account is being activated.');
+                    window.location.reload();
+                },
+                onError: (error: unknown) => {
+                    console.error('Paga error:', error);
+                    toast.error('Payment failed. Please try again.');
+                },
+                onClose: () => {},
+            });
+
+            resetAndClose();
+            window.PagaCheckout.openCheckout();
+
+            // Paga iframe is injected with low z-index — boost it above the navbar
+            setTimeout(() => {
+                document.querySelectorAll('iframe').forEach(iframe => {
+                    if (iframe.src.includes('checkout.paga.com')) {
+                        iframe.style.zIndex = '999999';
                     }
-                };
-                
-                const PagaCheckout = getPagaCheckout();
-                
-                if (!PagaCheckout) {
-                    toast.error('Payment gateway not loaded. Please refresh the page.');
-                    return;
-                }
-                
-                try {
-                    PagaCheckout.setOptions({
-                        publicKey: publicKey,
-                        amount: Number(Number(amount).toFixed(2)),
-                        currency: "NGN",
-                        phoneNumber: phoneNumber,
-                        email: email,
-                        payment_reference: reference,
-                        funding_sources: 'CARD',
-                        callback_url: window.location.origin + '/dashboard',
-                        onSuccess: () => {
-                            toast.success('Payment successful! Your account is being activated.');
-                            window.location.reload();
-                        },
-                        onError: (error: unknown) => {
-                            console.error('Paga error callback:', error);
-                            toast.error('Payment failed. Please try again.');
-                        },
-                        onClose: () => {
-                            console.log('Checkout closed callback');
-                        }
-                    });
-
-                    // Close our modal first
-                    resetAndClose();
-
-                    PagaCheckout.openCheckout();
-
-                    // The Paga iframe is injected with z-index: 5, which puts it behind the navbar (z-50).
-                    // We dynamically find it and boost its z-index so the entire checkout is visible.
-                    setTimeout(() => {
-                        const iframes = document.querySelectorAll('iframe');
-                        iframes.forEach(iframe => {
-                            if (iframe.src.includes('checkout.paga.com')) {
-                                iframe.style.zIndex = '999999';
-                            }
-                        });
-                    }, 500);
-
-                } catch (e: unknown) {
-                    console.error('Paga error during openCheckout:', e);
-                    const msg = e instanceof Error ? e.message : String(e);
-                    toast.error('Error opening payment gateway: ' + msg);
-                }
-            };
-
-            const checkPaga = () => {
-                try {
-                    return new Function('return typeof PagaCheckout !== "undefined" ? PagaCheckout : null')();
-                } catch {
-                    return null;
-                }
-            };
-
-            if (typeof window !== 'undefined' && !checkPaga()) {
-                toast.info('Loading payment gateway...');
-                const script = document.createElement('script');
-                script.src = 'https://checkout.paga.com/checkout/inline-js';
-                script.onload = () => initPaga();
-                script.onerror = () => toast.error('Failed to load payment gateway script');
-                document.body.appendChild(script);
-            } else {
-                initPaga();
-            }
+                });
+            }, 500);
 
         } catch (err: unknown) {
-            console.error('Payment initiation error:', err);
-            const apiErr = err as { data?: { message?: string }, status?: number };
-            toast.error(apiErr.data?.message || 'Failed to initiate activation payment. Please try again.');
+            console.error('Payment error:', err);
+            const apiErr = err as { data?: { message?: string }, message?: string };
+            const msg = apiErr.data?.message || apiErr.message || 'Failed to initiate payment. Please try again.';
+            toast.error(msg);
         }
     };
 
