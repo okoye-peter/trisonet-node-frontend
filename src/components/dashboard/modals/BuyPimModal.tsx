@@ -326,12 +326,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     >
                                         Pay By Transfer
                                     </Button>
-                                    {/* <Button
+                                    <Button
                                         onClick={() => setView('card')}
                                         className="w-full h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold transition-all"
                                     >
                                         Pay With Card
-                                    </Button> */}
+                                    </Button>
                                     <Button 
                                         variant="outline"
                                         onClick={resetAndClose}
