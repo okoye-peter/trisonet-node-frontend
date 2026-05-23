@@ -88,6 +88,7 @@ export default function EmailVerificationModal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
+                        onClick={onClose}
                     />
                     
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -110,14 +111,12 @@ export default function EmailVerificationModal({
                                         </h3>
                                     </div>
                                 </div>
-                                {!isMandatory && (
-                                    <button 
-                                        onClick={onClose} 
-                                        className="p-2 text-zinc-400 hover:text-zinc-900 rounded-xl hover:bg-zinc-50 transition-colors"
-                                    >
-                                        <X size={18} />
-                                    </button>
-                                )}
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 text-zinc-400 hover:text-zinc-900 rounded-xl hover:bg-zinc-50 transition-colors"
+                                >
+                                    <X size={18} />
+                                </button>
                             </div>
 
                             {step === 1 ? (
