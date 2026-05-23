@@ -80,6 +80,7 @@ export interface PimCardsSummary {
     totalSlots: number
     pendingCards: number
     price: number
+    basePrice: number
     activeCard: {
         id: string
         code: string
@@ -316,11 +317,17 @@ const ActivationCards = () => {
     const user = userResponse?.data?.user ?? null
 
     const pricePerCard = summary?.price ?? 0
-    const subtotal = quantity ? (user?.username === 'dev_user' ? 100 : quantity * pricePerCard) : 0
+    const basePrice = summary?.basePrice ?? 0
+    // basePrice is the raw setting value (no charges). pricePerCard already has charges
+    // for a single card baked in. Only calculate charge separately when we have the raw
+    // basePrice — otherwise pricePerCard * quantity already approximates the correct total.
+    const hasBasePrice = basePrice > 0
+    const effectiveBase = hasBasePrice ? basePrice : pricePerCard
+    const subtotal = quantity ? (user?.username === 'dev_user' ? 100 : quantity * effectiveBase) : 0
 
     const calculateCharge = (amount: number) => {
         if (amount === 0) return 0
-        const chargeRate = 0.015
+        const chargeRate = 0.008062
         const vatRate = 0.075
         const capped = 1000
 
@@ -331,7 +338,7 @@ const ActivationCards = () => {
         return Math.min(Math.round(totalCharge * 100) / 100, capped)
     }
 
-    const charge = calculateCharge(subtotal)
+    const charge = hasBasePrice ? calculateCharge(subtotal) : 0
     const totalAmount = subtotal + charge
 
     const copyCode = (code: string) => {
@@ -485,7 +492,7 @@ const ActivationCards = () => {
                                     </Label>
                                     <div className="relative">
                                         <Input
-                                            value={loading ? 'Loading…' : fmt(pricePerCard)}
+                                            value={loading ? 'Loading…' : fmt(effectiveBase)}
                                             disabled
                                             className="bg-muted/40 border-none font-bold text-base h-12 pr-10"
                                         />
