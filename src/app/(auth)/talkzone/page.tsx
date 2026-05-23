@@ -271,22 +271,22 @@ export default function TalkzonePage() {
             }`}>
 
                 {/* Header Actions */}
-                <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <Sparkles className="text-violet-500" size={18} />
-                        <span className="text-lg font-black tracking-tight text-zinc-900">Talkzone</span>
+                        <span className="text-lg font-black tracking-tight text-zinc-900">Inbox</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowDiscover(true)}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 hover:bg-violet-600 hover:text-white transition-all duration-300"
+                            className="flex items-center justify-center w-8 h-8 transition-all duration-300 rounded-xl bg-zinc-100 text-zinc-500 hover:bg-violet-600 hover:text-white"
                             title="Discover new friends"
                         >
                             <UserPlus size={16} />
                         </button>
                         <button
                             onClick={() => setShowCreateGroup(true)}
-                            className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 hover:bg-emerald-600 hover:text-white transition-all duration-300"
+                            className="flex items-center justify-center w-8 h-8 transition-all duration-300 rounded-xl bg-zinc-100 text-zinc-500 hover:bg-emerald-600 hover:text-white"
                             title="Create new group"
                         >
                             <Plus size={16} />
@@ -302,12 +302,12 @@ export default function TalkzonePage() {
                         placeholder="Search conversations..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full rounded-xl bg-zinc-50 py-2 pl-10 pr-4 text-sm text-zinc-700 border border-zinc-200 focus:outline-none focus:border-violet-500 transition-all duration-300"
+                        className="w-full py-2 pl-10 pr-4 text-sm transition-all duration-300 border rounded-xl bg-zinc-50 text-zinc-700 border-zinc-200 focus:outline-none focus:border-violet-500"
                     />
                 </div>
 
                 {/* Tabs */}
-                <div className="grid grid-cols-2 rounded-xl bg-zinc-100 p-1 mb-4 border border-zinc-200">
+                <div className="grid grid-cols-2 p-1 mb-4 border rounded-xl bg-zinc-100 border-zinc-200">
                     <button
                         onClick={() => { setActiveTab('inbox'); setSelectedGroupId(null); }}
                         className={`flex items-center justify-center gap-2 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all duration-300 ${
@@ -329,14 +329,14 @@ export default function TalkzonePage() {
                 </div>
 
                 {/* List Body */}
-                <div className="flex-1 overflow-y-auto pr-1 space-y-1">
+                <div className="flex-1 pr-1 space-y-1 overflow-y-auto">
                     {activeTab === 'inbox' ? (
                         loadingFriends ? (
-                            <div className="flex h-32 items-center justify-center">
+                            <div className="flex items-center justify-center h-32">
                                 <Loader2 className="animate-spin text-zinc-400" size={24} />
                             </div>
                         ) : filteredFriends.length === 0 ? (
-                            <div className="flex h-32 flex-col items-center justify-center text-center text-xs text-zinc-400">
+                            <div className="flex flex-col items-center justify-center h-32 text-xs text-center text-zinc-400">
                                 <User size={24} className="mb-2 text-zinc-300" />
                                 No active direct conversations.
                             </div>
@@ -353,13 +353,13 @@ export default function TalkzonePage() {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
-                                            <UserAvatar name={friend.name} className="h-10 w-10" />
+                                            <UserAvatar name={friend.name} className="w-10 h-10" />
                                             {friend.is_online && (
                                                 <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white" />
                                             )}
                                         </div>
                                         <div className="text-left">
-                                            <p className="text-sm font-bold text-zinc-900 leading-tight">{friend.name}</p>
+                                            <p className="text-sm font-bold leading-tight text-zinc-900">{friend.name}</p>
                                             <p className="text-[11px] text-zinc-500 leading-none">@{friend.username}</p>
                                         </div>
                                     </div>
@@ -373,11 +373,11 @@ export default function TalkzonePage() {
                         )
                     ) : (
                         loadingGroups ? (
-                            <div className="flex h-32 items-center justify-center">
+                            <div className="flex items-center justify-center h-32">
                                 <Loader2 className="animate-spin text-zinc-400" size={24} />
                             </div>
                         ) : filteredGroups.length === 0 ? (
-                            <div className="flex h-32 flex-col items-center justify-center text-center text-xs text-zinc-400">
+                            <div className="flex flex-col items-center justify-center h-32 text-xs text-center text-zinc-400">
                                 <Users size={24} className="mb-2 text-zinc-300" />
                                 No active group chats joined.
                             </div>
@@ -393,9 +393,9 @@ export default function TalkzonePage() {
                                     }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <UserAvatar name={group.name} className="h-10 w-10" />
+                                        <UserAvatar name={group.name} className="w-10 h-10" />
                                         <div className="text-left">
-                                            <p className="text-sm font-bold text-zinc-900 leading-tight">{group.name}</p>
+                                            <p className="text-sm font-bold leading-tight text-zinc-900">{group.name}</p>
                                             <p className="text-[11px] text-zinc-500 leading-none">
                                                 {group.users_count} {group.users_count === 1 ? 'member' : 'members'}
                                             </p>
@@ -415,20 +415,20 @@ export default function TalkzonePage() {
 
                 {/* Direct Message Pane */}
                 {selectedFriendId && selectedFriend ? (
-                    <div className="flex flex-1 flex-col h-full overflow-hidden">
+                    <div className="flex flex-col flex-1 h-full overflow-hidden">
 
                         {/* Chat Header */}
-                        <div className="flex items-center justify-between border-b border-zinc-100 p-4 bg-white">
+                        <div className="flex items-center justify-between p-4 bg-white border-b border-zinc-100">
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setSelectedFriendId(null)}
-                                    className="md:hidden flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-all duration-300"
+                                    className="flex items-center justify-center w-8 h-8 transition-all duration-300 md:hidden rounded-xl bg-zinc-100 text-zinc-500 hover:text-zinc-900"
                                     title="Back to conversations"
                                 >
                                     <ArrowLeft size={16} />
                                 </button>
                                 <div className="relative">
-                                    <UserAvatar name={selectedFriend.name} className="h-10 w-10" />
+                                    <UserAvatar name={selectedFriend.name} className="w-10 h-10" />
                                     {selectedFriend.is_online && (
                                         <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white" />
                                     )}
@@ -454,7 +454,7 @@ export default function TalkzonePage() {
                                 </button>
                                 <button
                                     onClick={() => deletePrivateChat({ friendId: selectedFriend.id })}
-                                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all duration-300"
+                                    className="flex items-center justify-center w-8 h-8 transition-all duration-300 rounded-xl bg-zinc-100 text-zinc-400 hover:text-red-500 hover:bg-red-50"
                                     title="Delete thread"
                                 >
                                     <Trash2 size={14} />
@@ -463,7 +463,7 @@ export default function TalkzonePage() {
                         </div>
 
                         {/* Message History */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-zinc-50/50">
+                        <div className="flex-1 p-4 space-y-6 overflow-y-auto bg-zinc-50/50">
                             {privateMessages && Object.keys(privateMessages).length > 0 ? (
                                 Object.keys(privateMessages).map((date) => (
                                     <div key={date} className="space-y-4">
@@ -509,7 +509,7 @@ export default function TalkzonePage() {
                                                         {isOutgoing && (
                                                             <button
                                                                 onClick={() => deletePrivateChat({ friendId: selectedFriend.id, messageId: msg.id })}
-                                                                className="absolute -left-6 top-3 hidden group-hover:block text-zinc-400 hover:text-red-500 transition-colors"
+                                                                className="absolute hidden transition-colors -left-6 top-3 group-hover:block text-zinc-400 hover:text-red-500"
                                                                 title="Delete message"
                                                             >
                                                                 <Trash2 size={12} />
@@ -522,7 +522,7 @@ export default function TalkzonePage() {
                                     </div>
                                 ))
                             ) : (
-                                <div className="flex h-full flex-col items-center justify-center text-center text-xs text-zinc-400">
+                                <div className="flex flex-col items-center justify-center h-full text-xs text-center text-zinc-400">
                                     <MessageSquare size={32} className="mb-2 text-zinc-300" />
                                     No messages yet. Send a message to start conversation!
                                 </div>
@@ -532,19 +532,19 @@ export default function TalkzonePage() {
 
                     </div>
                 ) : selectedGroupId && selectedGroup ? (
-                    <div className="flex flex-1 flex-col h-full overflow-hidden">
+                    <div className="flex flex-col flex-1 h-full overflow-hidden">
 
                         {/* Group Header */}
-                        <div className="flex items-center justify-between border-b border-zinc-100 p-4 bg-white">
+                        <div className="flex items-center justify-between p-4 bg-white border-b border-zinc-100">
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setSelectedGroupId(null)}
-                                    className="md:hidden flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-100 text-zinc-500 hover:text-zinc-900 transition-all duration-300"
+                                    className="flex items-center justify-center w-8 h-8 transition-all duration-300 md:hidden rounded-xl bg-zinc-100 text-zinc-500 hover:text-zinc-900"
                                     title="Back to groups"
                                 >
                                     <ArrowLeft size={16} />
                                 </button>
-                                <UserAvatar name={selectedGroup.name} className="h-10 w-10" />
+                                <UserAvatar name={selectedGroup.name} className="w-10 h-10" />
                                 <div>
                                     <h3 className="text-sm font-black text-zinc-900">{selectedGroup.name}</h3>
                                     <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">
@@ -588,7 +588,7 @@ export default function TalkzonePage() {
                         </div>
 
                         {/* Group Message Stream */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-zinc-50/50">
+                        <div className="flex-1 p-4 space-y-6 overflow-y-auto bg-zinc-50/50">
                             {groupMessagesData?.data?.messages && Object.keys(groupMessagesData.data.messages).length > 0 ? (
                                 Object.keys(groupMessagesData.data.messages).map((date) => (
                                     <div key={date} className="space-y-4">
@@ -627,7 +627,7 @@ export default function TalkzonePage() {
                                                         >
                                                             {msg.msg_body}
                                                         </div>
-                                                        <div className="flex items-center justify-end gap-1 mt-1 px-1">
+                                                        <div className="flex items-center justify-end gap-1 px-1 mt-1">
                                                             <span className="text-[9px] text-zinc-400">
                                                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
@@ -636,7 +636,7 @@ export default function TalkzonePage() {
                                                         {isOutgoing && (
                                                             <button
                                                                 onClick={() => deleteGroupMessage({ groupId: selectedGroup.id, messageId: msg.id })}
-                                                                className="absolute -left-6 top-3 hidden group-hover:block text-zinc-400 hover:text-red-500 transition-colors"
+                                                                className="absolute hidden transition-colors -left-6 top-3 group-hover:block text-zinc-400 hover:text-red-500"
                                                                 title="Delete message"
                                                             >
                                                                 <Trash2 size={12} />
@@ -649,7 +649,7 @@ export default function TalkzonePage() {
                                     </div>
                                 ))
                             ) : (
-                                <div className="flex h-full flex-col items-center justify-center text-center text-xs text-zinc-400">
+                                <div className="flex flex-col items-center justify-center h-full text-xs text-center text-zinc-400">
                                     <MessageSquare size={32} className="mb-2 text-zinc-300" />
                                     No group messages yet. Send a message to start conversation!
                                 </div>
@@ -659,7 +659,7 @@ export default function TalkzonePage() {
 
                     </div>
                 ) : (
-                    <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-zinc-400">
+                    <div className="flex flex-col items-center justify-center flex-1 p-8 text-center text-zinc-400">
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -669,8 +669,8 @@ export default function TalkzonePage() {
                             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] bg-zinc-100 border border-zinc-200 shadow-sm">
                                 <MessageSquare size={36} className="text-zinc-400" />
                             </div>
-                            <h2 className="text-xl font-black text-zinc-900 tracking-tight">Talkzone Communications</h2>
-                            <p className="mt-2 max-w-sm text-xs font-semibold text-zinc-500 leading-relaxed antialiased">
+                            <h2 className="text-xl font-black tracking-tight text-zinc-900">Talkzone Communications</h2>
+                            <p className="max-w-sm mt-2 text-xs antialiased font-semibold leading-relaxed text-zinc-500">
                                 Experience ultra-private secure chat systems. Search contact channels or discover new peers to begin real-time end-to-end messaging.
                             </p>
                         </motion.div>
@@ -681,19 +681,19 @@ export default function TalkzonePage() {
                 {(selectedFriendId || selectedGroupId) && (
                     <form
                         onSubmit={handleSendMessage}
-                        className="border-t border-zinc-100 p-4 bg-white flex items-center gap-3"
+                        className="flex items-center gap-3 p-4 bg-white border-t border-zinc-100"
                     >
                         <input
                             type="text"
                             placeholder="Type a message..."
                             value={messageInput}
                             onChange={(e) => setMessageInput(e.target.value)}
-                            className="flex-1 rounded-2xl bg-zinc-50 py-3 px-5 text-sm text-zinc-800 border border-zinc-200 focus:outline-none focus:border-violet-500 transition-all duration-300"
+                            className="flex-1 px-5 py-3 text-sm transition-all duration-300 border rounded-2xl bg-zinc-50 text-zinc-800 border-zinc-200 focus:outline-none focus:border-violet-500"
                         />
                         <button
                             type="submit"
                             disabled={!messageInput.trim() || sendingPrivate || sendingGroup}
-                            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600 text-white hover:bg-violet-500 disabled:opacity-40 disabled:hover:bg-violet-600 transition-all duration-300"
+                            className="flex items-center justify-center text-white transition-all duration-300 h-11 w-11 rounded-2xl bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:hover:bg-violet-600"
                         >
                             <Send size={16} />
                         </button>
@@ -705,26 +705,26 @@ export default function TalkzonePage() {
             {/* CREATE GROUP MODAL */}
             <AnimatePresence>
                 {showCreateGroup && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl"
+                            className="w-full max-w-md p-6 bg-white border shadow-2xl rounded-3xl border-zinc-200"
                         >
-                            <h3 className="text-lg font-black text-zinc-900 mb-4">Create Chat Group</h3>
+                            <h3 className="mb-4 text-lg font-black text-zinc-900">Create Chat Group</h3>
                             <form onSubmit={handleCreateGroupSubmit} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Group Image</label>
                                     <div className="flex items-center gap-4">
-                                        <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 flex items-center justify-center">
+                                        <div className="relative flex items-center justify-center w-16 h-16 overflow-hidden border rounded-2xl border-zinc-200 bg-zinc-50">
                                             {newGroupImagePreview ? (
-                                                <img src={newGroupImagePreview} alt="Preview" className="h-full w-full object-cover" />
+                                                <img src={newGroupImagePreview} alt="Preview" className="object-cover w-full h-full" />
                                             ) : (
                                                 <ImageIcon className="text-zinc-400" size={24} />
                                             )}
                                         </div>
-                                        <label className="flex h-10 px-4 items-center justify-center rounded-xl bg-zinc-100 border border-zinc-200 text-xs font-bold text-zinc-600 hover:bg-zinc-200 cursor-pointer transition-all duration-300">
+                                        <label className="flex items-center justify-center h-10 px-4 text-xs font-bold transition-all duration-300 border cursor-pointer rounded-xl bg-zinc-100 border-zinc-200 text-zinc-600 hover:bg-zinc-200">
                                             Select File
                                             <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                         </label>
@@ -738,7 +738,7 @@ export default function TalkzonePage() {
                                         placeholder="Enter group name..."
                                         value={newGroupName}
                                         onChange={(e) => setNewGroupName(e.target.value)}
-                                        className="w-full rounded-xl bg-zinc-50 p-3 text-sm text-zinc-800 border border-zinc-200 focus:outline-none focus:border-violet-500 transition-all duration-300"
+                                        className="w-full p-3 text-sm transition-all duration-300 border rounded-xl bg-zinc-50 text-zinc-800 border-zinc-200 focus:outline-none focus:border-violet-500"
                                         required
                                     />
                                 </div>
@@ -769,14 +769,14 @@ export default function TalkzonePage() {
             {/* DISCOVER USERS MODAL */}
             <AnimatePresence>
                 {showDiscover && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             className="w-full max-w-lg rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl flex flex-col max-h-[80vh]"
                         >
-                            <div className="mb-4 flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-black text-zinc-900">Discover Users</h3>
                                 <button
                                     onClick={() => setShowDiscover(false)}
@@ -801,17 +801,17 @@ export default function TalkzonePage() {
                                 />
                             </div>
 
-                            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                            <div className="flex-1 pr-1 space-y-2 overflow-y-auto">
                                 {discoverUsers?.data && discoverUsers.data.length > 0 ? (
                                     discoverUsers.data.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 border border-zinc-100"
+                                            className="flex items-center justify-between p-3 border rounded-2xl bg-zinc-50 border-zinc-100"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <UserAvatar name={item.name} className="h-10 w-10" />
+                                                <UserAvatar name={item.name} className="w-10 h-10" />
                                                 <div>
-                                                    <p className="text-sm font-bold text-zinc-900 leading-tight">{item.name}</p>
+                                                    <p className="text-sm font-bold leading-tight text-zinc-900">{item.name}</p>
                                                     <p className="text-[11px] text-zinc-500 leading-none">@{item.username}</p>
                                                 </div>
                                             </div>
@@ -820,14 +820,14 @@ export default function TalkzonePage() {
                                                     await toggleFollow(item.id);
                                                     dispatch(chatApi.util.invalidateTags(['Chat']));
                                                 }}
-                                                className="flex h-8 px-4 items-center justify-center rounded-xl bg-violet-600 hover:bg-violet-500 text-xs font-bold text-white transition-all duration-300"
+                                                className="flex items-center justify-center h-8 px-4 text-xs font-bold text-white transition-all duration-300 rounded-xl bg-violet-600 hover:bg-violet-500"
                                             >
                                                 Follow
                                             </button>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="flex h-32 flex-col items-center justify-center text-center text-xs text-zinc-400">
+                                    <div className="flex flex-col items-center justify-center h-32 text-xs text-center text-zinc-400">
                                         <User className="mb-2 text-zinc-300" size={24} />
                                         No new users matching query found to follow.
                                     </div>
@@ -841,15 +841,15 @@ export default function TalkzonePage() {
             {/* ADD MEMBER MODAL */}
             <AnimatePresence>
                 {showAddMember && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-sm rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl"
+                            className="w-full max-w-sm p-6 bg-white border shadow-2xl rounded-3xl border-zinc-200"
                         >
-                            <h3 className="text-lg font-black text-zinc-900 mb-2">Add Member to Group</h3>
-                            <p className="text-xs font-medium text-zinc-500 mb-4">Enter a friend&apos;s exact username or email address to add them to this chat channel.</p>
+                            <h3 className="mb-2 text-lg font-black text-zinc-900">Add Member to Group</h3>
+                            <p className="mb-4 text-xs font-medium text-zinc-500">Enter a friend&apos;s exact username or email address to add them to this chat channel.</p>
 
                             <form onSubmit={handleAddMemberSubmit} className="space-y-4">
                                 <div className="relative">
@@ -858,22 +858,22 @@ export default function TalkzonePage() {
                                         placeholder="Username or email..."
                                         value={addMemberInput}
                                         onChange={(e) => setAddMemberInput(e.target.value)}
-                                        className="w-full rounded-xl bg-zinc-50 p-3 text-sm text-zinc-800 border border-zinc-200 focus:outline-none focus:border-violet-500 transition-all duration-300"
+                                        className="w-full p-3 text-sm transition-all duration-300 border rounded-xl bg-zinc-50 text-zinc-800 border-zinc-200 focus:outline-none focus:border-violet-500"
                                         required
                                         autoFocus
                                     />
                                     {showAddMemberSuggestions && (
-                                        <div className="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto rounded-xl border border-zinc-200 bg-white p-1 shadow-lg z-50">
+                                        <div className="absolute left-0 right-0 z-50 p-1 mt-1 overflow-y-auto bg-white border shadow-lg max-h-40 rounded-xl border-zinc-200">
                                             {filteredAddMemberFriends.map((friend) => (
                                                 <button
                                                     key={friend.id}
                                                     type="button"
                                                     onClick={() => setAddMemberInput(friend.username)}
-                                                    className="w-full flex items-center gap-2 p-2 rounded-lg text-left hover:bg-zinc-50 transition-colors"
+                                                    className="flex items-center w-full gap-2 p-2 text-left transition-colors rounded-lg hover:bg-zinc-50"
                                                 >
                                                     <UserAvatar name={friend.name} className="h-6 w-6 text-[9px]" />
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-xs font-bold text-zinc-900 leading-tight truncate">{friend.name}</p>
+                                                        <p className="text-xs font-bold leading-tight truncate text-zinc-900">{friend.name}</p>
                                                         <p className="text-[10px] text-zinc-500 leading-none truncate">@{friend.username}</p>
                                                     </div>
                                                 </button>

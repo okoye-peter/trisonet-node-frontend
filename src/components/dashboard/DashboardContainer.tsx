@@ -121,7 +121,7 @@ export default function DashboardContainer({ forcedLevel }: DashboardContainerPr
             />
 
             <EmailVerificationModal
-                isOpen={isEmailVerifyModalOpen}
+                isOpen={isEmailVerifyModalOpen && user?.status === true && !user?.emailVerifiedAt}
                 onClose={() => setIsEmailVerifyModalOpen(false)}
                 currentEmail={user?.email || ''}
             />

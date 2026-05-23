@@ -265,7 +265,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <EmailVerificationModal
                 key={user?.id ? `email-${user.id}` : 'email-modal'}
-                isOpen={isEmailModalOpen}
+                isOpen={isEmailModalOpen && user?.status === true && user?.emailVerifiedAt === null}
                 isMandatory={user?.emailVerifiedAt === null}
                 onClose={() => setIsEmailModalOpen(false)}
                 onLogout={logout}

@@ -286,7 +286,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
             if (res.status === 'success' && res.data) {
                 setTransferDetails({
                     ...res.data.account_detail,
-                    amount,
+                    amount: res.data.account_detail.amount ?? Number(amount),
                     reference: res.data.account_detail.reference || '' // Backend should return ref
                 });
                 setView('transfer_details');
