@@ -277,7 +277,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-6 border-b border-zinc-100">
-                        <h2 className="text-xl font-black text-zinc-900 tracking-tight">
+                        <h2 className="text-xl font-black tracking-tight text-zinc-900">
                             {view === 'selection' && 'Activate Your Account'}
                             {view === 'code' && 'Activation with Code'}
                             {view === 'transfer' && 'Activation by Transfer'}
@@ -285,7 +285,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                             {view === 'card' && 'Pay With Card'}
                             {view === 'verifying' && 'Verifying Payment'}
                         </h2>
-                        <button onClick={resetAndClose} className="p-2 hover:bg-zinc-100 rounded-full transition-colors">
+                        <button onClick={resetAndClose} className="p-2 transition-colors rounded-full hover:bg-zinc-100">
                             <X size={20} className="text-zinc-500" />
                         </button>
                     </div>
@@ -293,7 +293,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                     <div className="p-6">
                         {view === 'selection' && (
                             <div className="space-y-4">
-                                <p className="text-sm font-medium text-zinc-600 leading-relaxed mb-4">
+                                <p className="mb-4 text-sm font-medium leading-relaxed text-zinc-600">
                                     Select your preferred activation method to proceed.
                                 </p>
                                 <div className="space-y-3">
@@ -309,16 +309,16 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     >
                                         Pay By Transfer
                                     </Button>
-                                    <Button
+                                    {/* <Button
                                         onClick={() => setView('card')}
                                         className="w-full h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold transition-all"
                                     >
                                         Pay With Card
-                                    </Button>
+                                    </Button> */}
                                     <Button 
                                         variant="outline"
                                         onClick={resetAndClose}
-                                        className="w-full h-12 border-zinc-200 text-zinc-500 rounded-xl font-bold hover:bg-zinc-50 transition-all"
+                                        className="w-full h-12 font-bold transition-all border-zinc-200 text-zinc-500 rounded-xl hover:bg-zinc-50"
                                     >
                                         Cancel
                                     </Button>
@@ -329,13 +329,13 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                         {view === 'card' && (
                             <div className="space-y-6">
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-bold text-zinc-900 leading-tight">
+                                    <h3 className="text-lg font-bold leading-tight text-zinc-900">
                                         Enter your card details to proceed with payment
                                     </h3>
 
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-zinc-700">Activation Total Amount</label>
-                                        <div className="h-14 px-4 bg-zinc-50 rounded-xl border border-zinc-200 flex items-center">
+                                        <div className="flex items-center px-4 border h-14 bg-zinc-50 rounded-xl border-zinc-200">
                                             <span className="text-lg font-bold text-zinc-600">
                                                 {((activationData?.total || 0) * (1 + selectedTeamMembers.length)).toFixed(2)}
                                             </span>
@@ -360,7 +360,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                     {selectedTeamMembers.map(id => {
                                                         const member = candidates.find(c => c.id === id);
                                                         return (
-                                                            <span key={id} className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-700 text-xs font-bold rounded-lg">
+                                                            <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-lg bg-zinc-100 text-zinc-700">
                                                                 {member?.username}
                                                                 <button onClick={() => toggleMember(id)} className="hover:text-red-500">
                                                                     <X size={12} />
@@ -377,12 +377,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                 </div>
 
                                                 {searchTerm && filteredCandidates.length > 0 && (
-                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                                                    <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border shadow-lg border-zinc-200 rounded-xl max-h-48">
                                                         {filteredCandidates.map(member => (
                                                             <button
                                                                 key={member.id}
                                                                 onClick={() => toggleMember(member.id)}
-                                                                className="w-full p-3 text-left hover:bg-zinc-50 flex items-center justify-between group"
+                                                                className="flex items-center justify-between w-full p-3 text-left hover:bg-zinc-50 group"
                                                             >
                                                                 <span className="text-sm font-medium text-zinc-700">{member.username}</span>
                                                                 {selectedTeamMembers.includes(member.id) && <Check size={16} className="text-[#9333ea]" />}
@@ -399,7 +399,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     <Button 
                                         variant="outline"
                                         onClick={() => setView('selection')}
-                                        className="flex-1 h-12 border-zinc-200 text-zinc-500 rounded-xl font-bold"
+                                        className="flex-1 h-12 font-bold border-zinc-200 text-zinc-500 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
@@ -446,7 +446,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                 {selectedTeamMembers.map(id => {
                                                     const member = candidates.find(c => c.id === id);
                                                     return (
-                                                        <span key={id} className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-700 text-xs font-bold rounded-lg">
+                                                        <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-lg bg-zinc-100 text-zinc-700">
                                                             {member?.username}
                                                             <button onClick={() => toggleMember(id)} className="hover:text-red-500">
                                                                 <X size={12} />
@@ -463,12 +463,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                             </div>
 
                                             {searchTerm && filteredCandidates.length > 0 && (
-                                                <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                                                <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border shadow-lg border-zinc-200 rounded-xl max-h-48">
                                                     {filteredCandidates.map(member => (
                                                         <button
                                                             key={member.id}
                                                             onClick={() => toggleMember(member.id)}
-                                                            className="w-full p-3 text-left hover:bg-zinc-50 flex items-center justify-between group"
+                                                            className="flex items-center justify-between w-full p-3 text-left hover:bg-zinc-50 group"
                                                         >
                                                             <span className="text-sm font-medium text-zinc-700">{member.username}</span>
                                                             {selectedTeamMembers.includes(member.id) && <Check size={16} className="text-[#9333ea]" />}
@@ -484,7 +484,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     <Button 
                                         variant="outline"
                                         onClick={() => setView('selection')}
-                                        className="flex-1 h-12 border-zinc-200 text-zinc-500 rounded-xl font-bold"
+                                        className="flex-1 h-12 font-bold border-zinc-200 text-zinc-500 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
@@ -508,7 +508,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     <Input 
                                         readOnly
                                         value={((activationData?.total || 0) * (1 + (selectedTeamMembers.length))).toFixed(2)}
-                                        className="h-12 bg-zinc-50 border-zinc-200 text-zinc-600 font-bold"
+                                        className="h-12 font-bold bg-zinc-50 border-zinc-200 text-zinc-600"
                                     />
                                 </div>
 
@@ -530,7 +530,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                 {selectedTeamMembers.map(id => {
                                                     const member = candidates.find(c => c.id === id);
                                                     return (
-                                                        <span key={id} className="inline-flex items-center gap-1 px-2 py-1 bg-zinc-100 text-zinc-700 text-xs font-bold rounded-lg">
+                                                        <span key={id} className="inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-lg bg-zinc-100 text-zinc-700">
                                                             {member?.username}
                                                             <button onClick={() => toggleMember(id)} className="hover:text-red-500">
                                                                 <X size={12} />
@@ -547,12 +547,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                             </div>
 
                                         {searchTerm && filteredCandidates.length > 0 && (
-                                                <div className="absolute z-10 w-full mt-1 bg-white border border-zinc-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
+                                                <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border shadow-lg border-zinc-200 rounded-xl max-h-48">
                                                     {filteredCandidates.map(member => (
                                                         <button
                                                             key={member.id}
                                                             onClick={() => toggleMember(member.id)}
-                                                            className="w-full p-3 text-left hover:bg-zinc-50 flex items-center justify-between group"
+                                                            className="flex items-center justify-between w-full p-3 text-left hover:bg-zinc-50 group"
                                                         >
                                                             <span className="text-sm font-medium text-zinc-700">{member.username}</span>
                                                             {selectedTeamMembers.includes(member.id) && <Check size={16} className="text-[#9333ea]" />}
@@ -568,7 +568,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     <Button 
                                         variant="outline"
                                         onClick={() => setView('selection')}
-                                        className="flex-1 h-12 border-zinc-200 text-zinc-500 rounded-xl font-bold"
+                                        className="flex-1 h-12 font-bold border-zinc-200 text-zinc-500 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
@@ -585,42 +585,42 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                         {view === 'transfer_details' && transferDetails && (
                             <div className="space-y-6">
-                                <div className="p-4 bg-purple-50 rounded-2xl border border-purple-100 space-y-4">
-                                    <div className="flex justify-between items-center pb-2 border-b border-purple-100">
+                                <div className="p-4 space-y-4 border border-purple-100 bg-purple-50 rounded-2xl">
+                                    <div className="flex items-center justify-between pb-2 border-b border-purple-100">
                                         <span className="text-sm font-medium text-purple-600">Bank Name</span>
                                         <span className="text-sm font-bold text-zinc-900">{transferDetails.bank_name}</span>
                                     </div>
-                                    <div className="flex justify-between items-center pb-2 border-b border-purple-100">
+                                    <div className="flex items-center justify-between pb-2 border-b border-purple-100">
                                         <span className="text-sm font-medium text-purple-600">Account Name</span>
                                         <span className="text-sm font-bold text-zinc-900">{transferDetails.account_name}</span>
                                     </div>
-                                    <div className="flex justify-between items-center pb-2 border-b border-purple-100">
+                                    <div className="flex items-center justify-between pb-2 border-b border-purple-100">
                                         <span className="text-sm font-medium text-purple-600">Account Number</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-bold text-zinc-900 tracking-wider text-lg">{transferDetails.account_number}</span>
+                                            <span className="text-sm text-lg font-bold tracking-wider text-zinc-900">{transferDetails.account_number}</span>
                                             <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(transferDetails.account_number);
                                                     toast.success('Account number copied!');
                                                 }}
-                                                className="p-1 hover:bg-purple-100 rounded text-purple-600"
+                                                className="p-1 text-purple-600 rounded hover:bg-purple-100"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="flex justify-between items-center pb-2 border-b border-purple-100">
+                                    <div className="flex items-center justify-between pb-2 border-b border-purple-100">
                                         <span className="text-sm font-medium text-purple-600">Amount to Pay</span>
-                                        <span className="text-sm font-black text-zinc-900 text-lg">{formatCurrency(Number(transferDetails.amount))}</span>
+                                        <span className="text-sm text-lg font-black text-zinc-900">{formatCurrency(Number(transferDetails.amount))}</span>
                                     </div>
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium text-purple-600">Expires At</span>
                                         <span className="text-sm font-bold text-red-500">{transferDetails.expires_at}</span>
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                                    <p className="text-xs text-amber-700 font-medium leading-relaxed">
+                                <div className="p-4 border bg-amber-50 rounded-2xl border-amber-100">
+                                    <p className="text-xs font-medium leading-relaxed text-amber-700">
                                         <span className="font-bold">Important:</span> This account is valid for 30 minutes only. Please ensure you make the exact transfer within this period.
                                     </p>
                                 </div>
@@ -628,7 +628,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                 <Button
                                     onClick={handleSentMoney}
                                     disabled={isPolling}
-                                    className="w-full h-12 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold disabled:opacity-50"
+                                    className="w-full h-12 font-bold text-white bg-zinc-900 hover:bg-zinc-800 rounded-xl disabled:opacity-50"
                                 >
                                     I have sent the money
                                 </Button>
@@ -637,21 +637,21 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                         {view === 'verifying' && (
                             <div className="flex flex-col items-center justify-center py-8 space-y-6">
-                                <div className="relative flex items-center justify-center h-24 w-24">
-                                    <div className="absolute inset-0 rounded-full bg-purple-100 animate-ping opacity-60" />
-                                    <div className="absolute inset-2 rounded-full bg-purple-200 animate-pulse" />
+                                <div className="relative flex items-center justify-center w-24 h-24">
+                                    <div className="absolute inset-0 bg-purple-100 rounded-full animate-ping opacity-60" />
+                                    <div className="absolute bg-purple-200 rounded-full inset-2 animate-pulse" />
                                     <Loader2 size={36} className="relative z-10 text-purple-600 animate-spin" />
                                 </div>
 
-                                <div className="text-center space-y-2">
+                                <div className="space-y-2 text-center">
                                     <h3 className="text-xl font-black text-zinc-900">Verifying Payment</h3>
-                                    <p className="text-sm text-zinc-500 max-w-xs leading-relaxed">
+                                    <p className="max-w-xs text-sm leading-relaxed text-zinc-500">
                                         We&apos;re confirming your transfer. This usually takes a few seconds.
                                     </p>
                                 </div>
 
-                                <div className="w-full p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                                    <p className="text-xs text-amber-700 font-medium text-center leading-relaxed">
+                                <div className="w-full p-4 border bg-amber-50 rounded-2xl border-amber-100">
+                                    <p className="text-xs font-medium leading-relaxed text-center text-amber-700">
                                         <span className="font-bold">Please wait</span> — do not close this window while we verify your payment.
                                     </p>
                                 </div>
