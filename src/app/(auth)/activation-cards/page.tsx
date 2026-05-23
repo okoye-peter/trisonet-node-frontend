@@ -41,9 +41,31 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import LoadingScreen from '@/components/LoadingScreen'
-import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, useVerifyCardPurchasePaymentMutation, type PaymentAccountDetail, type PimCard } from '@/store/api/pimCardApi'
+import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, useVerifyCardPurchasePaymentMutation, useInitiateCardPurchasePaymentMutation, type PaymentAccountDetail, type PimCard } from '@/store/api/pimCardApi'
 import { useGetUserQuery } from '@/store/api/userApi'
 import { toast } from 'sonner'
+
+// ─── Paga inline checkout helpers ────────────────────────────────────────────
+declare global { interface Window { PagaCheckout: { setOptions: (o: any) => void; openCheckout: () => void } } }
+
+function loadScript(src: string, id: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        if (document.getElementById(id)) { resolve(); return; }
+        const s = document.createElement('script');
+        s.id = id; s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error(`Failed to load: ${src}`));
+        document.body.appendChild(s);
+    });
+}
+
+async function loadPagaScript(): Promise<void> {
+    if (window.PagaCheckout) return;
+    document.getElementById('paga-pim-script')?.remove();
+    await loadScript('https://checkout.paga.com/checkout/inline-js', 'paga-pim-script');
+    await loadScript('/paga-bridge.js');
+    if (!window.PagaCheckout) throw new Error('PagaCheckout not defined after load');
+}
 
 const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
     <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
@@ -179,12 +201,58 @@ const ActivationCards = () => {
     const { data: summaryResponse, isLoading: isSummaryLoading, refetch: refetchSummary } = useGetPimCardsSummaryQuery()
     const [purchaseCard, { isLoading: isPurchasing }] = usePurchasePimCardMutation()
     const [verifyPayment] = useVerifyCardPurchasePaymentMutation()
+    const [initiateCardPayment, { isLoading: isInitiatingCard }] = useInitiateCardPurchasePaymentMutation()
 
     useEffect(() => {
         startTransition(() => {
             setIsMounted(true)
         })
     }, [])
+
+    // Detect Paga redirect after card payment
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const chargeRef = params.get('charge_reference')
+        const statusCode = params.get('status_code')
+        if (!chargeRef) return
+
+        params.delete('charge_reference')
+        params.delete('status_message')
+        params.delete('status_code')
+        const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`
+        window.history.replaceState({}, '', newUrl)
+
+        if (statusCode !== '0') {
+            toast.error('Card payment was not completed. Please try again.')
+            return
+        }
+
+        toast.loading('Verifying card payment…', { id: 'paga-verify' })
+        const startTime = Date.now()
+        const maxDuration = 120000
+        let delay = 2000
+
+        const poll = async () => {
+            try {
+                const res = await verifyPayment({ reference: chargeRef }).unwrap()
+                if (res.status === 'success') {
+                    toast.success('Card payment verified! Your PIM card is ready.', { id: 'paga-verify' })
+                    refetchCards()
+                    refetchSummary()
+                    return
+                }
+            } catch {
+                // continue polling
+            }
+            if (Date.now() - startTime >= maxDuration) {
+                toast.error('Verification timed out. Contact support if payment was deducted.', { id: 'paga-verify' })
+                return
+            }
+            setTimeout(poll, delay)
+            delay = Math.min(delay * 1.5, 10000)
+        }
+        poll()
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const cards = cardsResponse?.data?.data ?? []
     const meta = cardsResponse?.data?.meta
@@ -270,6 +338,48 @@ const ActivationCards = () => {
         navigator.clipboard.writeText(code)
         setCopiedCode(code)
         setTimeout(() => setCopiedCode(null), 2000)
+    }
+
+    const handlePayWithCard = async () => {
+        if (!quantity || quantity < 2) {
+            toast.error('Minimum quantity is 2 cards')
+            return
+        }
+        try {
+            const res = await initiateCardPayment({ quantity, amount: totalAmount }).unwrap()
+            const { reference, amount, publicKey, email, phoneNumber } = res.data!
+
+            await loadPagaScript()
+
+            const callbackUrl = `${window.location.origin}${window.location.pathname}`
+            window.PagaCheckout.setOptions({
+                publicKey,
+                amount: Number(Number(amount).toFixed(2)),
+                currency: 'NGN',
+                phoneNumber,
+                email,
+                payment_reference: reference,
+                funding_sources: 'CARD',
+                callback_url: callbackUrl,
+            })
+
+            const observer = new MutationObserver(() => {
+                const pagaIframe = document.querySelector('iframe[src*="paga"]') as HTMLElement | null
+                if (pagaIframe) {
+                    const parent = pagaIframe.parentElement as HTMLElement | null
+                    if (parent) parent.style.zIndex = '2147483647'
+                    pagaIframe.style.zIndex = '2147483647'
+                    observer.disconnect()
+                }
+            })
+            observer.observe(document.body, { childList: true, subtree: true })
+
+            window.PagaCheckout.openCheckout()
+            setIsOpen(false)
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string }; message?: string }
+            toast.error(error?.data?.message || error?.message || 'Failed to initiate card payment')
+        }
     }
 
     if (!isMounted || loading) return <LoadingScreen message="Loading your cards…" />
@@ -421,7 +531,16 @@ const ActivationCards = () => {
                                 </div>
                             </div>
 
-                            <DialogFooter>
+                            <DialogFooter className="gap-3 flex-col sm:flex-col">
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-12 rounded-xl text-base font-bold border-primary/30 hover:bg-primary/5 transition-all active:scale-95"
+                                    onClick={handlePayWithCard}
+                                    disabled={isInitiatingCard || isPurchasing}
+                                >
+                                    {isInitiatingCard ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+                                    Pay with Card
+                                </Button>
                                 <Button
                                     className="w-full h-12 rounded-xl text-base font-bold shadow-xl shadow-primary/10 transition-all active:scale-95"
                                     onClick={async () => {
@@ -438,7 +557,7 @@ const ActivationCards = () => {
                                             toast.error(error?.data?.message || error.message || 'Failed to generate virtual account');
                                         }
                                     }}
-                                    disabled={isPurchasing}
+                                    disabled={isPurchasing || isInitiatingCard}
                                 >
                                     {isPurchasing ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : null}
                                     Generate Virtual Account

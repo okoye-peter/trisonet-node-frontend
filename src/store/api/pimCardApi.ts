@@ -91,6 +91,19 @@ export const pimCardApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Wallet'],
         }),
+        initiateCardPurchasePayment: builder.mutation<AppResponse<{
+            reference: string;
+            amount: number;
+            publicKey: string;
+            email: string;
+            phoneNumber: string;
+        }>, { quantity: number; amount: number }>({
+            query: (body) => ({
+                url: 'pim_cards/initiate-payment',
+                method: 'POST',
+                body,
+            }),
+        }),
     }),
 });
 
@@ -99,4 +112,5 @@ export const {
     useGetPimCardsSummaryQuery,
     usePurchasePimCardMutation,
     useVerifyCardPurchasePaymentMutation,
+    useInitiateCardPurchasePaymentMutation,
 } = pimCardApi;

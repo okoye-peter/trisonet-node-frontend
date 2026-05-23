@@ -11,35 +11,35 @@ const AuthLayout = ({ children, title, description }: { children: React.ReactNod
                 <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#ffc400] rounded-full blur-[120px]" />
             </div>
 
-            <div className="w-full max-w-[1100px] bg-white rounded-xl shadow-2xl overflow-hidden grid lg:grid-cols-2 relative z-10 border border-zinc-100">
+            <div className="w-full max-w-[1100px] bg-white rounded-xl shadow-2xl overflow-hidden grid lg:grid-cols-2 relative border border-zinc-100">
                 {/* Left Side - Visual/Branding */}
                 <div className="hidden lg:flex flex-col justify-between p-12 bg-[#040021] text-white relative">
                     {/* Background Overlay Pattern */}
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'url("/assets/img/bg/counter-right-img.png")', backgroundSize: 'cover' }} />
                     <div className="absolute inset-0 bg-[#6639ff]/40 mix-blend-multiply" />
                     
-                    <div className="relative z-10">
+                    <div className="relative">
                         <Link href="/" className="flex items-center gap-3">
-                            <div className="bg-white p-2 rounded-lg">
+                            <div className="p-2 bg-white rounded-lg">
                                 <Image src="/assets/img/logo/logo.png" alt="Logo" width={40} height={40} style={{ height: 'auto' }} />
                             </div>
-                            <span className="text-2xl font-bold tracking-tight text-white uppercase italic">Trisonet</span>
+                            <span className="text-2xl italic font-bold tracking-tight text-white uppercase">Trisonet</span>
                         </Link>
                     </div>
 
-                    <div className="relative z-10 space-y-6">
+                    <div className="relative space-y-6">
                         <div className="inline-block px-4 py-1 bg-[#6639ff] text-white text-xs font-bold uppercase tracking-widest rounded-full">
                             Leading in Digital Assets
                         </div>
                         <h2 className="text-4xl font-extrabold leading-tight text-white uppercase">
                             Empowering Your <span className="text-[#ffc400]">Digital Future</span>
                         </h2>
-                        <p className="text-zinc-300 text-lg leading-relaxed">
+                        <p className="text-lg leading-relaxed text-zinc-300">
                             Join over 53,000+ partners globally. Access metaverse solutions, digital logistics, and sustainable economy building.
                         </p>
                     </div>
 
-                    <div className="relative z-10">
+                    <div className="relative">
                         <div className="flex items-center gap-4 text-sm text-zinc-400">
                             <div className="flex -space-x-2">
                                 {['team1.png', 'team2.jpg', 'team3.jpg', 'team4.jpg'].map((img, i) => (
@@ -54,9 +54,9 @@ const AuthLayout = ({ children, title, description }: { children: React.ReactNod
                 </div>
 
                 {/* Right Side - Form */}
-                <div className="flex flex-col p-8 lg:p-16 justify-center bg-white">
+                <div className="flex flex-col justify-center p-8 bg-white lg:p-16">
                     <div className="w-full max-w-[400px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <div className="lg:hidden flex justify-center mb-8">
+                        <div className="flex justify-center mb-8 lg:hidden">
                             <Image src="/assets/img/logo/logo.png" alt="Logo" width={60} height={60} style={{ height: 'auto' }} />
                         </div>
                         

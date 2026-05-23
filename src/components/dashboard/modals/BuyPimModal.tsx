@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Send, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,12 +19,10 @@ declare global {
                 currency?: string;
                 email?: string;
                 phoneNumber?: string;
-                payment_reference: string;
+                payment_reference?: string;
                 funding_sources?: string;
                 callback_url?: string;
-                onSuccess?: (response: unknown) => void;
-                onError?: (error: unknown) => void;
-                onClose?: () => void;
+                charge_url?: string // browser redirect URL for the JS setOptions API
             }) => void;
             openCheckout: () => void;
         };
@@ -59,10 +58,17 @@ function loadScript(src: string, id?: string): Promise<void> {
 
 async function loadPagaScript(): Promise<void> {
     if (window.PagaCheckout) return;
-    // 1. Load Paga's inline-js (exposes `PagaCheckout` as a global class declaration)
-    await loadScript(PAGA_SCRIPT_URL, 'js-script');
-    // 2. Load same-origin bridge script that can access the class and pins it to window
+
+    // Remove stale tag so Paga's script re-executes — Paga clears window.PagaCheckout
+    // after each checkout session, so the script must run fresh every time.
+    document.getElementById('paga-script')?.remove();
+    await loadScript(PAGA_SCRIPT_URL, 'paga-script');
+
+    // The bridge runs without an id so it always re-executes after the Paga script.
+    // It accesses PagaCheckout as a bare global name (class declarations live in the
+    // global scope but are NOT properties of window, so window/globalThis won't see it).
     await loadScript('/paga-bridge.js');
+
     if (!window.PagaCheckout) throw new Error('PagaCheckout not defined after load');
 }
 
@@ -85,8 +91,60 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
     // Preload Paga script as soon as the modal is opened
     useEffect(() => {
-        if (isOpen) loadPagaScript().catch(() => {});
+        if (isOpen) loadPagaScript().catch(() => { });
     }, [isOpen]);
+
+    // Handle redirect back from Paga checkout.
+    // Paga appends charge_reference, status_message, status_code to charge_url.
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const chargeRef = params.get('charge_reference');
+        const statusCode = params.get('status_code');
+        if (!chargeRef) return;
+
+        // Clean Paga params from URL without triggering navigation
+        ['charge_reference', 'status_message', 'status_code'].forEach(k => params.delete(k));
+        const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        window.history.replaceState({}, '', newUrl);
+
+        // status_code=0 means success; anything else is a failure or cancel
+        if (statusCode !== '0') {
+            toast.error('Payment was not completed. Please try again.');
+            return;
+        }
+
+        toast.info('Verifying your payment…');
+
+        let totalTime = 0;
+        let delay = 2000;
+        const maxTime = 120000;
+        let cancelled = false;
+
+        const poll = async () => {
+            if (cancelled || totalTime >= maxTime) {
+                if (!cancelled) toast.info('Payment is still being processed. We will notify you once confirmed.');
+                return;
+            }
+            try {
+                const res = await checkStatus(chargeRef).unwrap();
+                if (res.data?.status === 'approved') {
+                    toast.success('Payment confirmed! Your account has been activated.');
+                    window.location.reload();
+                    return;
+                }
+            } catch { /* keep polling */ }
+
+            setTimeout(() => {
+                totalTime += delay;
+                delay = Math.min(delay * 1.5, 30000);
+                poll();
+            }, delay);
+        };
+
+        poll();
+        return () => { cancelled = true; };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const { data: candidatesResponse } = useGetActivationCandidatesQuery(undefined, {
         skip: !isOpen || !isMultiple
@@ -97,12 +155,12 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
     const [activateByCode, { isLoading: isActivatingByCode }] = useActivateByCodeMutation();
 
     const candidates = candidatesResponse?.data || [];
-    const filteredCandidates = candidates.filter(c => 
+    const filteredCandidates = candidates.filter(c =>
         c.username.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const toggleMember = (id: string) => {
-        setSelectedTeamMembers(prev => 
+        setSelectedTeamMembers(prev =>
             prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
         );
     };
@@ -139,6 +197,13 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
             await loadPagaScript();
 
+            // Paga redirects the browser here on close/cancel/success.
+            // Must be a frontend page — the webhook env var is for Paga's server-to-server
+            // charge_url = where the browser is redirected after payment/cancel (docs).
+            // callback_url = server-side webhook (Paga validates it; use the registered one).
+            // Paga appends charge_reference, status_message, status_code to charge_url.
+            const chargeUrl = `${window.location.origin}${window.location.pathname}`;
+
             window.PagaCheckout.setOptions({
                 publicKey,
                 amount: Number(Number(amount).toFixed(2)),
@@ -147,28 +212,60 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                 email,
                 payment_reference: reference,
                 funding_sources: 'CARD',
-                onSuccess: () => {
-                    toast.success('Payment successful! Your account is being activated.');
-                    window.location.reload();
-                },
-                onError: (error: unknown) => {
-                    console.error('Paga error:', error);
-                    toast.error('Payment failed. Please try again.');
-                },
-                onClose: () => {},
+                callback_url: process.env.NEXT_PUBLIC_PAGA_CALLBACK_URL,
+                charge_url: chargeUrl,
             });
 
             resetAndClose();
             window.PagaCheckout.openCheckout();
 
-            // Paga iframe is injected with low z-index — boost it above the navbar
-            setTimeout(() => {
+            // Paga injects its iframe/overlay with a low z-index — boost only z-index,
+            // never position (changing position breaks Paga's own close/layout logic).
+            const boostZ = (node: Element) => {
+                (node as HTMLElement).style.setProperty('z-index', '2147483647', 'important');
+            };
+
+            // Remove Paga's iframe and any wrapper it injected.
+            const closePagaOverlay = () => {
                 document.querySelectorAll('iframe').forEach(iframe => {
-                    if (iframe.src.includes('checkout.paga.com')) {
-                        iframe.style.zIndex = '999999';
+                    if (iframe.src.includes('paga.com')) {
+                        iframe.parentElement?.remove();
+                        iframe.remove();
                     }
                 });
-            }, 500);
+            };
+
+            // Listen for Paga's postMessage close event. Paga calls onClose() via
+            // postMessage; since we can't pass onClose (it causes 403 in redirect mode),
+            // we handle the message ourselves and tear down the overlay manually.
+            const onPagaMessage = (e: MessageEvent) => {
+                if (!String(e.origin).includes('paga')) return;
+                const d = e.data;
+                const isClose =
+                    d === 'close' ||
+                    d?.type === 'close' ||
+                    d?.event === 'close' ||
+                    d?.action === 'close' ||
+                    d?.status === 'cancelled' ||
+                    d?.status === 'closed';
+                if (isClose) {
+                    closePagaOverlay();
+                    window.removeEventListener('message', onPagaMessage);
+                }
+            };
+            window.addEventListener('message', onPagaMessage);
+
+            const observer = new MutationObserver(() => {
+                document.querySelectorAll('iframe').forEach(iframe => {
+                    if (iframe.src.includes('paga.com')) {
+                        boostZ(iframe);
+                        if (iframe.parentElement) boostZ(iframe.parentElement);
+                    }
+                });
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+            setTimeout(() => observer.disconnect(), 10000);
 
         } catch (err: unknown) {
             console.error('Payment error:', err);
@@ -266,9 +363,9 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm">
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-9999 bg-zinc-950/60 backdrop-blur-sm">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -297,25 +394,25 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                     Select your preferred activation method to proceed.
                                 </p>
                                 <div className="space-y-3">
-                                    <Button 
+                                    <Button
                                         onClick={() => setView('code')}
                                         className="w-full h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold transition-all"
                                     >
                                         Activate With Code
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={() => setView('transfer')}
                                         className="w-full h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold transition-all"
                                     >
                                         Pay By Transfer
                                     </Button>
-                                    {/* <Button
+                                    <Button
                                         onClick={() => setView('card')}
                                         className="w-full h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold transition-all"
                                     >
                                         Pay With Card
-                                    </Button> */}
-                                    <Button 
+                                    </Button>
+                                    <Button
                                         variant="outline"
                                         onClick={resetAndClose}
                                         className="w-full h-12 font-bold transition-all border-zinc-200 text-zinc-500 rounded-xl hover:bg-zinc-50"
@@ -344,8 +441,8 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                                     <div className="flex items-center gap-3 pt-2">
                                         <label className="text-sm font-bold text-zinc-700">Multiple Account Activation</label>
-                                        <input 
-                                            type="checkbox" 
+                                        <input
+                                            type="checkbox"
                                             checked={isMultiple}
                                             onChange={(e) => setIsMultiple(e.target.checked)}
                                             className="w-5 h-5 rounded border-zinc-300 text-[#9333ea] focus:ring-[#9333ea]"
@@ -368,7 +465,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                             </span>
                                                         );
                                                     })}
-                                                    <input 
+                                                    <input
                                                         placeholder={selectedTeamMembers.length === 0 ? "Search members..." : ""}
                                                         value={searchTerm}
                                                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -396,14 +493,14 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                 </div>
 
                                 <div className="flex gap-3 pt-4">
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         onClick={() => setView('selection')}
                                         className="flex-1 h-12 font-bold border-zinc-200 text-zinc-500 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handlePayWithCard}
                                         disabled={isInitiating}
                                         className="flex-1 h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold shadow-lg shadow-purple-200/50 disabled:opacity-50"
@@ -420,7 +517,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-zinc-700">Activation Code</label>
-                                    <Input 
+                                    <Input
                                         placeholder="activation code"
                                         value={activationCode}
                                         onChange={(e) => setActivationCode(e.target.value)}
@@ -430,8 +527,8 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                                 <div className="flex items-center gap-3">
                                     <label className="text-sm font-bold text-zinc-700">Multiple Account Activation</label>
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         checked={isMultiple}
                                         onChange={(e) => setIsMultiple(e.target.checked)}
                                         className="w-5 h-5 rounded border-zinc-300 text-[#9333ea] focus:ring-[#9333ea]"
@@ -454,7 +551,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                         </span>
                                                     );
                                                 })}
-                                                <input 
+                                                <input
                                                     placeholder={selectedTeamMembers.length === 0 ? "Search members..." : ""}
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -481,14 +578,14 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                 )}
 
                                 <div className="flex gap-3 pt-4">
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         onClick={() => setView('selection')}
                                         className="flex-1 h-12 font-bold border-zinc-200 text-zinc-500 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handleActivateByCode}
                                         disabled={!activationCode || isActivatingByCode}
                                         className="flex-1 h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold disabled:opacity-50"
@@ -505,7 +602,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-zinc-700">Amount</label>
-                                    <Input 
+                                    <Input
                                         readOnly
                                         value={((activationData?.total || 0) * (1 + (selectedTeamMembers.length))).toFixed(2)}
                                         className="h-12 font-bold bg-zinc-50 border-zinc-200 text-zinc-600"
@@ -514,8 +611,8 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
                                 <div className="flex items-center gap-3">
                                     <label className="text-sm font-bold text-zinc-700">Multiple Account Activation</label>
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         checked={isMultiple}
                                         onChange={(e) => setIsMultiple(e.target.checked)}
                                         className="w-5 h-5 rounded border-zinc-300 text-[#9333ea] focus:ring-[#9333ea]"
@@ -538,7 +635,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                         </span>
                                                     );
                                                 })}
-                                                <input 
+                                                <input
                                                     placeholder={selectedTeamMembers.length === 0 ? "Search members..." : ""}
                                                     value={searchTerm}
                                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -546,7 +643,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                 />
                                             </div>
 
-                                        {searchTerm && filteredCandidates.length > 0 && (
+                                            {searchTerm && filteredCandidates.length > 0 && (
                                                 <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border shadow-lg border-zinc-200 rounded-xl max-h-48">
                                                     {filteredCandidates.map(member => (
                                                         <button
@@ -565,14 +662,14 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                 )}
 
                                 <div className="flex gap-3 pt-4">
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         onClick={() => setView('selection')}
                                         className="flex-1 h-12 font-bold border-zinc-200 text-zinc-500 rounded-xl"
                                     >
                                         Cancel
                                     </Button>
-                                    <Button 
+                                    <Button
                                         onClick={handleGenerateVirtualAccount}
                                         disabled={isGenerating}
                                         className="flex-1 h-12 bg-[#9333ea] hover:bg-[#7e22ce] text-white rounded-xl font-bold disabled:opacity-50"
@@ -605,7 +702,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                                                 }}
                                                 className="p-1 text-purple-600 rounded hover:bg-purple-100"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
                                             </button>
                                         </div>
                                     </div>
@@ -660,6 +757,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                     </div>
                 </motion.div>
             </div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

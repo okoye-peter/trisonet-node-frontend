@@ -333,7 +333,7 @@ export default function DashboardPage() {
                         )}
                     >
                         <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-linear-to-br", stat.gradient)} />
-                        <CardContent className="relative z-10 h-full p-4 bg-white rounded-xl">
+                        <CardContent className="relative h-full p-4 bg-white rounded-xl">
                             <div className="flex items-start justify-between">
                                 <div className={cn("rounded-[1.2rem] p-4 shadow-sm transition-transform duration-500 group-hover:rotate-12", stat.bg, stat.color)}>
                                     <stat.icon size={28} strokeWidth={2.5} />
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                             <div className="absolute top-0 right-0 -mt-20 -mr-20 rounded-full w-80 h-80 bg-purple-500/20 blur-3xl animate-pulse" />
                             <div className="absolute bottom-0 left-0 -mb-20 -ml-20 rounded-full w-80 h-80 bg-indigo-500/20 blur-3xl animate-pulse" />
                             
-                            <CardContent className="relative z-10 flex flex-col justify-between h-full p-8">
+                            <CardContent className="relative flex flex-col justify-between h-full p-8">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center justify-center text-indigo-200 border h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-md border-white/20">

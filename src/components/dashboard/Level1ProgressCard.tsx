@@ -23,15 +23,15 @@ export default function Level1ProgressCard({ totalSales, isPendingLevel2Migratio
     const leftToTarget = Math.max(target - totalSales, 0);
 
     return (
-        <Card className="relative overflow-hidden border-none bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-500 group">
+        <Card className="relative overflow-hidden transition-all duration-500 bg-white border-none shadow-sm rounded-3xl hover:shadow-xl group">
             {/* Background elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mt-10 -mr-10" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl -mb-8 -ml-8" />
+            <div className="absolute top-0 right-0 w-32 h-32 -mt-10 -mr-10 rounded-full bg-blue-500/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 -mb-8 -ml-8 rounded-full bg-indigo-500/10 blur-2xl" />
             
-            <CardContent className="p-6 relative z-10">
+            <CardContent className="relative p-6 ">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                        <div className="flex items-center justify-center w-10 h-10 text-blue-600 rounded-xl bg-blue-50">
                             <Target size={20} />
                         </div>
                         <div>
@@ -51,14 +51,14 @@ export default function Level1ProgressCard({ totalSales, isPendingLevel2Migratio
                     <div className="flex items-end justify-between">
                         <div>
                             <span className="text-4xl font-black tracking-tighter text-zinc-900">{leftToTarget}</span>
-                            <span className="text-sm font-medium text-zinc-400 ml-1">Left</span>
+                            <span className="ml-1 text-sm font-medium text-zinc-400">Left</span>
                         </div>
-                        <p className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
+                        <p className="px-2 py-1 text-xs font-bold text-blue-600 rounded-lg bg-blue-50">
                             {progressPercent}% Complete
                         </p>
                     </div>
 
-                    <div className="h-3 w-full rounded-full bg-zinc-100 overflow-hidden relative">
+                    <div className="relative w-full h-3 overflow-hidden rounded-full bg-zinc-100">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercent}%` }}
