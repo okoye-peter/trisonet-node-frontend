@@ -1,46 +1,53 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Film, 
-    Volume2, 
-    VolumeX, 
-    Play, 
-    Pause, 
-    ChevronLeft, 
-    Loader2, 
-    Sparkles, 
-    Home 
+import {
+    Film,
+    Volume2,
+    VolumeX,
+    Play,
+    ChevronLeft,
+    Loader2,
+    Sparkles,
+    Home
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useGetReelsQuery, type Reel } from '@/store/api/reelApi';
-import { cn } from '@/lib/utils';
 
 export default function ReelsPage() {
     const [page, setPage] = useState(1);
-    const [reels, setReels] = useState<Reel[]>([]);
-    const [isMuted, setIsMuted] = useState(true); // Default to muted for autoplay permission compliance
+    const [isMuted, setIsMuted] = useState(true);
     const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
     const [pausedVideos, setPausedVideos] = useState<Record<number, boolean>>({});
 
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRefs = useRef<Record<number, HTMLVideoElement | null>>({});
+    // Accumulate pages in a ref — mutated during render, never triggers re-renders on its own
+    const pageCacheRef = useRef<Record<number, Reel[]>>({});
 
     const { data: reelsResponse, isLoading, isFetching } = useGetReelsQuery({ page, limit: 5 });
 
-    // Handle appending new reels when pagination updates
-    useEffect(() => {
-        if (reelsResponse?.data?.data) {
-            const fetchedReels = reelsResponse.data.data;
-            setReels((prev) => {
-                // Filter out any duplicates
-                const prevIds = new Set(prev.map(r => r.id));
-                const uniqueNewReels = fetchedReels.filter(r => !prevIds.has(r.id));
-                return [...prev, ...uniqueNewReels];
+    // Write new page data into the ref synchronously during render (safe — refs are mutable)
+    if (reelsResponse?.data?.data) {
+        pageCacheRef.current[page] = reelsResponse.data.data;
+    }
+
+    // Derive flat deduplicated list during render; re-computes whenever reelsResponse or page changes
+    const reels = useMemo<Reel[]>(() => {
+        const seen = new Set<string | number>();
+        return Object.keys(pageCacheRef.current)
+            .map(Number)
+            .sort((a, b) => a - b)
+            .flatMap(p => pageCacheRef.current[p])
+            .filter(r => {
+                if (seen.has(r.id)) return false;
+                seen.add(r.id);
+                return true;
             });
-        }
-    }, [reelsResponse]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [reelsResponse, page]);
 
     // Setup intersection observer to detect the active reel on screen
     useEffect(() => {
@@ -179,14 +186,16 @@ export default function ReelsPage() {
                                             className="w-full h-full object-cover cursor-pointer"
                                             loop
                                             muted={isMuted}
+                                            autoPlay={isCurrentActive}
                                             playsInline
                                             onClick={() => togglePlay(index)}
                                         />
                                     ) : (
-                                        <img 
+                                        <Image
                                             src={reel.url}
                                             alt={`Reel ${reel.id}`}
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
                                         />
                                     )}
                                 </div>
