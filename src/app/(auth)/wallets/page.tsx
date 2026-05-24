@@ -356,7 +356,7 @@ export default function WalletsPage() {
 
     return (
         <div className="min-h-screen bg-zinc-50/50">
-            <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
+            <div className="p-4 mx-auto space-y-8 md:p-8 max-w-7xl">
                 <TransferModal open={isTransferModalOpen} onOpenChange={setIsTransferModalOpen} />
 
                 {/* Hero Balance Section */}
@@ -365,35 +365,35 @@ export default function WalletsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="relative overflow-hidden rounded-[3rem] bg-zinc-900 p-12 text-white shadow-2xl"
                 >
-                    <div className="absolute top-0 right-0 p-12 opacity-10 blur-3xl bg-indigo-500 w-96 h-96 rounded-full -mr-48 -mt-48 animate-pulse" />
-                    <div className="absolute bottom-0 left-0 p-12 opacity-10 blur-3xl bg-emerald-500 w-96 h-96 rounded-full -ml-48 -mb-48 animate-pulse" />
+                    <div className="absolute top-0 right-0 p-12 -mt-48 -mr-48 bg-indigo-500 rounded-full opacity-10 blur-3xl w-96 h-96 animate-pulse" />
+                    <div className="absolute bottom-0 left-0 p-12 -mb-48 -ml-48 rounded-full opacity-10 blur-3xl bg-emerald-500 w-96 h-96 animate-pulse" />
 
-                    <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-                        <span className="text-zinc-400 font-bold uppercase tracking-widest text-xs">Total Wallet Balance</span>
+                    <div className="relative z-10 flex flex-col items-center space-y-6 text-center">
+                        <span className="text-xs font-bold tracking-widest uppercase text-zinc-400">Total Wallet Balance</span>
                         <div className="flex flex-col items-center gap-2">
                             <div className="flex items-center gap-4">
-                                <span className="text-4xl md:text-6xl font-black text-zinc-500">₦</span>
-                                <h1 className="text-6xl md:text-8xl font-black tracking-tighter">
+                                <span className="text-4xl font-black md:text-6xl text-zinc-500">₦</span>
+                                <h1 className="text-6xl font-black tracking-tighter md:text-8xl">
                                     {directWallet?.amount.toLocaleString() ?? '0.00'}
                                 </h1>
                             </div>
                             <div className="flex gap-2">
-                                <Badge className="bg-emerald-500/20 text-emerald-400 border-none px-4 py-1 rounded-full font-bold">
-                                    <TrendingUp size={14} className="mr-1 inline" /> +2.4% this week
+                                <Badge className="px-4 py-1 font-bold border-none rounded-full bg-emerald-500/20 text-emerald-400">
+                                    <TrendingUp size={14} className="inline mr-1" /> +2.4% this week
                                 </Badge>
                             </div>
                         </div>
 
                         {/* User Account Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl mt-8 pt-8 border-t border-white/10">
-                            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-left group hover:bg-white/10 transition-all">
+                        <div className="grid w-full max-w-xl grid-cols-1 gap-4 pt-8 mt-8 border-t md:grid-cols-2 border-white/10">
+                            <div className="p-4 text-left transition-all border bg-white/5 backdrop-blur-md rounded-2xl border-white/10 group hover:bg-white/10">
                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Account Name</p>
                                 <p className="text-lg font-black text-white truncate">{profile?.name || '---'}</p>
                             </div>
-                            <div className="bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10 text-left group hover:bg-white/10 transition-all flex items-center justify-between">
+                            <div className="flex items-center justify-between p-4 text-left transition-all border bg-white/5 backdrop-blur-md rounded-2xl border-white/10 group hover:bg-white/10">
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Account Number</p>
-                                    <p className="text-lg font-black text-white tracking-wider truncate">
+                                    <p className="text-lg font-black tracking-wider text-white truncate">
                                         {profile?.transferId || '---'}
                                     </p>
                                 </div>
@@ -405,7 +405,7 @@ export default function WalletsPage() {
                                             navigator.clipboard.writeText(profile.transferId!);
                                             toast.success('Account number copied!');
                                         }}
-                                        className="h-10 w-10 text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl"
+                                        className="w-10 h-10 text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl"
                                     >
                                         <Copy size={18} />
                                     </Button>
@@ -474,7 +474,7 @@ export default function WalletsPage() {
                                 )}
                             </div>
 
-                            <div className="flex gap-4 justify-center">
+                            <div className="flex justify-center gap-4">
                                 <Button 
                                     onClick={() => setIsTransferModalOpen(true)}
                                     className="h-16 px-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-2xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
@@ -483,7 +483,7 @@ export default function WalletsPage() {
                                     Internal Transfer
                                 </Button>
                                 <Link href="/wallets/transfers">
-                                    <Button variant="outline" className="h-16 px-10 rounded-2xl font-black border-zinc-200 hover:bg-zinc-50 transition-all flex items-center gap-3">
+                                    <Button variant="outline" className="flex items-center h-16 gap-3 px-10 font-black transition-all rounded-2xl border-zinc-200 hover:bg-zinc-50">
                                         <RefreshCcw size={20} />
                                         History
                                     </Button>
@@ -499,30 +499,30 @@ export default function WalletsPage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-2xl mx-auto w-full"
+                            className="w-full max-w-2xl mx-auto"
                         >
                             <Card className="border-none bg-white rounded-[3rem] p-4 shadow-2xl ring-1 ring-zinc-100">
                                 <CardContent className="p-8 space-y-8">
                                     <div className="flex items-center gap-4 mb-2">
-                                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
+                                        <div className="p-3 text-indigo-600 bg-indigo-50 rounded-2xl">
                                             <Plus size={24} />
                                         </div>
                                         <div>
                                             <h2 className="text-2xl font-black text-zinc-900">Fund Your Wallet</h2>
-                                            <p className="text-sm text-zinc-500 font-medium italic">Instant deposit to your direct account.</p>
+                                            <p className="text-sm italic font-medium text-zinc-500">Instant deposit to your direct account.</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-6">
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Deposit Amount</Label>
+                                            <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Deposit Amount</Label>
                                             <div className="relative">
-                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-bold text-zinc-400">₦</div>
+                                                <div className="absolute text-2xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">₦</div>
                                                 <Input 
                                                     value={fundAmount}
                                                     onChange={(e) => setFundAmount(e.target.value)}
                                                     placeholder="0.00" 
-                                                    className="h-20 pl-12 text-3xl font-black rounded-2xl bg-zinc-50 border-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-all"
+                                                    className="h-20 pl-12 text-3xl font-black transition-all border-none rounded-2xl bg-zinc-50 focus-visible:ring-2 focus-visible:ring-indigo-600"
                                                 />
                                             </div>
                                         </div>
@@ -530,7 +530,7 @@ export default function WalletsPage() {
                                         <Button 
                                             onClick={handleFundWallet}
                                             disabled={isInitiatingFunding}
-                                            className="w-full h-20 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xl font-black shadow-2xl shadow-indigo-100 transition-all font-inter disabled:opacity-50"
+                                            className="w-full h-20 text-xl font-black text-white transition-all bg-indigo-600 shadow-2xl rounded-2xl hover:bg-indigo-700 shadow-indigo-100 font-inter disabled:opacity-50"
                                         >
                                             {isInitiatingFunding ? (
                                                 <div className="flex items-center gap-2">
@@ -554,7 +554,7 @@ export default function WalletsPage() {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className="max-w-3xl mx-auto w-full"
+                            className="w-full max-w-3xl mx-auto"
                         >
                             <Card className="border-none bg-white rounded-[3rem] p-4 shadow-2xl ring-1 ring-zinc-100">
                                 <CardContent className="p-8">
@@ -564,23 +564,23 @@ export default function WalletsPage() {
                                         </div>
                                         <div>
                                             <h2 className="text-2xl font-black text-zinc-900">Withdraw Funds</h2>
-                                            <p className="text-sm text-zinc-500 font-medium italic">Secure transfer to your linked bank account.</p>
+                                            <p className="text-sm italic font-medium text-zinc-500">Secure transfer to your linked bank account.</p>
                                         </div>
                                     </div>
 
                                     <form onSubmit={handleWithdraw} className="space-y-8">
                                         {profile?.bank && profile?.accountNumber ? (
-                                            <div className="p-6 bg-zinc-50 rounded-2xl border border-dashed border-zinc-200 space-y-4">
+                                            <div className="p-6 space-y-4 border border-dashed bg-zinc-50 rounded-2xl border-zinc-200">
                                                 <div className="flex items-center justify-between">
                                                     <div className="space-y-1">
                                                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Withdrawal Bank</p>
                                                         <p className="text-xl font-black text-zinc-900">{profile.bank}</p>
                                                     </div>
-                                                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                                                    <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
                                                         <CheckCircle2 size={24} />
                                                     </div>
                                                 </div>
-                                                <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
+                                                <div className="grid gap-4 pt-4 border-t md:grid-cols-2 border-zinc-100">
                                                     <div className="space-y-1">
                                                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Number</p>
                                                         <p className="text-xl font-black text-zinc-900">{profile.accountNumber}</p>
@@ -592,16 +592,16 @@ export default function WalletsPage() {
                                                                 Change Details
                                                             </Link>
                                                         </div>
-                                                        <p className="text-xl font-black text-zinc-900 truncate">
+                                                        <p className="text-xl font-black truncate text-zinc-900">
                                                             {userBankDetail?.accountName || withdrawData.account_name || (isResolving || isUserBankLoading ? 'Resolving...' : '---')}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="grid md:grid-cols-2 gap-6">
+                                            <div className="grid gap-6 md:grid-cols-2">
                                                 <div className="space-y-2">
-                                                    <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Select Bank</Label>
+                                                    <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Select Bank</Label>
                                                     <SearchableSelect
                                                         items={banks.map((bank: { name: string; uuid: string }) => ({ label: bank.name, value: bank.uuid }))}
                                                         value={withdrawData.bank_code}
@@ -618,7 +618,7 @@ export default function WalletsPage() {
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Number</Label>
+                                                    <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Account Number</Label>
                                                     <div className="relative">
                                                         <Input 
                                                             value={withdrawData.account_number}
@@ -633,16 +633,16 @@ export default function WalletsPage() {
                                                                 }
                                                             }}
                                                             placeholder="8103078096"
-                                                            className="h-14 rounded-2xl bg-zinc-50 border-none font-bold placeholder:text-zinc-300"
+                                                            className="font-bold border-none h-14 rounded-2xl bg-zinc-50 placeholder:text-zinc-300"
                                                         />
-                                                        {isResolving && <Loader2 size={20} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-zinc-400" />}
+                                                        {isResolving && <Loader2 size={20} className="absolute -translate-y-1/2 right-4 top-1/2 animate-spin text-zinc-400" />}
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
                                             <div className="space-y-2">
-                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Account Name</Label>
+                                                <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Account Name</Label>
                                                 <div className="relative">
                                                     <Input 
                                                         value={userBankDetail?.accountName || withdrawData.account_name}
@@ -661,7 +661,7 @@ export default function WalletsPage() {
                                                                 initial={{ opacity: 0, scale: 0.5 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
                                                                 exit={{ opacity: 0, scale: 0.5 }}
-                                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 bg-emerald-100/50 p-1 rounded-full"
+                                                                className="absolute p-1 -translate-y-1/2 rounded-full right-4 top-1/2 text-emerald-500 bg-emerald-100/50"
                                                             >
                                                                 <CheckCircle2 size={20} />
                                                             </motion.div>
@@ -670,11 +670,11 @@ export default function WalletsPage() {
                                                 </div>
                                             </div>
 
-                                        <div className="grid md:grid-cols-2 gap-6 items-end">
+                                        <div className="grid items-end gap-6 md:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">Amount to Withdraw</Label>
+                                                <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Amount to Withdraw</Label>
                                                 <div className="relative">
-                                                    <div className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₦</div>
+                                                    <div className="absolute text-xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">₦</div>
                                                     <Input 
                                                         value={withdrawData.amount}
                                                         onChange={(e) => {
@@ -688,7 +688,7 @@ export default function WalletsPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-xs font-black uppercase text-zinc-400 tracking-widest ml-1">
+                                                <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">
                                                     {profile?.role === 8 ? 'Withdrawal OTP' : 'Transaction PIN'}
                                                 </Label>
                                                 <div className="relative">
@@ -701,9 +701,9 @@ export default function WalletsPage() {
                                                         type={profile?.role === 8 ? 'text' : 'password'}
                                                         maxLength={profile?.role === 8 ? 6 : 4}
                                                         placeholder={profile?.role === 8 ? "000000" : "****"}
-                                                        className="h-20 text-center text-3xl tracking-widest font-black rounded-2xl bg-zinc-50 border-none placeholder:text-zinc-200"
+                                                        className="h-20 text-3xl font-black tracking-widest text-center border-none rounded-2xl bg-zinc-50 placeholder:text-zinc-200"
                                                     />
-                                                    <Lock size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-300" />
+                                                    <Lock size={18} className="absolute -translate-y-1/2 left-6 top-1/2 text-zinc-300" />
                                                 </div>
                                             </div>
                                         </div>
@@ -711,7 +711,7 @@ export default function WalletsPage() {
                                         <Button 
                                             type="submit"
                                             disabled={isWithdrawing}
-                                            className="w-full h-20 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xl font-black shadow-2xl shadow-emerald-100 transition-all disabled:opacity-50"
+                                            className="w-full h-20 text-xl font-black text-white transition-all shadow-2xl rounded-2xl bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 disabled:opacity-50"
                                         >
                                             {isWithdrawing ? "Processing..." : "Withdraw Funds"}
                                         </Button>
@@ -726,30 +726,30 @@ export default function WalletsPage() {
                 {activeTab === 'overview' && (
                     <div className="grid gap-8 lg:grid-cols-2">
                         <Card className="border-none bg-linear-to-br from-indigo-900 via-indigo-900 to-indigo-800 text-white rounded-[3rem] p-10 shadow-2xl overflow-hidden relative group">
-                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                            <div className="absolute top-0 right-0 p-8 transition-transform duration-700 opacity-10 group-hover:scale-110">
                                 <ShieldCheck size={160} />
                             </div>
-                            <CardContent className="p-0 relative z-10">
-                                <h2 className="text-4xl font-black tracking-tighter mb-6">Secured Transactions</h2>
-                                <p className="text-indigo-100 font-medium max-w-sm mb-10 text-lg leading-relaxed italic">
+                            <CardContent className="relative z-10 p-0">
+                                <h2 className="mb-6 text-4xl font-black tracking-tighter">Secured Transactions</h2>
+                                <p className="max-w-sm mb-10 text-lg italic font-medium leading-relaxed text-indigo-100">
                                     Every transfer is encrypted and verified by multiple security layers.
                                 </p>
-                                <Button className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-black h-14 px-10 transition-all">
+                                <Button className="px-10 font-black text-white transition-all border rounded-2xl bg-white/10 backdrop-blur-md border-white/20 hover:bg-white/20 h-14">
                                     Security Settings
                                 </Button>
                             </CardContent>
                         </Card>
 
                         <Card className="border-zinc-100 bg-white rounded-[3rem] p-10 flex flex-col justify-center items-center text-center group transition-all hover:shadow-2xl">
-                            <div className="h-20 w-20 rounded-3xl bg-indigo-50 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
+                            <div className="flex items-center justify-center w-20 h-20 mb-8 transition-transform duration-500 rounded-3xl bg-indigo-50 group-hover:scale-110">
                                 <TrendingUp className="text-indigo-600" size={40} />
                             </div>
-                            <h3 className="text-2xl font-black text-zinc-900 mb-4">GKWTH Wallet</h3>
+                            <h3 className="mb-4 text-2xl font-black text-zinc-900">GKWTH Wallet</h3>
                             <p className="text-zinc-500 font-medium mb-10 max-w-[280px] italic leading-relaxed">
                                 Manage your GKWTH (Indirect) balance and assets with specialized tools.
                             </p>
                             <Link href="/wallets/gkwth">
-                                <Button variant="outline" className="rounded-2xl border-zinc-200 font-black h-14 px-10 hover:bg-zinc-50">
+                                <Button variant="outline" className="px-10 font-black rounded-2xl border-zinc-200 h-14 hover:bg-zinc-50">
                                     Switch to GKWTH
                                 </Button>
                             </Link>
@@ -761,25 +761,25 @@ export default function WalletsPage() {
             {/* Bank Details Modal */}
             <Dialog open={showBankModal} onOpenChange={setShowBankModal}>
                 <DialogContent className="max-w-[calc(100%-2rem)] md:max-w-md rounded-[2rem] md:rounded-[2.5rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
-                    <div className="bg-indigo-600 p-6 md:p-8 text-white relative overflow-hidden">
+                    <div className="relative p-6 overflow-hidden text-white bg-indigo-600 md:p-8">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <Plus size={120} />
                         </div>
                         <DialogHeader className="relative z-10">
-                            <DialogTitle className="text-xl md:text-2xl font-black">Transfer Details</DialogTitle>
-                            <DialogDescription className="text-indigo-100 font-medium text-xs md:text-sm">
+                            <DialogTitle className="text-xl font-black md:text-2xl">Transfer Details</DialogTitle>
+                            <DialogDescription className="text-xs font-medium text-indigo-100 md:text-sm">
                                 Follow the instructions below to fund your wallet.
                             </DialogDescription>
                         </DialogHeader>
                     </div>
                     
-                    <div className="p-6 md:p-8 md:pb-12 space-y-6">
+                    <div className="p-6 space-y-6 md:p-8 md:pb-12">
                         {/* Noticeable Amount Card */}
                         <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 text-center space-y-3 shadow-sm">
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Amount to Transfer</p>
                             <div className="flex items-center justify-center gap-3">
-                                <span className="text-3xl md:text-4xl font-black text-indigo-600">₦</span>
-                                <h1 className="text-4xl md:text-6xl font-black text-zinc-900 tracking-tighter">
+                                <span className="text-3xl font-black text-indigo-600 md:text-4xl">₦</span>
+                                <h1 className="text-4xl font-black tracking-tighter md:text-6xl text-zinc-900">
                                     {fundingData?.amount?.toLocaleString()}
                                 </h1>
                             </div>
@@ -801,20 +801,20 @@ export default function WalletsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
+                            <div className="flex items-center justify-between p-4 transition-colors bg-zinc-50 rounded-2xl group hover:bg-zinc-100">
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Bank Name</p>
                                     <p className="text-lg font-black text-zinc-900">{fundingData?.account_detail?.bank_name}</p>
                                 </div>
-                                <div className="p-2 bg-white rounded-lg shadow-xs group-hover:scale-110 transition-transform">
+                                <div className="p-2 transition-transform bg-white rounded-lg shadow-xs group-hover:scale-110">
                                     <Plus className="text-indigo-600" size={20} />
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-zinc-50 rounded-2xl flex items-center justify-between group hover:bg-zinc-100 transition-colors">
+                            <div className="flex items-center justify-between p-4 transition-colors bg-zinc-50 rounded-2xl group hover:bg-zinc-100">
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Number</p>
-                                    <p className="text-lg font-black text-zinc-900 tracking-wider">{fundingData?.account_detail?.account_number}</p>
+                                    <p className="text-lg font-black tracking-wider text-zinc-900">{fundingData?.account_detail?.account_number}</p>
                                 </div>
                                 <Button 
                                     variant="ghost" 
@@ -825,13 +825,13 @@ export default function WalletsPage() {
                                             toast.success('Account number copied!');
                                         }
                                     }}
-                                    className="bg-white hover:bg-indigo-50 text-indigo-600 rounded-xl shadow-xs"
+                                    className="text-indigo-600 bg-white shadow-xs hover:bg-indigo-50 rounded-xl"
                                 >
                                     <Copy size={18} />
                                 </Button>
                             </div>
 
-                            <div className="p-4 bg-zinc-50 rounded-2xl group hover:bg-zinc-100 transition-colors">
+                            <div className="p-4 transition-colors bg-zinc-50 rounded-2xl group hover:bg-zinc-100">
                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account Name</p>
                                 <p className="text-lg font-black text-zinc-900">{fundingData?.account_detail?.account_name}</p>
                             </div>
@@ -839,14 +839,14 @@ export default function WalletsPage() {
 
                         <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-2xl text-amber-700">
                             <Clock size={20} className="shrink-0" />
-                            <p className="text-xs font-bold leading-relaxed italic">
+                            <p className="text-xs italic font-bold leading-relaxed">
                                 This account expires at {fundingData?.account_detail?.expiry_date}. Please complete the transfer before then.
                             </p>
                         </div>
 
                         <Button 
                             onClick={startPolling}
-                            className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl shadow-indigo-100 transition-all mb-4"
+                            className="w-full h-16 mb-4 font-black text-white transition-all bg-indigo-600 shadow-xl rounded-2xl hover:bg-indigo-700 shadow-indigo-100"
                         >
                             I&apos;ve Made The Transfer
                         </Button>
@@ -857,7 +857,7 @@ export default function WalletsPage() {
             {/* Polling/Processing Modal */}
             <Dialog open={showPollingModal} onOpenChange={() => {}}>
                 <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-sm rounded-[2rem] md:rounded-[2.5rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
-                    <div className="p-6 md:p-12 md:pb-16 text-center space-y-6 relative">
+                    <div className="relative p-6 space-y-6 text-center md:p-12 md:pb-16">
                         <div className="absolute top-0 inset-x-0 h-2 bg-zinc-100 overflow-hidden rounded-t-[2rem] md:rounded-t-[2.5rem]">
                             <motion.div 
                                 className="h-full bg-indigo-600"
@@ -867,14 +867,14 @@ export default function WalletsPage() {
                             />
                         </div>
                         <div className="relative inline-block">
-                            <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-25" />
-                            <div className="relative h-20 w-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
+                            <div className="absolute inset-0 bg-indigo-100 rounded-full opacity-25 animate-ping" />
+                            <div className="relative flex items-center justify-center w-20 h-20 mx-auto text-indigo-600 rounded-full bg-indigo-50">
                                 <Loader2 className="animate-spin" size={40} />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-zinc-900 italic">Verifying Payment</h2>
-                            <p className="text-sm text-zinc-500 font-medium">
+                            <h2 className="text-2xl italic font-black text-zinc-900">Verifying Payment</h2>
+                            <p className="text-sm font-medium text-zinc-500">
                                 We&apos;re checking your transfer details. This usually takes less than a minute.
                             </p>
                         </div>
@@ -882,7 +882,7 @@ export default function WalletsPage() {
                             {[0, 1, 2].map((i) => (
                                 <motion.div
                                     key={i}
-                                    className="h-2 w-2 bg-indigo-600 rounded-full"
+                                    className="w-2 h-2 bg-indigo-600 rounded-full"
                                     animate={{ opacity: [0.2, 1, 0.2] }}
                                     transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
                                 />
@@ -895,23 +895,23 @@ export default function WalletsPage() {
             {/* Success Modal */}
             <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
                 <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-sm rounded-[2rem] md:rounded-[3rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
-                    <div className="bg-emerald-500 p-8 md:p-12 text-center text-white relative">
+                    <div className="relative p-8 text-center text-white bg-emerald-500 md:p-12">
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50" />
                         <motion.div 
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
-                            className="relative h-24 w-24 bg-white text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-2xl mb-6"
+                            className="relative flex items-center justify-center w-24 h-24 mx-auto mb-6 bg-white rounded-full shadow-2xl text-emerald-500"
                         >
                             <CheckCircle size={56} />
                         </motion.div>
-                        <h2 className="text-2xl md:text-3xl font-black tracking-tighter mb-2 italic">Success!</h2>
-                        <p className="text-emerald-50 font-medium italic text-xs md:text-sm">Wallet Funded Successfully</p>
+                        <h2 className="mb-2 text-2xl italic font-black tracking-tighter md:text-3xl">Success!</h2>
+                        <p className="text-xs italic font-medium text-emerald-50 md:text-sm">Wallet Funded Successfully</p>
                     </div>
-                    <div className="p-6 md:p-8 md:pb-12 space-y-6 text-center">
+                    <div className="p-6 space-y-6 text-center md:p-8 md:pb-12">
                         <div className="space-y-1">
-                            <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">Amount Credited</p>
-                            <p className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tighter">₦{fundingData?.amount?.toLocaleString()}</p>
+                            <p className="text-xs font-black tracking-widest uppercase text-zinc-400">Amount Credited</p>
+                            <p className="text-3xl font-black tracking-tighter md:text-4xl text-zinc-900">₦{fundingData?.amount?.toLocaleString()}</p>
                         </div>
                         <Button 
                             onClick={() => {
@@ -929,31 +929,31 @@ export default function WalletsPage() {
             {/* Pending/Timeout Modal */}
             <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
                 <DialogContent className="max-w-[calc(100%-2rem)] md:max-w-md rounded-[2rem] md:rounded-[2.5rem] border-none p-0 overflow-y-auto bg-white shadow-2xl">
-                    <div className="bg-amber-500 p-8 md:p-12 text-center text-white relative">
-                        <div className="relative h-20 w-20 bg-white/20 text-white rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="relative p-8 text-center text-white bg-amber-500 md:p-12">
+                        <div className="relative flex items-center justify-center w-20 h-20 mx-auto mb-6 text-white rounded-full bg-white/20">
                             <AlertCircle size={48} />
                         </div>
-                        <h2 className="text-xl md:text-2xl font-black italic">Still Processing</h2>
-                        <p className="text-amber-50 font-medium italic text-xs md:text-sm">We haven&apos;t confirmed your payment yet.</p>
+                        <h2 className="text-xl italic font-black md:text-2xl">Still Processing</h2>
+                        <p className="text-xs italic font-medium text-amber-50 md:text-sm">We haven&apos;t confirmed your payment yet.</p>
                     </div>
-                    <div className="p-6 md:p-8 md:pb-12 space-y-8">
+                    <div className="p-6 space-y-8 md:p-8 md:pb-12">
                         <div className="space-y-4">
-                            <div className="flex gap-4 p-4 bg-zinc-50 rounded-2xl items-start">
-                                <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                            <div className="flex items-start gap-4 p-4 bg-zinc-50 rounded-2xl">
+                                <div className="p-2 rounded-lg bg-amber-50 text-amber-600">
                                     <Clock size={20} />
                                 </div>
                                 <div>
-                                    <p className="font-black text-zinc-900 text-sm italic">Don&apos;t worry!</p>
-                                    <p className="text-xs text-zinc-500 font-medium">Your request is still in our queue and will be processed shortly.</p>
+                                    <p className="text-sm italic font-black text-zinc-900">Don&apos;t worry!</p>
+                                    <p className="text-xs font-medium text-zinc-500">Your request is still in our queue and will be processed shortly.</p>
                                 </div>
                             </div>
-                            <div className="flex gap-4 p-4 bg-zinc-50 rounded-2xl items-start">
-                                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                            <div className="flex items-start gap-4 p-4 bg-zinc-50 rounded-2xl">
+                                <div className="p-2 text-indigo-600 rounded-lg bg-indigo-50">
                                     <MessageCircle size={20} />
                                 </div>
                                 <div>
-                                    <p className="font-black text-zinc-900 text-sm italic">Need help?</p>
-                                    <p className="text-xs text-zinc-500 font-medium">If your funds don&apos;t appear in 30 minutes, please contact support for assistance.</p>
+                                    <p className="text-sm italic font-black text-zinc-900">Need help?</p>
+                                    <p className="text-xs font-medium text-zinc-500">If your funds don&apos;t appear in 30 minutes, please contact support for assistance.</p>
                                 </div>
                             </div>
                         </div>
@@ -962,7 +962,7 @@ export default function WalletsPage() {
                             <Button 
                                 variant="outline"
                                 onClick={() => setShowPendingModal(false)}
-                                className="w-full h-16 rounded-2xl border-zinc-200 font-black text-zinc-600 hover:bg-zinc-50 transition-all font-inter"
+                                className="w-full h-16 font-black transition-all rounded-2xl border-zinc-200 text-zinc-600 hover:bg-zinc-50 font-inter"
                             >
                                 Close
                             </Button>
