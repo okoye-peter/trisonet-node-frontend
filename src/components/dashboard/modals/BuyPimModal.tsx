@@ -129,7 +129,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                 const res = await checkStatus(chargeRef).unwrap();
                 if (res.data?.status === 'approved') {
                     toast.success('Payment confirmed! Your account has been activated.');
-                    window.location.reload();
+                    setTimeout(() => window.location.reload(), 1500);
                     return;
                 }
             } catch { /* keep polling */ }
@@ -323,6 +323,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                     setIsPolling(false);
                     toast.success('Payment confirmed! Your account has been activated.');
                     resetAndClose();
+                    setTimeout(() => window.location.reload(), 1500);
                     return;
                 }
             } catch (err) {
@@ -353,8 +354,7 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
 
             toast.success('Account activated successfully!');
             resetAndClose();
-            // Refresh page to reflect new status
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 1500);
         } catch (err: unknown) {
             const apiErr = err as { data?: { message?: string } };
             toast.error(apiErr.data?.message || 'Failed to activate with code');
@@ -733,23 +733,22 @@ export default function BuyPimModal({ isOpen, onClose, activationData }: BuyPimM
                         )}
 
                         {view === 'verifying' && (
-                            <div className="flex flex-col items-center justify-center py-8 space-y-6">
-                                <div className="relative flex items-center justify-center w-24 h-24">
-                                    <div className="absolute inset-0 bg-purple-100 rounded-full animate-ping opacity-60" />
-                                    <div className="absolute bg-purple-200 rounded-full inset-2 animate-pulse" />
-                                    <Loader2 size={36} className="relative z-10 text-purple-600 animate-spin" />
+                            <div className="py-12 text-center space-y-6">
+                                <div className="relative inline-flex">
+                                    <div className="h-24 w-24 rounded-full border-4 border-[#6639ff]/10 border-t-[#6639ff] animate-spin" />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <Loader2 size={32} className="text-[#6639ff] animate-pulse" />
+                                    </div>
                                 </div>
-
-                                <div className="space-y-2 text-center">
-                                    <h3 className="text-xl font-black text-zinc-900">Verifying Payment</h3>
-                                    <p className="max-w-xs text-sm leading-relaxed text-zinc-500">
-                                        We&apos;re confirming your transfer. This usually takes a few seconds.
+                                <div className="space-y-2">
+                                    <h4 className="font-black text-zinc-900 text-2xl tracking-tight">Verifying Payment</h4>
+                                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-relaxed px-6">
+                                        Confirming your transfer — this may take up to 2 minutes. Do not close this page.
                                     </p>
                                 </div>
-
-                                <div className="w-full p-4 border bg-amber-50 rounded-2xl border-amber-100">
-                                    <p className="text-xs font-medium leading-relaxed text-center text-amber-700">
-                                        <span className="font-bold">Please wait</span> — do not close this window while we verify your payment.
+                                <div className="bg-[#6639ff]/5 border border-[#6639ff]/10 px-5 py-3 rounded-2xl inline-block">
+                                    <p className="text-[10px] font-black text-[#6639ff] uppercase tracking-widest animate-pulse">
+                                        Polling Transaction Status…
                                     </p>
                                 </div>
                             </div>

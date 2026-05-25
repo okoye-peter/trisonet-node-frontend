@@ -251,7 +251,7 @@ export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) 
                         )}
 
                         {status === 'polling' && (
-                            <motion.div 
+                            <motion.div
                                 key="polling"
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
@@ -259,20 +259,20 @@ export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) 
                                 className="py-12 text-center space-y-6"
                             >
                                 <div className="relative inline-flex">
-                                    <div className="h-24 w-24 rounded-full border-4 border-emerald-50 border-t-emerald-500 animate-spin" />
+                                    <div className="h-24 w-24 rounded-full border-4 border-[#6639ff]/10 border-t-[#6639ff] animate-spin" />
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <Loader2 size={32} className="text-emerald-500 animate-pulse" />
+                                        <Loader2 size={32} className="text-[#6639ff] animate-pulse" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <h4 className="font-black text-zinc-900 text-2xl tracking-tighter">Processing Payment</h4>
-                                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-relaxed px-8">
-                                        We are verifying your transfer. This may take up to 2 minutes. Please do not close this window.
+                                    <h4 className="font-black text-zinc-900 text-2xl tracking-tight">Verifying Payment</h4>
+                                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-relaxed px-6">
+                                        Confirming your transfer — this may take up to 2 minutes. Do not close this page.
                                     </p>
                                 </div>
-                                <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 inline-block">
-                                    <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest animate-pulse">
-                                        Polling Transaction Status...
+                                <div className="bg-[#6639ff]/5 border border-[#6639ff]/10 px-5 py-3 rounded-2xl inline-block">
+                                    <p className="text-[10px] font-black text-[#6639ff] uppercase tracking-widest animate-pulse">
+                                        Polling Transaction Status…
                                     </p>
                                 </div>
                             </motion.div>

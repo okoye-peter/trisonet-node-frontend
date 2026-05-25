@@ -97,11 +97,11 @@ export default function EmailVerificationModal({
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
                             transition={{ duration: 0.3 }}
-                            className="relative w-full max-w-lg overflow-hidden bg-white/80 border border-white/20 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl"
+                            className="relative w-full max-w-lg p-6 overflow-hidden border shadow-2xl bg-white/80 border-white/20 rounded-3xl md:p-8 backdrop-blur-xl"
                         >
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <div className="flex items-center justify-center w-10 h-10 text-blue-600 rounded-xl bg-blue-50">
                                         {step === 1 ? <Mail size={20} /> : <KeyRound size={20} />}
                                     </div>
                                     <div>
@@ -113,7 +113,7 @@ export default function EmailVerificationModal({
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 text-zinc-400 hover:text-zinc-900 rounded-xl hover:bg-zinc-50 transition-colors"
+                                    className="p-2 transition-colors text-zinc-400 hover:text-zinc-900 rounded-xl hover:bg-zinc-50"
                                 >
                                     <X size={18} />
                                 </button>
@@ -128,7 +128,7 @@ export default function EmailVerificationModal({
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="Enter your email address"
-                                            className="h-14 rounded-2xl border-zinc-200 px-4 text-sm font-medium focus-visible:ring-indigo-500/20"
+                                            className="px-4 text-sm font-medium h-14 rounded-2xl border-zinc-200 focus-visible:ring-indigo-500/20"
                                             required
                                         />
                                         <p className="text-[10px] font-medium text-zinc-400 leading-relaxed">
@@ -141,11 +141,11 @@ export default function EmailVerificationModal({
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={onLogout}
+                                                onClick={onClose}
                                                 disabled={isSendingOtp}
                                                 className="flex-1 h-14 rounded-2xl border-zinc-200 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 hover:bg-zinc-50"
                                             >
-                                                Logout
+                                                Close
                                             </Button>
                                         )}
                                         <Button
@@ -154,7 +154,7 @@ export default function EmailVerificationModal({
                                             className="flex-2 h-14 rounded-2xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 disabled:opacity-50"
                                         >
                                             {isSendingOtp ? (
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                             ) : (
                                                 'Send Code'
                                             )}
@@ -170,7 +170,7 @@ export default function EmailVerificationModal({
                                             value={otp}
                                             onChange={(e) => setOtp(e.target.value)}
                                             placeholder="Enter the 6-digit code"
-                                            className="h-14 rounded-2xl border-zinc-200 px-4 text-sm font-medium focus-visible:ring-indigo-500/20 text-center tracking-widest font-mono"
+                                            className="px-4 font-mono text-sm font-medium tracking-widest text-center h-14 rounded-2xl border-zinc-200 focus-visible:ring-indigo-500/20"
                                             maxLength={6}
                                             required
                                         />
@@ -179,7 +179,7 @@ export default function EmailVerificationModal({
                                             <button 
                                                 type="button"
                                                 onClick={() => setStep(1)}
-                                                className="text-blue-600 font-bold hover:underline"
+                                                className="font-bold text-blue-600 hover:underline"
                                             >
                                                 Edit Email
                                             </button>
@@ -202,7 +202,7 @@ export default function EmailVerificationModal({
                                             className="flex-2 h-14 rounded-2xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 disabled:opacity-50"
                                         >
                                             {isVerifyingOtp ? (
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                             ) : (
                                                 'Verify Email'
                                             )}

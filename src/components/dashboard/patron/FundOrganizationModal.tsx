@@ -240,19 +240,24 @@ export function FundOrganizationModal({ initialName, initialPlan, onSuccess }: F
                                 key="polling"
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="py-8 flex flex-col items-center justify-center space-y-6 text-center"
+                                exit={{ opacity: 0, scale: 1.05 }}
+                                className="py-12 text-center space-y-6"
                             >
-                                <div className="w-20 h-20 relative">
-                                    <div className="absolute inset-0 border-4 border-zinc-100 rounded-full" />
-                                    <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin" />
-                                    <div className="absolute inset-0 flex items-center justify-center text-indigo-600">
-                                        <Wallet size={24} />
+                                <div className="relative inline-flex">
+                                    <div className="h-24 w-24 rounded-full border-4 border-[#6639ff]/10 border-t-[#6639ff] animate-spin" />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <Loader2 size={32} className="text-[#6639ff] animate-pulse" />
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-black text-zinc-900">Confirming Payment</h3>
-                                    <p className="text-sm font-medium text-zinc-500 mt-2 max-w-[250px] mx-auto">
-                                        Please wait while we verify your transfer. This usually takes less than a minute.
+                                <div className="space-y-2">
+                                    <h4 className="font-black text-zinc-900 text-2xl tracking-tight">Verifying Payment</h4>
+                                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-relaxed px-6">
+                                        Confirming your transfer — this may take up to 2 minutes. Do not close this page.
+                                    </p>
+                                </div>
+                                <div className="bg-[#6639ff]/5 border border-[#6639ff]/10 px-5 py-3 rounded-2xl inline-block">
+                                    <p className="text-[10px] font-black text-[#6639ff] uppercase tracking-widest animate-pulse">
+                                        Polling Transaction Status…
                                     </p>
                                 </div>
                             </motion.div>

@@ -885,29 +885,23 @@ export default function GkwthWalletPage() {
                             transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
                         />
                     </div>
-                    <div className="space-y-6">
-                        <div className="relative inline-block">
-                            <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-25" />
-                            <div className="relative h-20 w-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto">
-                                <Loader2 className="animate-spin" size={40} />
+                    <div className="py-6 text-center space-y-6">
+                        <div className="relative inline-flex">
+                            <div className="h-24 w-24 rounded-full border-4 border-[#6639ff]/10 border-t-[#6639ff] animate-spin" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 size={32} className="text-[#6639ff] animate-pulse" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-zinc-900 italic">Verifying Payment</h2>
-                            <p className="text-sm text-zinc-500 font-medium">
-                                We&apos;re checking your transfer details. This usually takes less than a minute.
+                            <h4 className="font-black text-zinc-900 text-2xl tracking-tight">Verifying Payment</h4>
+                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-relaxed px-6">
+                                Confirming your transfer — this may take up to 2 minutes. Do not close this page.
                             </p>
                         </div>
-                        <div className="flex justify-center gap-1.5 pt-4">
-                            {[0, 1, 2].map((i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0.3 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.2 }}
-                                    className="w-2 h-2 rounded-full bg-indigo-600"
-                                />
-                            ))}
+                        <div className="bg-[#6639ff]/5 border border-[#6639ff]/10 px-5 py-3 rounded-2xl inline-block">
+                            <p className="text-[10px] font-black text-[#6639ff] uppercase tracking-widest animate-pulse">
+                                Polling Transaction Status…
+                            </p>
                         </div>
                     </div>
                 </DialogContent>
