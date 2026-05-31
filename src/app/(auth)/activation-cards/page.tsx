@@ -137,7 +137,7 @@ const CardVisual = ({ code, amount }: { code: string; amount: number }) => {
     return (
         <div className="relative select-none">
             {/* Main card face */}
-            <div className="relative rounded-3xl overflow-hidden w-full"
+            <div className="relative w-full overflow-hidden rounded-3xl"
                 style={{
                     aspectRatio: '1.586 / 1',
                     boxShadow: '0 30px 60px -10px rgba(0,0,0,.45)',
@@ -159,19 +159,19 @@ const CardVisual = ({ code, amount }: { code: string; amount: number }) => {
                 {/* Amount — bottom left */}
                 <div className="absolute bottom-4 left-5">
                     <p className="text-white/50 text-[9px] font-semibold uppercase tracking-widest mb-0.5">Amount</p>
-                    <p className="text-white font-black text-base drop-shadow">{fmt(amount)}</p>
+                    <p className="text-base font-black text-white drop-shadow">{fmt(amount)}</p>
                 </div>
 
                 {/* Code — bottom right */}
-                <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-white/80 tracking-widest drop-shadow">{code}</span>
+                <div className="absolute flex items-center gap-2 bottom-4 right-4">
+                    <span className="font-mono text-sm font-bold tracking-widest text-white/80 drop-shadow">{code}</span>
                     <button onClick={copy}
                         className="p-1.5 rounded-lg bg-black/30 hover:bg-black/50 transition-colors backdrop-blur-sm"
                         title="Copy code"
                     >
                         {copied
-                            ? <Check className="h-3 w-3 text-emerald-400" />
-                            : <Copy className="h-3 w-3 text-white/70" />
+                            ? <Check className="w-3 h-3 text-emerald-400" />
+                            : <Copy className="w-3 h-3 text-white/70" />
                         }
                     </button>
                 </div>
@@ -429,22 +429,22 @@ const ActivationCards = () => {
     ] : []
 
     return (
-        <div className="container mx-auto py-6 px-3 sm:py-10 sm:px-4 space-y-6 sm:space-y-10 max-w-6xl">
+        <div className="container max-w-6xl px-3 py-6 mx-auto space-y-6 sm:py-10 sm:px-4 sm:space-y-10">
 
             {/* ── Header ── */}
             <motion.div
                 initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+                className="flex flex-col justify-between gap-6 md:flex-row md:items-center"
             >
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-primary" />
-                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight bg-linear-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text text-transparent">
+                        <Sparkles className="w-5 h-5 text-primary" />
+                        <h1 className="text-2xl font-black tracking-tight text-transparent sm:text-3xl bg-linear-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text">
                             PIM Credit Cards
                         </h1>
                     </div>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                         Manage and request your community activation cards.
                     </p>
                 </div>
@@ -467,17 +467,17 @@ const ActivationCards = () => {
                         <DialogTrigger render={
                             <Button
                                 size="lg"
-                                className="rounded-xl shadow-lg shadow-primary/20 transition-all hover:scale-105 group font-bold w-full sm:w-auto"
+                                className="w-full font-bold transition-all shadow-lg rounded-xl shadow-primary/20 hover:scale-105 group sm:w-auto"
                             >
-                                <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform" />
+                                <Plus className="w-5 h-5 mr-2 transition-transform group-hover:rotate-90" />
                                 Request New Card
                             </Button>
                         } />
 
                         <DialogContent className="sm:max-w-[440px] rounded-3xl border-none shadow-2xl p-8">
-                            <DialogHeader className="space-y-3 mb-2">
-                                <div className="h-13 w-13 rounded-2xl bg-linear-to-br from-primary/20 to-emerald-500/10 flex items-center justify-center mb-1 border border-primary/10">
-                                    <CreditCard className="h-6 w-6 text-primary" />
+                            <DialogHeader className="mb-2 space-y-3">
+                                <div className="flex items-center justify-center mb-1 border h-13 w-13 rounded-2xl bg-linear-to-br from-primary/20 to-emerald-500/10 border-primary/10">
+                                    <CreditCard className="w-6 h-6 text-primary" />
                                 </div>
                                 <DialogTitle className="text-2xl font-black">Purchase Cards</DialogTitle>
                                 <DialogDescription>
@@ -487,22 +487,22 @@ const ActivationCards = () => {
 
                             <div className="grid gap-5 py-4">
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-black text-muted-foreground uppercase tracking-widest">
+                                    <Label className="text-xs font-black tracking-widest uppercase text-muted-foreground">
                                         Price Per Card
                                     </Label>
                                     <div className="relative">
                                         <Input
                                             value={loading ? 'Loading…' : fmt(effectiveBase)}
                                             disabled
-                                            className="bg-muted/40 border-none font-bold text-base h-12 pr-10"
+                                            className="h-12 pr-10 text-base font-bold border-none bg-muted/40"
                                         />
                                         <Wallet className="absolute right-3 top-3.5 h-4 w-4 text-muted-foreground/40" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="qty" className="text-xs font-black text-muted-foreground uppercase tracking-widest">
-                                        Quantity <span className="text-muted-foreground/50 normal-case font-medium">(min: 2)</span>
+                                    <Label htmlFor="qty" className="text-xs font-black tracking-widest uppercase text-muted-foreground">
+                                        Quantity <span className="font-medium normal-case text-muted-foreground/50">(min: 2)</span>
                                     </Label>
                                     <Input
                                         id="qty"
@@ -510,21 +510,21 @@ const ActivationCards = () => {
                                         min={2}
                                         value={quantity}
                                         onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                        className="h-12 border-primary/20 focus-visible:ring-primary font-bold text-base"
+                                        className="h-12 text-base font-bold border-primary/20 focus-visible:ring-primary"
                                     />
                                 </div>
 
                                 {/* Total box */}
-                                <div className="rounded-2xl bg-linear-to-br from-primary/10 to-emerald-500/5 border border-primary/15 p-5 space-y-3">
-                                    <div className="flex justify-between items-center text-sm font-medium">
-                                        <span className="text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">Subtotal</span>
-                                        <span className="font-bold flex-shrink-0">{fmt(subtotal)}</span>
+                                <div className="p-5 space-y-3 border rounded-2xl bg-linear-to-br from-primary/10 to-emerald-500/5 border-primary/15">
+                                    <div className="flex items-center justify-between text-sm font-medium">
+                                        <span className="overflow-hidden text-muted-foreground whitespace-nowrap text-ellipsis">Subtotal</span>
+                                        <span className="flex-shrink-0 font-bold">{fmt(subtotal)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-sm font-medium">
-                                        <span className="text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">Service Charge</span>
-                                        <span className="font-bold flex-shrink-0">{fmt(charge)}</span>
+                                    <div className="flex items-center justify-between text-sm font-medium">
+                                        <span className="overflow-hidden text-muted-foreground whitespace-nowrap text-ellipsis">Service Charge</span>
+                                        <span className="flex-shrink-0 font-bold">{fmt(charge)}</span>
                                     </div>
-                                    <div className="pt-3 border-t border-primary/10 flex items-center justify-between">
+                                    <div className="flex items-center justify-between pt-3 border-t border-primary/10">
                                         <div>
                                             <p className="text-[10px] font-black text-primary uppercase tracking-[.18em] mb-1">Total Amount</p>
                                             <p className="text-3xl font-black text-primary">
@@ -532,24 +532,24 @@ const ActivationCards = () => {
                                             </p>
                                         </div>
                                         <div className="p-3 bg-primary/10 rounded-xl">
-                                            <Wallet className="h-6 w-6 text-primary" />
+                                            <Wallet className="w-6 h-6 text-primary" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <DialogFooter className="gap-3 flex-col sm:flex-col">
+                            <DialogFooter className="flex-col gap-3 sm:flex-col">
                                 <Button
                                     variant="outline"
-                                    className="w-full h-12 rounded-xl text-base font-bold border-primary/30 hover:bg-primary/5 transition-all active:scale-95"
+                                    className="w-full h-12 text-base font-bold transition-all rounded-xl border-primary/30 hover:bg-primary/5 active:scale-95"
                                     onClick={handlePayWithCard}
                                     disabled={isInitiatingCard || isPurchasing}
                                 >
-                                    {isInitiatingCard ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CreditCard className="mr-2 h-5 w-5" />}
+                                    {isInitiatingCard ? <RefreshCw className="w-5 h-5 mr-2 animate-spin" /> : <CreditCard className="w-5 h-5 mr-2" />}
                                     Pay with Card
                                 </Button>
                                 <Button
-                                    className="w-full h-12 rounded-xl text-base font-bold shadow-xl shadow-primary/10 transition-all active:scale-95"
+                                    className="w-full h-12 text-base font-bold transition-all shadow-xl rounded-xl shadow-primary/10 active:scale-95"
                                     onClick={async () => {
                                         try {
                                             const res = await purchaseCard({ quantity, amount: totalAmount }).unwrap();
@@ -566,9 +566,9 @@ const ActivationCards = () => {
                                     }}
                                     disabled={isPurchasing || isInitiatingCard}
                                 >
-                                    {isPurchasing ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : null}
+                                    {isPurchasing ? <RefreshCw className="w-5 h-5 mr-2 animate-spin" /> : null}
                                     Generate Virtual Account
-                                    <ArrowUpRight className="ml-2 h-5 w-5" />
+                                    <ArrowUpRight className="w-5 h-5 ml-2" />
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -583,9 +583,9 @@ const ActivationCards = () => {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="flex items-center gap-3 p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm font-medium"
+                        className="flex items-center gap-3 p-4 text-sm font-medium text-red-700 border border-red-200 rounded-2xl bg-red-50 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400"
                     >
-                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <AlertCircle className="w-4 h-4 shrink-0" />
                         {error}
                         <Button variant="ghost" size="sm" onClick={fetchData} className="ml-auto text-red-600 hover:text-red-700 hover:bg-red-100">
                             Retry
@@ -595,7 +595,7 @@ const ActivationCards = () => {
             </AnimatePresence>
 
             {/* ── Active Card Visual + Stats ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
                 {/* Card Visual (spans 2 cols) */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -603,9 +603,9 @@ const ActivationCards = () => {
                     transition={{ delay: 0.1 }}
                     className="lg:col-span-2"
                 >
-                    <Card className="border-none shadow-xl shadow-black/5 rounded-3xl overflow-hidden h-full">
+                    <Card className="h-full overflow-hidden border-none shadow-xl shadow-black/5 rounded-3xl">
                         <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center justify-between gap-2">
+                            <CardTitle className="flex items-center justify-between gap-2 text-sm font-black tracking-widest uppercase text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                     <div className={cn(
                                         "h-2 w-2 rounded-full animate-pulse",
@@ -618,35 +618,35 @@ const ActivationCards = () => {
                                 )}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-0 pb-6 px-6">
+                        <CardContent className="px-6 pt-0 pb-6">
                             {loading ? (
-                                <Skeleton className="h-52 w-full rounded-3xl" />
+                                <Skeleton className="w-full h-52 rounded-3xl" />
                             ) : activeCard ? (
                                 <CardVisual code={activeCard.code} amount={activeCard.amount} />
                             ) : (
-                                <div className="h-52 w-full rounded-3xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                                    <CreditCard className="h-10 w-10 opacity-30" />
+                                <div className="flex flex-col items-center justify-center w-full gap-3 border-2 border-dashed h-52 rounded-3xl border-muted-foreground/20 text-muted-foreground">
+                                    <CreditCard className="w-10 h-10 opacity-30" />
                                     <p className="text-sm font-medium">No active card</p>
                                 </div>
                             )}
 
                             {activeCard && !loading && (
-                                <div className="mt-4 grid grid-cols-2 gap-3">
-                                    <div className="rounded-2xl bg-muted/40 p-3">
+                                <div className="grid grid-cols-2 gap-3 mt-4">
+                                    <div className="p-3 rounded-2xl bg-muted/40">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Used</p>
-                                        <p className="font-bold text-sm">{summary?.usedSlots ?? 0} Users</p>
+                                        <p className="text-sm font-bold">{summary?.usedSlots ?? 0} Users</p>
                                     </div>
-                                    <div className="rounded-2xl bg-muted/40 p-3">
+                                    <div className="p-3 rounded-2xl bg-muted/40">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available</p>
-                                        <p className="font-bold text-sm text-emerald-600">{summary?.availableSlots ?? 0} Left</p>
+                                        <p className="text-sm font-bold text-emerald-600">{summary?.availableSlots ?? 0} Left</p>
                                     </div>
-                                    <div className="rounded-2xl bg-muted/40 p-3">
+                                    <div className="p-3 rounded-2xl bg-muted/40">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Price/Slot</p>
-                                        <p className="font-bold text-sm">{fmt(activeCard.pricePerUser)}</p>
+                                        <p className="text-sm font-bold">{fmt(activeCard.pricePerUser)}</p>
                                     </div>
-                                    <div className="rounded-2xl bg-muted/40 p-3">
+                                    <div className="p-3 rounded-2xl bg-muted/40">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Issued</p>
-                                        <p className="font-bold text-sm">{fmtDate(activeCard.createdAt)}</p>
+                                        <p className="text-sm font-bold">{fmtDate(activeCard.createdAt)}</p>
                                     </div>
                                 </div>
                             )}
@@ -655,10 +655,10 @@ const ActivationCards = () => {
                 </motion.div>
 
                 {/* Stats grid (spans 3 cols) */}
-                <div className="lg:col-span-3 grid md:grid-cols-2 grid-cols-1 gap-3 sm:gap-4 content-start">
+                <div className="grid content-start grid-cols-1 gap-3 lg:col-span-3 md:grid-cols-2 sm:gap-4">
                     {loading
                         ? Array.from({ length: 4 }).map((_, i) => (
-                            <Skeleton key={i} className="h-28 w-full rounded-3xl" />
+                            <Skeleton key={i} className="w-full h-28 rounded-3xl" />
                         ))
                         : stats.map((stat, i) => (
                             <motion.div
@@ -671,10 +671,10 @@ const ActivationCards = () => {
                                     'border shadow-sm hover:shadow-md transition-all rounded-3xl group cursor-default h-full',
                                     stat.border
                                 )}>
-                                    <CardContent className="p-4 sm:p-5 flex items-start justify-between gap-3 h-full">
-                                        <div className="space-y-1 flex-1">
+                                    <CardContent className="flex items-start justify-between h-full gap-3 p-4 sm:p-5">
+                                        <div className="flex-1 space-y-1">
                                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{stat.label}</p>
-                                            <p className="text-4xl sm:text-4xl font-black">{stat.value}</p>
+                                            <p className="text-4xl font-black sm:text-4xl">{stat.value}</p>
                                         </div>
                                         <div className={cn('p-3 rounded-2xl mt-0.5 transition-transform group-hover:scale-110 shrink-0', stat.bg)}>
                                             <stat.icon className={cn('h-5 w-5', stat.color)} />
@@ -693,11 +693,11 @@ const ActivationCards = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
-                    className="rounded-3xl bg-linear-to-r from-primary/10 via-emerald-500/5 to-teal-500/10 border border-primary/15 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="flex flex-col justify-between gap-4 p-6 border rounded-3xl bg-linear-to-r from-primary/10 via-emerald-500/5 to-teal-500/10 border-primary/15 sm:flex-row sm:items-center"
                 >
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary/15 rounded-2xl">
-                            <Wallet className="h-6 w-6 text-primary" />
+                            <Wallet className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-0.5">Current Price Per Slot</p>
@@ -706,9 +706,9 @@ const ActivationCards = () => {
                     </div>
                     <Button
                         onClick={() => setIsOpen(true)}
-                        className="rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                        className="font-bold transition-transform shadow-lg rounded-xl shadow-primary/20 hover:scale-105"
                     >
-                        <Plus className="mr-2 h-4 w-4" />
+                        <Plus className="w-4 h-4 mr-2" />
                         Get a Card
                     </Button>
                 </motion.div>
@@ -720,12 +720,12 @@ const ActivationCards = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.45 }}
             >
-                <Card className="border-none shadow-xl shadow-black/5 overflow-hidden rounded-3xl">
-                    <CardHeader className="p-7 pb-4">
-                        <div className="flex items-center justify-between flex-wrap gap-4">
+                <Card className="overflow-hidden border-none shadow-xl shadow-black/5 rounded-3xl">
+                    <CardHeader className="pb-4 p-7">
+                        <div className="flex flex-wrap items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary/10 rounded-xl">
-                                    <History className="h-5 w-5 text-primary" />
+                                    <History className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
                                     <CardTitle className="text-lg font-black">My PIM Credit Cards</CardTitle>
@@ -733,7 +733,7 @@ const ActivationCards = () => {
                                 </div>
                             </div>
                             {!loading && (
-                                <Badge variant="secondary" className="rounded-full font-black text-xs px-3">
+                                <Badge variant="secondary" className="px-3 text-xs font-black rounded-full">
                                     {meta?.totalItems ?? 0} card{(meta?.totalItems ?? 0) !== 1 ? 's' : ''}
                                 </Badge>
                             )}
@@ -741,14 +741,14 @@ const ActivationCards = () => {
                     </CardHeader>
                     <CardContent className="p-0">
                         {loading ? (
-                            <div className="p-7 space-y-3">
+                            <div className="space-y-3 p-7">
                                 {Array.from({ length: 3 }).map((_, i) => (
-                                    <Skeleton key={i} className="h-14 w-full rounded-xl" />
+                                    <Skeleton key={i} className="w-full h-14 rounded-xl" />
                                 ))}
                             </div>
                         ) : cards.length === 0 ? (
-                            <div className="py-20 flex flex-col items-center gap-4 text-muted-foreground">
-                                <CreditCard className="h-12 w-12 opacity-20" />
+                            <div className="flex flex-col items-center gap-4 py-20 text-muted-foreground">
+                                <CreditCard className="w-12 h-12 opacity-20" />
                                 <p className="text-sm font-medium">No cards found</p>
                                 <Button variant="outline" size="sm" onClick={() => setIsOpen(true)} className="rounded-xl">
                                     Request your first card
@@ -757,8 +757,8 @@ const ActivationCards = () => {
                         ) : (
                             <Table className="min-w-[600px]">
                                 <TableHeader className="bg-muted/20">
-                                    <TableRow className="hover:bg-transparent border-none whitespace-nowrap">
-                                        {['Code', 'Amount', 'Used', 'Available', 'Status', 'Date', ''].map(h => (
+                                    <TableRow className="border-none hover:bg-transparent whitespace-nowrap">
+                                        {['Code', 'Amount', 'Used', 'Available', 'Status', 'Date', 'Action'].map(h => (
                                             <TableHead key={h} className={cn(
                                                 'font-black text-[10px] uppercase tracking-widest py-4',
                                                 h === 'Code' && 'pl-4 sm:pl-7',
@@ -766,7 +766,7 @@ const ActivationCards = () => {
                                                 h === 'Used' && 'text-center',
                                                 h === 'Available' && 'text-center',
                                                 h === 'Status' && 'text-center',
-                                                h === 'Date' && 'text-right hidden md:table-cell',
+                                                h === 'Date' && 'text-right table-cell',
                                                 h === '' && 'pr-4 sm:pr-7'
                                             )}>
                                                 {h}
@@ -778,20 +778,20 @@ const ActivationCards = () => {
                                     {cards.map((card) => (
                                         <TableRow
                                             key={card.id}
-                                            className="group hover:bg-muted/10 transition-colors border-muted/10 last:border-0 whitespace-nowrap"
+                                            className="transition-colors group hover:bg-muted/10 border-muted/10 last:border-0 whitespace-nowrap"
                                         >
                                             {/* Code */}
-                                            <TableCell className="pl-4 sm:pl-7 py-4 sm:py-5">
+                                            <TableCell className="py-4 pl-4 sm:pl-7 sm:py-5">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-mono font-bold text-xs sm:text-sm">{card.code}</span>
+                                                    <span className="font-mono text-xs font-bold sm:text-sm">{card.code}</span>
                                                     <button
                                                         onClick={() => copyCode(card.code)}
                                                         className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1.5 rounded-lg bg-muted hover:bg-muted-foreground/20"
                                                         title="Copy code"
                                                     >
                                                         {copiedCode === card.code
-                                                            ? <Check className="h-3 w-3 text-emerald-500" />
-                                                            : <Copy className="h-3 w-3 text-muted-foreground" />
+                                                            ? <Check className="w-3 h-3 text-emerald-500" />
+                                                            : <Copy className="w-3 h-3 text-muted-foreground" />
                                                         }
                                                     </button>
                                                 </div>
@@ -800,19 +800,19 @@ const ActivationCards = () => {
                                             {/* Amount */}
                                             <TableCell className="text-right">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="font-black text-xs sm:text-sm">{fmt(card.amount)}</span>
+                                                    <span className="text-xs font-black sm:text-sm">{fmt(card.amount)}</span>
                                                     <span className="text-[10px] text-muted-foreground font-medium">{fmt(card.pricePerUser)}/slot</span>
                                                 </div>
                                             </TableCell>
 
                                             {/* Used */}
                                             <TableCell className="text-center">
-                                                <span className="font-bold text-sm text-amber-600">{card.usersWithCard ? card.usersWithCard.length : (card._count?.usersWithCard || 0)}</span>
+                                                <span className="text-sm font-bold text-amber-600">{card.usersWithCard ? card.usersWithCard.length : (card._count?.usersWithCard || 0)}</span>
                                             </TableCell>
 
                                             {/* Available */}
                                             <TableCell className="text-center">
-                                                <span className="font-bold text-sm text-emerald-600">
+                                                <span className="text-sm font-bold text-emerald-600">
                                                     {card.slotsLeft !== undefined ? card.slotsLeft : (card.pricePerUser > 0 ? Math.max(0, Math.floor(card.amount / card.pricePerUser) - (card._count?.usersWithCard || 0)) : 0)}
                                                 </span>
                                             </TableCell>
@@ -828,12 +828,12 @@ const ActivationCards = () => {
                                             </TableCell>
 
                                             {/* Date */}
-                                            <TableCell className="text-right text-xs text-muted-foreground font-medium hidden md:table-cell">
+                                            <TableCell className="table-cell text-xs font-medium text-right text-muted-foreground">
                                                 {fmtDate(card.createdAt)}
                                             </TableCell>
 
                                             {/* Actions */}
-                                            <TableCell className="pr-4 sm:pr-7 text-right">
+                                            <TableCell className="pr-4 text-right sm:pr-7">
                                                 <Button 
                                                     variant="ghost" 
                                                     size="sm" 
@@ -855,8 +855,8 @@ const ActivationCards = () => {
 
                     {/* Pagination Footer */}
                     {meta && meta.totalPages > 1 && (
-                        <div className="p-6 border-t border-muted/10 bg-muted/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                        <div className="flex flex-col items-center justify-between gap-4 p-6 border-t border-muted/10 bg-muted/5 sm:flex-row">
+                            <div className="text-xs font-bold tracking-widest uppercase text-muted-foreground">
                                 Page <span className="text-primary">{meta.currentPage}</span> of {meta.totalPages}
                             </div>
                             <div className="flex items-center gap-2">
@@ -868,7 +868,7 @@ const ActivationCards = () => {
                                         window.scrollTo({ top: 0, behavior: 'smooth' })
                                     }}
                                     disabled={!meta.hasPreviousPage || isFetching}
-                                    className="rounded-xl font-bold h-9 px-4 border-muted-foreground/20"
+                                    className="px-4 font-bold rounded-xl h-9 border-muted-foreground/20"
                                 >
                                     Previous
                                 </Button>
@@ -877,7 +877,7 @@ const ActivationCards = () => {
                                         .filter(p => p === 1 || p === meta.totalPages || Math.abs(p - meta.currentPage) <= 1)
                                         .map((p, i, arr) => (
                                             <React.Fragment key={p}>
-                                                {i > 0 && arr[i - 1] !== p - 1 && <span className="text-muted-foreground text-xs mx-1">...</span>}
+                                                {i > 0 && arr[i - 1] !== p - 1 && <span className="mx-1 text-xs text-muted-foreground">...</span>}
                                                 <Button
                                                     variant={p === meta.currentPage ? 'default' : 'ghost'}
                                                     size="sm"
@@ -905,7 +905,7 @@ const ActivationCards = () => {
                                         window.scrollTo({ top: 0, behavior: 'smooth' })
                                     }}
                                     disabled={!meta.hasNextPage || isFetching}
-                                    className="rounded-xl font-bold h-9 px-4 border-muted-foreground/20"
+                                    className="px-4 font-bold rounded-xl h-9 border-muted-foreground/20"
                                 >
                                     Next
                                 </Button>
@@ -920,10 +920,10 @@ const ActivationCards = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.65 }}
-                className="text-center p-6 bg-muted/10 rounded-3xl border border-dashed border-muted-foreground/15"
+                className="p-6 text-center border border-dashed bg-muted/10 rounded-3xl border-muted-foreground/15"
             >
-                <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm font-medium">
-                    <AlertCircle className="h-4 w-4" />
+                <div className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground">
+                    <AlertCircle className="w-4 h-4" />
                     Need help with your activation cards? Contact support or check the FAQ.
                 </div>
             </motion.div>
@@ -937,27 +937,27 @@ const ActivationCards = () => {
                 }
             }}>
                 <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none shadow-2xl p-0 overflow-y-auto">
-                    <div className="bg-emerald-600 p-8 text-white relative">
+                    <div className="relative p-8 text-white bg-emerald-600">
                         <div className="absolute top-0 right-0 p-8 opacity-10">
                             <NairaIcon size={80} />
                         </div>
                         <DialogHeader>
-                            <DialogTitle className="text-2xl font-black flex items-center gap-2">
+                            <DialogTitle className="flex items-center gap-2 text-2xl font-black">
                                 <CheckCircle2 className="text-emerald-200" />
                                 Payment details
                             </DialogTitle>
-                            <DialogDescription className="text-emerald-50/70 font-medium">
+                            <DialogDescription className="font-medium text-emerald-50/70">
                                 Transfer the exact amount to the account below.
                             </DialogDescription>
                         </DialogHeader>
                     </div>
 
                     <div className="p-8 pb-12 space-y-6">
-                        <div className="text-center space-y-2 pb-2">
+                        <div className="pb-2 space-y-2 text-center">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Amount to Transfer</p>
                             <h3 className="text-4xl font-black tracking-tighter text-zinc-900">₦{paymentDetails?.amount.toLocaleString()}</h3>
                             <div className="flex items-center justify-center gap-2 mt-2">
-                                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 font-bold px-3 py-1">
+                                <Badge variant="outline" className="px-3 py-1 font-bold bg-amber-50 text-amber-700 border-amber-200">
                                     <Clock size={12} className="mr-1.5" />
                                     Expires at {paymentDetails?.expiry_date}
                                 </Badge>
@@ -966,7 +966,7 @@ const ActivationCards = () => {
 
                         <div className="space-y-4">
                             <div 
-                                className="group rounded-3xl bg-zinc-50 p-6 border-2 border-transparent hover:border-emerald-500/20 transition-all cursor-pointer relative"
+                                className="relative p-6 transition-all border-2 border-transparent cursor-pointer group rounded-3xl bg-zinc-50 hover:border-emerald-500/20"
                                 onClick={() => {
                                     if(paymentDetails?.account_number) {
                                         navigator.clipboard.writeText(paymentDetails.account_number);
@@ -974,14 +974,14 @@ const ActivationCards = () => {
                                     }
                                 }}
                             >
-                                <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-start justify-between mb-4">
                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Account Number</p>
-                                    <div className="h-8 w-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-muted-foreground group-hover:text-emerald-600 transition-colors">
+                                    <div className="flex items-center justify-center w-8 h-8 transition-colors bg-white shadow-sm rounded-xl text-muted-foreground group-hover:text-emerald-600">
                                         <Copy size={14} />
                                     </div>
                                 </div>
-                                <p className="text-3xl font-black text-zinc-900 tracking-tight">{paymentDetails?.account_number}</p>
-                                <div className="mt-3 flex items-center gap-3">
+                                <p className="text-3xl font-black tracking-tight text-zinc-900">{paymentDetails?.account_number}</p>
+                                <div className="flex items-center gap-3 mt-3">
                                     <div className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest">{paymentDetails?.bank_name}</div>
                                     <div className="text-[11px] font-bold text-zinc-500">{paymentDetails?.account_name}</div>
                                 </div>
@@ -993,9 +993,9 @@ const ActivationCards = () => {
                                 <div className="space-y-4">
                                     <Button 
                                         disabled
-                                        className="w-full h-14 rounded-2xl bg-zinc-100 text-zinc-400 font-black text-lg border-2 border-dashed border-zinc-200"
+                                        className="w-full text-lg font-black border-2 border-dashed h-14 rounded-2xl bg-zinc-100 text-zinc-400 border-zinc-200"
                                     >
-                                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+                                        <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
                                         Verifying Payment...
                                     </Button>
                                     <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest animate-pulse">
@@ -1004,8 +1004,8 @@ const ActivationCards = () => {
                                 </div>
                             ) : isTimeout ? (
                                 <div className="space-y-4">
-                                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 space-y-2">
-                                        <p className="text-xs font-bold text-amber-800 flex items-center gap-2">
+                                    <div className="p-4 space-y-2 border rounded-2xl bg-amber-50 border-amber-100">
+                                        <p className="flex items-center gap-2 text-xs font-bold text-amber-800">
                                             <AlertCircle size={14} />
                                             Payment is being processed
                                         </p>
@@ -1014,7 +1014,7 @@ const ActivationCards = () => {
                                         </p>
                                     </div>
                                     <Button 
-                                        className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                        className="w-full text-lg font-black text-white transition-all shadow-xl h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 shadow-zinc-200 active:scale-95"
                                         onClick={() => setIsPaymentModalOpen(false)}
                                     >
                                         Close Window
@@ -1022,7 +1022,7 @@ const ActivationCards = () => {
                                 </div>
                             ) : (
                                 <Button 
-                                    className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black text-lg shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                    className="w-full text-lg font-black text-white transition-all shadow-xl h-14 rounded-2xl bg-zinc-900 hover:bg-zinc-800 shadow-zinc-200 active:scale-95"
                                     onClick={handleVerifyPayment}
                                 >
                                     I Have Made the Payment
@@ -1045,20 +1045,20 @@ const ActivationCards = () => {
 
                     <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
                         <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div className="rounded-2xl bg-muted/40 p-4">
-                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Total Amount</p>
-                                <p className="font-bold text-lg">{fmt(selectedCard?.amount)}</p>
+                            <div className="p-4 rounded-2xl bg-muted/40">
+                                <p className="mb-1 text-xs font-black tracking-widest uppercase text-muted-foreground">Total Amount</p>
+                                <p className="text-lg font-bold">{fmt(selectedCard?.amount)}</p>
                             </div>
-                            <div className="rounded-2xl bg-muted/40 p-4">
-                                <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Amount Left</p>
-                                <p className="font-bold text-lg text-emerald-600">{fmt(selectedCard?.amountLeft)}</p>
+                            <div className="p-4 rounded-2xl bg-muted/40">
+                                <p className="mb-1 text-xs font-black tracking-widest uppercase text-muted-foreground">Amount Left</p>
+                                <p className="text-lg font-bold text-emerald-600">{fmt(selectedCard?.amountLeft)}</p>
                             </div>
                         </div>
 
                         {selectedCard?.usersWithCard && selectedCard.usersWithCard.length > 0 ? (
                             <div className="space-y-3">
                                 {selectedCard.usersWithCard.map(u => (
-                                    <div key={u.id} className="flex items-center justify-between p-4 rounded-2xl border border-muted/20 bg-muted/5">
+                                    <div key={u.id} className="flex items-center justify-between p-4 border rounded-2xl border-muted/20 bg-muted/5">
                                         <div>
                                             <p className="font-bold">{u.name}</p>
                                             <p className="text-xs text-muted-foreground">@{u.username || 'unknown'}</p>
@@ -1069,7 +1069,7 @@ const ActivationCards = () => {
                                             )}
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">Amount Used</p>
+                                            <p className="mb-1 text-xs font-black tracking-widest uppercase text-muted-foreground">Amount Used</p>
                                             <p className="font-black text-primary">{fmt(u.amountUsed)}</p>
                                         </div>
                                     </div>
@@ -1082,7 +1082,7 @@ const ActivationCards = () => {
                         )}
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" className="rounded-xl w-full" onClick={() => setIsUsersModalOpen(false)}>
+                        <Button variant="outline" className="w-full rounded-xl" onClick={() => setIsUsersModalOpen(false)}>
                             Close
                         </Button>
                     </DialogFooter>

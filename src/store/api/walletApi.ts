@@ -119,14 +119,28 @@ export const walletApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Wallet'],
         }),
+        getWalletHistory: builder.query<AppResponse<PaginatedResult<{
+            id: string;
+            action: string;
+            oldValues: { amount?: number; type?: string } | null;
+            newValues: { amount?: number; type?: string } | null;
+            endpoint: string | null;
+            createdAt: string;
+        }>>, { page?: number; limit?: number }>({
+            query: ({ page = 1, limit = 10 }) => ({
+                url: 'wallet/history',
+                params: { page, limit },
+            }),
+            providesTags: ['Wallet'],
+        }),
     }),
 });
 
-export const { 
-    useGetWalletsQuery, 
-    useGetTransfersQuery, 
-    useTransferMutation, 
-    useGetGkwthPricesQuery, 
+export const {
+    useGetWalletsQuery,
+    useGetTransfersQuery,
+    useTransferMutation,
+    useGetGkwthPricesQuery,
     usePurchaseGkwthMutation,
     useRequestAssetLoanMutation,
     useGetAssetLoansQuery,
@@ -137,5 +151,6 @@ export const {
     useInitiateIndirectGkwthFundingMutation,
     useVerifyWardSlotPurchaseMutation,
     useGetEarningConversionInfoQuery,
-    useConvertCustomerEarningsMutation
+    useConvertCustomerEarningsMutation,
+    useGetWalletHistoryQuery,
 } = walletApi;

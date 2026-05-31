@@ -20,6 +20,7 @@ import { useGetUserQuery } from '@/store/api/userApi';
 import { useLogout } from '@/hooks/useLogout';
 import { ROLES } from '@/types';
 import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
+import PublicNoticeBanner from './PublicNoticeBanner';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -204,6 +205,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             <Topbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+            <PublicNoticeBanner />
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
 

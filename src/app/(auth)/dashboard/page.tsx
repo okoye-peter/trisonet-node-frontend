@@ -13,9 +13,19 @@ import {
     ExternalLink,
     ChevronRight,
     Award,
+    History,
+    ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
@@ -39,7 +49,7 @@ import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useGetGkwthPricesQuery } from '@/store/api/walletApi';
+import { useGetGkwthPricesQuery, useGetWalletHistoryQuery } from '@/store/api/walletApi';
 
 
 const partnerColumns: ColumnDef<Partner>[] = [
@@ -177,6 +187,8 @@ export default function DashboardPage() {
 
     const [isPimModalOpen, setIsPimModalOpen] = useState(false);
     const [isBuyPimModalOpen, setIsBuyPimModalOpen] = useState(false);
+    const [isWalletHistoryOpen, setIsWalletHistoryOpen] = useState(false);
+    const [walletHistoryPage, setWalletHistoryPage] = useState(1);
 
     const { refetch: refetchUser } = useGetUserQuery();
     const { data: notificationResponse } = useGetNotificationsQuery({ limit: 5 });
@@ -208,6 +220,11 @@ export default function DashboardPage() {
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const gkwthSalePrice = Number(pricesResponse?.data?.gkwthSalePrice) || 0;
     const gkwthPurchasePrice = Number(pricesResponse?.data?.gkwthPurchasePrice) || 0;
+
+    const { data: walletHistoryResponse, isFetching: isWalletHistoryFetching } = useGetWalletHistoryQuery(
+        { page: walletHistoryPage, limit: 10 },
+        { skip: !isWalletHistoryOpen }
+    );
 
     const stats = useMemo(() => {
         const capitalAssetAmount = dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'indirect')?.amount ?? 0.00;
@@ -361,7 +378,7 @@ export default function DashboardPage() {
                             </div>
                             
                             {stat.label === 'Capital Asset' && (
-                                <Button 
+                                <Button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setIsPimModalOpen(true);
@@ -371,6 +388,21 @@ export default function DashboardPage() {
                                 >
                                     View PIM
                                     <ExternalLink size={14} className="transition-transform group-hover/pim:translate-x-1" />
+                                </Button>
+                            )}
+
+                            {stat.label === 'Wallet' && (
+                                <Button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setWalletHistoryPage(1);
+                                        setIsWalletHistoryOpen(true);
+                                    }}
+                                    variant="ghost"
+                                    className="mt-4 h-9 px-4 rounded-xl bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 transition-all w-full flex items-center justify-between group/wh"
+                                >
+                                    View History
+                                    <History size={14} className="transition-transform group-hover/wh:rotate-12" />
                                 </Button>
                             )}
 
@@ -576,10 +608,108 @@ export default function DashboardPage() {
                 </div>
             </motion.div>
 
-            <PIMCardModal 
-                isOpen={isPimModalOpen} 
-                onClose={() => setIsPimModalOpen(false)} 
-                user={user} 
+            {/* Wallet History Dialog */}
+            <Dialog open={isWalletHistoryOpen} onOpenChange={setIsWalletHistoryOpen}>
+                <DialogContent className="sm:max-w-[560px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
+                    <div className="p-6 bg-emerald-600 text-white">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-xl font-black">
+                                <History size={20} className="text-emerald-200" />
+                                Wallet History
+                            </DialogTitle>
+                            <DialogDescription className="text-emerald-100/70 font-medium mt-1">
+                                Balance changes for your wallet.
+                            </DialogDescription>
+                        </DialogHeader>
+                    </div>
+
+                    <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
+                        {isWalletHistoryFetching ? (
+                            <div className="space-y-3">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <div key={i} className="h-16 rounded-2xl bg-zinc-100 animate-pulse" />
+                                ))}
+                            </div>
+                        ) : (walletHistoryResponse?.data?.data?.length ?? 0) === 0 ? (
+                            <div className="flex flex-col items-center gap-3 py-16 text-zinc-400">
+                                <History size={36} strokeWidth={1.5} className="opacity-30" />
+                                <p className="text-sm font-medium">No wallet history found.</p>
+                            </div>
+                        ) : (
+                            walletHistoryResponse?.data?.data?.map((log) => {
+                                const oldBal = (log.oldValues as any)?.amount ?? null;
+                                const newBal = (log.newValues as any)?.amount ?? null;
+                                const diff = oldBal != null && newBal != null ? newBal - oldBal : null;
+                                const isCredit = diff != null && diff > 0;
+                                const date = new Date(log.createdAt).toLocaleDateString('en-NG', {
+                                    day: '2-digit', month: 'short', year: 'numeric',
+                                    hour: '2-digit', minute: '2-digit',
+                                });
+                                return (
+                                    <div key={log.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">
+                                                <span>{date}</span>
+                                                {diff != null && (
+                                                    <Badge className={cn(
+                                                        'rounded-full px-2 py-0 text-[10px] font-black border-none',
+                                                        isCredit
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-red-100 text-red-700'
+                                                    )}>
+                                                        {isCredit ? '+' : ''}{diff >= 0 ? '' : '-'}₦{Math.abs(diff).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm font-bold text-zinc-700">
+                                                <span>₦{oldBal != null ? Number(oldBal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}</span>
+                                                <ArrowRight size={14} className="text-zinc-400 shrink-0" />
+                                                <span className={cn(isCredit ? 'text-emerald-600' : 'text-red-600')}>
+                                                    ₦{newBal != null ? Number(newBal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    {/* Pagination */}
+                    {(walletHistoryResponse?.data?.meta?.totalPages ?? 0) > 1 && (
+                        <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-100">
+                            <p className="text-xs font-bold text-zinc-400">
+                                Page {walletHistoryResponse?.data?.meta?.currentPage} of {walletHistoryResponse?.data?.meta?.totalPages}
+                            </p>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-xl font-bold text-xs h-8"
+                                    disabled={!walletHistoryResponse?.data?.meta?.hasPreviousPage || isWalletHistoryFetching}
+                                    onClick={() => setWalletHistoryPage(p => p - 1)}
+                                >
+                                    Previous
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="rounded-xl font-bold text-xs h-8"
+                                    disabled={!walletHistoryResponse?.data?.meta?.hasNextPage || isWalletHistoryFetching}
+                                    onClick={() => setWalletHistoryPage(p => p + 1)}
+                                >
+                                    Next
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <PIMCardModal
+                isOpen={isPimModalOpen}
+                onClose={() => setIsPimModalOpen(false)}
+                user={user}
                 capitalAssetValue={(stats.find(s => s.label === 'Capital Asset')?.value ?? 0) >= 1 ? 1 : 0}
             />
 
