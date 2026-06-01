@@ -21,6 +21,7 @@ import { useLogout } from '@/hooks/useLogout';
 import { ROLES } from '@/types';
 import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
 import PublicNoticeBanner from './PublicNoticeBanner';
+import BlockedAccountModal from './BlockedAccountModal';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -287,6 +288,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 isOpen={isLevel1StatusModalOpen}
                 onClose={() => setIsLevel1StatusModalOpen(false)}
                 totalSales={dashboardStats?.migrationSales ?? 0}
+            />
+
+            <BlockedAccountModal
+                isOpen={!!user?.blockedAt}
+                onSuccess={() => refetchUser()}
+                onLogout={logout}
             />
         </div>
     );

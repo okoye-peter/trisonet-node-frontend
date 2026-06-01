@@ -84,6 +84,7 @@ export interface User {
     transferId: string | null;
     pimId: string | null;
     unblockingCode: string | null;
+    blockedAt: string | null;
     createdAt: string;
     updatedAt: string;
     level: number;

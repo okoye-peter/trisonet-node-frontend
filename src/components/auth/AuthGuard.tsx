@@ -29,7 +29,19 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             dispatch(setUser(user));
 
             const isPatron = user.role === ROLES.PATRON;
+            const isCustomer = user.role === ROLES.CUSTOMER;
             const isPaymentPage = pathname === '/patron/payment';
+            const isDashboard = pathname === '/dashboard';
+            const isAuthPage = pathname?.startsWith('/login') ||
+                             pathname?.startsWith('/register') ||
+                             pathname?.startsWith('/forgot-password');
+
+            // Blocked customers must stay on /dashboard — the BlockedAccountModal
+            // takes over from there and prevents all other interaction.
+            if (isAuthenticated && isCustomer && user.blockedAt && !isDashboard) {
+                router.push('/dashboard');
+                return;
+            }
 
             // Block unactivated patrons from accessing any dashboard page
             if (isAuthenticated && isPatron && (!user.patronId && !user.patronActivated) && !isPaymentPage) {
@@ -39,11 +51,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
             // Mandatory KYC Verification Check (Only for Customers)
             const hasVerifiedLevel2 = user.hasVerifiedLevel2;
-            const isCustomer = user.role === ROLES.CUSTOMER;
-            const isDashboard = pathname === '/dashboard';
-            const isAuthPage = pathname?.startsWith('/login') || 
-                             pathname?.startsWith('/register') || 
-                             pathname?.startsWith('/forgot-password');
 
             if (isAuthenticated && isCustomer && user.level >= 2 && !hasVerifiedLevel2 && !isDashboard && !isAuthPage) {
                 router.push('/dashboard');

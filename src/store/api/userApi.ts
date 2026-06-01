@@ -121,6 +121,30 @@ export const userApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+        generatePukVirtualAccount: builder.mutation<AppResponse<{
+            status: boolean;
+            account_detail: {
+                account_name: string;
+                bank_name: string;
+                account_number: string;
+                expires_at: string;
+                amount: number;
+                reference: string;
+            };
+        }>, void>({
+            query: () => ({
+                url: 'payment/puk/generate-virtual-account',
+                method: 'POST',
+            }),
+        }),
+        unblockWithPuk: builder.mutation<AppResponse<{ status: boolean; message: string }>, { puk: string }>({
+            query: (body) => ({
+                url: 'payment/puk/unblock-with-puk',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['User'],
+        }),
     }),
 });
 
@@ -144,5 +168,7 @@ export const {
     useActivateByCodeMutation,
     useSendEmailVerificationOtpMutation,
     useVerifyEmailOtpMutation,
+    useGeneratePukVirtualAccountMutation,
+    useUnblockWithPukMutation,
 } = userApi;
 
