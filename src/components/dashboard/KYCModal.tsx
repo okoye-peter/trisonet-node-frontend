@@ -34,6 +34,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [isCameraMode, setIsCameraMode] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [verificationMethod, setVerificationMethod] = useState<'bvn' | 'nin'>('bvn');
+    const [globalVerificationMethod, setGlobalVerificationMethod] = useState<'face' | 'passport'>('face');
     const isNigerian = user?.country?.toLowerCase() === 'nigeria';
     
     const [mounted, setMounted] = useState(false);
@@ -100,9 +101,14 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (isNigerian && bvn.length !== 11) {
             toast.error('Invalid BVN. Must be 11 digits.');
+            return;
+        }
+
+        if (!isNigerian && globalVerificationMethod === 'passport' && bvn.trim().length < 5) {
+            toast.error('Please provide a valid passport number.');
             return;
         }
 
@@ -112,21 +118,24 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
         }
 
         setIsSubmitting(true);
-        
+
         try {
             const formData = new FormData();
             formData.append('name', name);
-            
+
             let endpoint = '/kyc/face-verify';
-            
+
             if (isNigerian) {
                 if (verificationMethod === 'bvn') {
                     formData.append('bvn', bvn);
                     endpoint = '/kyc/verify';
                 } else {
-                    formData.append('nin', bvn); // Using the same 'bvn' state variable for NIN input
+                    formData.append('nin', bvn);
                     endpoint = '/kyc/nin-verify';
                 }
+            } else if (globalVerificationMethod === 'passport') {
+                formData.append('passportNumber', bvn.trim());
+                endpoint = '/kyc/passport-verify';
             }
             
             formData.append('image', passportImage);
@@ -183,7 +192,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                             isMandatory ? "cursor-default" : "cursor-pointer"
                         )}
                     />
-                    <div className="fixed inset-0 z-100020 flex items-center justify-center p-4 pointer-events-none">
+                    <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none z-100020">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -195,20 +204,20 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                 {!isMandatory && (
                                     <button
                                         onClick={handleClose}
-                                        className="absolute right-6 top-6 rounded-2xl bg-zinc-50 p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-all active:scale-95"
+                                        className="absolute p-2 transition-all right-6 top-6 rounded-2xl bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 active:scale-95"
                                     >
                                         <X size={20} />
                                     </button>
                                 )}
                                 <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+                                    <div className="flex items-center justify-center text-indigo-600 shadow-inner h-14 w-14 rounded-2xl bg-indigo-50">
                                         <Fingerprint size={28} strokeWidth={2.5} />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black tracking-tight text-zinc-900 leading-tight">
-                                            {isNigerian ? "Identity Verification" : "Facial Verification"}
+                                        <h3 className="text-2xl font-black leading-tight tracking-tight text-zinc-900">
+                                            Identity Verification
                                         </h3>
-                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mt-1">
+                                        <p className="mt-1 text-sm font-bold tracking-widest uppercase text-zinc-400">
                                             {isNigerian ? "KYC Level 1" : "Global KYC"}
                                         </p>
                                     </div>
@@ -218,11 +227,11 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                             <form onSubmit={handleSubmit} className="p-8 pt-2 space-y-7">
                                 {/* Name Section */}
                                 <div className="space-y-3">
-                                    <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
+                                    <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
                                         Full Name (Must match your ID)
                                     </label>
                                     <div className="relative group">
-                                        <div className="absolute inset-y-0 left-4 flex items-center text-zinc-400 group-hover:text-indigo-600 transition-colors">
+                                        <div className="absolute inset-y-0 flex items-center transition-colors left-4 text-zinc-400 group-hover:text-indigo-600">
                                             <User size={18} />
                                         </div>
                                         <Input
@@ -230,19 +239,85 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                             placeholder="Enter full name as on ID"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
-                                            className="h-14 pl-12 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 transition-all text-lg font-bold tracking-tight placeholder:tracking-normal placeholder:font-medium"
+                                            className="pl-12 text-lg font-bold tracking-tight transition-all h-14 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 placeholder:tracking-normal placeholder:font-medium"
                                             required
                                         />
                                     </div>
                                 </div>
 
+                                {/* Verification Method Selector (non-Nigeria) */}
+                                {!isNigerian && (
+                                    <div className="space-y-3">
+                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
+                                            Verification Method
+                                        </label>
+                                        <div className="flex p-1 border bg-zinc-100/80 rounded-2xl border-zinc-200/50">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setGlobalVerificationMethod('face');
+                                                    setBvn('');
+                                                }}
+                                                className={cn(
+                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                    globalVerificationMethod === 'face'
+                                                        ? "bg-white text-indigo-600 shadow-sm"
+                                                        : "text-zinc-500 hover:text-zinc-700"
+                                                )}
+                                            >
+                                                Face Only
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setGlobalVerificationMethod('passport');
+                                                    setBvn('');
+                                                }}
+                                                className={cn(
+                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                    globalVerificationMethod === 'passport'
+                                                        ? "bg-white text-indigo-600 shadow-sm"
+                                                        : "text-zinc-500 hover:text-zinc-700"
+                                                )}
+                                            >
+                                                Passport
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Passport Number Input (non-Nigeria, passport method) */}
+                                {!isNigerian && globalVerificationMethod === 'passport' && (
+                                    <div className="space-y-3">
+                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
+                                            International Passport Number
+                                        </label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 flex items-center transition-colors left-4 text-zinc-400 group-hover:text-indigo-600">
+                                                <AlertCircle size={18} />
+                                            </div>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter passport number"
+                                                value={bvn}
+                                                onChange={(e) => setBvn(e.target.value.toUpperCase())}
+                                                className="pl-12 text-lg font-bold tracking-widest transition-all h-14 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 placeholder:tracking-normal placeholder:font-medium"
+                                                required
+                                            />
+                                        </div>
+                                        <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
+                                            * Your passport number is required for identity verification and anti-fraud measures.
+                                        </p>
+                                    </div>
+                                )}
+
                                  {/* Verification Method Selector (Nigeria only) */}
                                 {isNigerian && (
                                     <div className="space-y-3">
-                                        <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
+                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
                                             Verification Method
                                         </label>
-                                        <div className="flex bg-zinc-100/80 p-1 rounded-2xl border border-zinc-200/50">
+                                        <div className="flex p-1 border bg-zinc-100/80 rounded-2xl border-zinc-200/50">
                                             <button 
                                                 type="button"
                                                 onClick={() => {
@@ -280,11 +355,11 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                 {/* ID Number Section (Nigeria only) */}
                                 {isNigerian && (
                                     <div className="space-y-3">
-                                        <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">
+                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
                                             {verificationMethod === 'bvn' ? 'Bank Verification Number (BVN)' : 'National Identification Number (NIN)'}
                                         </label>
                                         <div className="relative group">
-                                            <div className="absolute inset-y-0 left-4 flex items-center text-zinc-400 group-hover:text-indigo-600 transition-colors">
+                                            <div className="absolute inset-y-0 flex items-center transition-colors left-4 text-zinc-400 group-hover:text-indigo-600">
                                                 <AlertCircle size={18} />
                                             </div>
                                             <Input
@@ -293,7 +368,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                                 placeholder={verificationMethod === 'bvn' ? "Enter 11-digit BVN" : "Enter 11-digit NIN"}
                                                 value={bvn}
                                                 onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
-                                                className="h-14 pl-12 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 transition-all text-lg font-bold tracking-widest placeholder:tracking-normal placeholder:font-medium"
+                                                className="pl-12 text-lg font-bold tracking-widest transition-all h-14 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 placeholder:tracking-normal placeholder:font-medium"
                                                 required
                                             />
                                         </div>
@@ -306,7 +381,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                 {/* ID Upload Section */}
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between ml-1">
-                                        <label className="text-xs font-black text-zinc-500 uppercase tracking-widest leading-none">
+                                        <label className="text-xs font-black leading-none tracking-widest uppercase text-zinc-500">
                                             Passport Photograph
                                         </label>
                                         <div className="flex bg-zinc-100/80 p-0.5 rounded-xl border border-zinc-200/50">
@@ -376,32 +451,32 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                                         e.stopPropagation();
                                                         handleRetake();
                                                     }}
-                                                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                    className="absolute inset-0 flex items-center justify-center transition-opacity opacity-0 bg-black/40 group-hover:opacity-100"
                                                 >
-                                                    <div className="p-4 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center gap-2 font-bold text-xs">
+                                                    <div className="flex items-center gap-2 p-4 text-xs font-bold text-white border rounded-2xl bg-white/20 backdrop-blur-md border-white/30">
                                                         <RotateCcw size={18} /> Retake
                                                     </div>
                                                 </div>
-                                                <div className="absolute bottom-4 right-4 h-10 w-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
+                                                <div className="absolute flex items-center justify-center w-10 h-10 text-white bg-indigo-600 shadow-xl bottom-4 right-4 rounded-2xl">
                                                     <Check size={18} strokeWidth={3} />
                                                 </div>
                                             </div>
                                         ) : isCameraMode ? (
-                                            <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+                                            <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
                                                 <Webcam
                                                     audio={false}
                                                     ref={webcamRef}
                                                     screenshotFormat="image/jpeg"
                                                     videoConstraints={videoConstraints}
                                                     onUserMediaError={() => setCameraError("Cannot access camera")}
-                                                    className="h-full w-full object-cover"
+                                                    className="object-cover w-full h-full"
                                                 />
                                                 {cameraError ? (
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                                                        <div className="h-12 w-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-4">
+                                                        <div className="flex items-center justify-center w-12 h-12 mb-4 text-red-500 rounded-2xl bg-red-500/10">
                                                             <Camera size={24} />
                                                         </div>
-                                                        <p className="text-xs font-bold text-white uppercase tracking-widest">{cameraError}</p>
+                                                        <p className="text-xs font-bold tracking-widest text-white uppercase">{cameraError}</p>
                                                         <button 
                                                             type="button"
                                                             onClick={handleRetake}
@@ -417,15 +492,15 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                                             e.stopPropagation();
                                                             handleCapture();
                                                         }}
-                                                        className="absolute bottom-6 left-1/2 -translate-x-1/2 h-16 w-16 rounded-full bg-white/20 backdrop-blur-md border-4 border-white flex items-center justify-center group/btn active:scale-90 transition-all shadow-2xl"
+                                                        className="absolute flex items-center justify-center w-16 h-16 transition-all -translate-x-1/2 border-4 border-white rounded-full shadow-2xl bottom-6 left-1/2 bg-white/20 backdrop-blur-md group/btn active:scale-90"
                                                     >
-                                                        <div className="h-10 w-10 rounded-full bg-white transition-all group-hover/btn:scale-90 shadow-inner" />
+                                                        <div className="w-10 h-10 transition-all bg-white rounded-full shadow-inner group-hover/btn:scale-90" />
                                                     </button>
                                                 )}
                                             </div>
                                         ) : (
                                             <>
-                                                <div className="h-16 w-16 rounded-3xl bg-white border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:text-indigo-600 shadow-sm transition-transform group-hover:scale-110">
+                                                <div className="flex items-center justify-center w-16 h-16 transition-transform bg-white border shadow-sm rounded-3xl border-zinc-100 text-zinc-400 group-hover:text-indigo-600 group-hover:scale-110">
                                                     <Upload size={24} />
                                                 </div>
                                                 <div className="mt-4 text-center">
@@ -438,7 +513,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                 </div>
 
                                 {/* Footer / Actions */}
-                                <div className="pt-4 flex gap-4">
+                                <div className="flex gap-4 pt-4">
                                     
                                         <Button
                                             type="button"
@@ -452,12 +527,12 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting || (isNigerian && bvn.length !== 11) || !passportImage}
+                                        disabled={isSubmitting || (isNigerian && bvn.length !== 11) || (!isNigerian && globalVerificationMethod === 'passport' && bvn.trim().length < 5) || !passportImage}
                                         className="flex-2 h-16 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
                                     >
                                         {isSubmitting ? (
                                             <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...
                                             </>
                                         ) : (
                                             'Verify Identity'
