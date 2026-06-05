@@ -31,6 +31,7 @@ import { useGetUserBankQuery } from '@/store/api/bankApi';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Wallet } from '@/types';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 const withdrawalSchema = z.object({
     amount: z.number().min(0.01, 'Amount must be greater than 0'),
@@ -47,6 +48,7 @@ interface WithdrawalModalProps {
 
 export function WithdrawalModal({ open, onOpenChange, earningWallet }: WithdrawalModalProps) {
     const [isSuccess, setIsSuccess] = useState(false);
+    const currency = useCurrencySymbol();
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: bankResponse, isLoading: isLoadingBank } = useGetUserBankQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
@@ -197,7 +199,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1"
                                                 >
-                                                    ≈ ₦{(form.watch('amount') * purchasePrice).toLocaleString()}
+                                                    ≈ {currency}{(form.watch('amount') * purchasePrice).toLocaleString()}
                                                 </motion.p>
                                             )}
                                         </div>
@@ -270,7 +272,7 @@ export function WithdrawalModal({ open, onOpenChange, earningWallet }: Withdrawa
                                         {form.getValues('amount').toLocaleString()} <span className="text-sm font-bold text-zinc-400">Assets</span>
                                     </h3>
                                     <p className="text-xl font-black text-emerald-600">
-                                        ≈ ₦{(form.getValues('amount') * purchasePrice).toLocaleString()}
+                                        ≈ {currency}{(form.getValues('amount') * purchasePrice).toLocaleString()}
                                     </p>
                                 </div>
 

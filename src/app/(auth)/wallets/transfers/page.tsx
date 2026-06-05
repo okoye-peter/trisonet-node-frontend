@@ -19,9 +19,11 @@ import { useAppSelector } from '@/store/hooks';
 import { useState } from 'react';
 import { TransferModal } from '@/components/wallets/TransferModal';
 import { Button } from '@/components/ui/button';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 export default function WalletTransfersPage() {
     const user = useAppSelector((state) => state.auth.user);
+    const currency = useCurrencySymbol();
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
@@ -83,7 +85,7 @@ export default function WalletTransfersPage() {
                         "font-black text-sm min-w-[100px]",
                         isOutbound ? "text-rose-600" : "text-emerald-600"
                     )}>
-                        {isOutbound ? '-' : '+'}₦{row.original.amount.toLocaleString()}
+                        {isOutbound ? '-' : '+'}{currency}{row.original.amount.toLocaleString()}
                     </div>
                 );
             }

@@ -42,6 +42,7 @@ import { RootState } from '@/store';
 import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 interface PagaOptions {
     amount: number;
@@ -66,9 +67,10 @@ declare global {
 
 type TabType = 'overview' | 'fund' | 'withdraw';
 
-const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
-    <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
-);
+const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => {
+    const currency = useCurrencySymbol();
+    return <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>{currency}</span>;
+};
 
 const walletConfig: Record<string, { label: string; icon: React.ElementType; color: string; bg: string; border: string; gradient: string }> = {
     direct: { 
@@ -85,6 +87,7 @@ export default function WalletsPage() {
     const router = useRouter();
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
+    const currency = useCurrencySymbol();
     const { data: userResponse } = useGetUserQuery();
     const profile = userResponse?.data?.user || user;
 
@@ -131,7 +134,7 @@ export default function WalletsPage() {
 
     const handleFundWallet = async () => {
         if (!fundAmount || Number(fundAmount) < 500) {
-            toast.error('Minimum funding amount is ₦500');
+            toast.error(`Minimum funding amount is ${currency}500`);
             return;
         }
 
@@ -372,7 +375,7 @@ export default function WalletsPage() {
                         <span className="text-xs font-bold tracking-widest uppercase text-zinc-400">Total Wallet Balance</span>
                         <div className="flex flex-col items-center gap-2">
                             <div className="flex items-center gap-4">
-                                <span className="text-4xl font-black md:text-6xl text-zinc-500">₦</span>
+                                <span className="text-4xl font-black md:text-6xl text-zinc-500">{currency}</span>
                                 <h1 className="text-6xl font-black tracking-tighter md:text-8xl">
                                     {directWallet?.amount.toLocaleString() ?? '0.00'}
                                 </h1>
@@ -465,7 +468,7 @@ export default function WalletsPage() {
                                                 </div>
                                                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-3">{walletConfig.direct.label}</p>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className="text-2xl font-bold text-zinc-400">₦</span>
+                                                    <span className="text-2xl font-bold text-zinc-400">{currency}</span>
                                                     <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{directWallet.amount.toLocaleString()}</h3>
                                                 </div>
                                             </CardContent>
@@ -517,7 +520,7 @@ export default function WalletsPage() {
                                         <div className="space-y-2">
                                             <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Deposit Amount</Label>
                                             <div className="relative">
-                                                <div className="absolute text-2xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">₦</div>
+                                                <div className="absolute text-2xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">{currency}</div>
                                                 <Input 
                                                     value={fundAmount}
                                                     onChange={(e) => setFundAmount(e.target.value)}
@@ -674,7 +677,7 @@ export default function WalletsPage() {
                                             <div className="space-y-2">
                                                 <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Amount to Withdraw</Label>
                                                 <div className="relative">
-                                                    <div className="absolute text-xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">₦</div>
+                                                    <div className="absolute text-xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">{currency}</div>
                                                     <Input 
                                                         value={withdrawData.amount}
                                                         onChange={(e) => {
@@ -778,7 +781,7 @@ export default function WalletsPage() {
                         <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 text-center space-y-3 shadow-sm">
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Amount to Transfer</p>
                             <div className="flex items-center justify-center gap-3">
-                                <span className="text-3xl font-black text-indigo-600 md:text-4xl">₦</span>
+                                <span className="text-3xl font-black text-indigo-600 md:text-4xl">{currency}</span>
                                 <h1 className="text-4xl font-black tracking-tighter md:text-6xl text-zinc-900">
                                     {fundingData?.amount?.toLocaleString()}
                                 </h1>
@@ -906,7 +909,7 @@ export default function WalletsPage() {
                     <div className="p-6 space-y-6 text-center md:p-8 md:pb-12">
                         <div className="space-y-1">
                             <p className="text-xs font-black tracking-widest uppercase text-zinc-400">Amount Credited</p>
-                            <p className="text-3xl font-black tracking-tighter md:text-4xl text-zinc-900">₦{fundingData?.amount?.toLocaleString()}</p>
+                            <p className="text-3xl font-black tracking-tighter md:text-4xl text-zinc-900">{currency}{fundingData?.amount?.toLocaleString()}</p>
                         </div>
                         <Button 
                             onClick={() => {

@@ -2,6 +2,7 @@
 
 import Marquee from 'react-fast-marquee';
 import { Sparkles } from 'lucide-react';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 interface FeeTransaction {
     name: string;
@@ -13,6 +14,7 @@ interface SchoolFeesMarqueeProps {
 }
 
 export default function SchoolFeesMarquee({ transactions = [] }: SchoolFeesMarqueeProps) {
+    const currency = useCurrencySymbol();
     if (transactions.length === 0) return null;
 
     return (
@@ -42,7 +44,7 @@ export default function SchoolFeesMarquee({ transactions = [] }: SchoolFeesMarqu
                                 <span className="text-xs font-bold text-white">{tx.name}</span>
                                 <div className="w-1 h-1 rounded-full bg-zinc-600" />
                                 <span className="text-xs font-black text-emerald-400">
-                                    ₦{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {currency}{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </div>
                         ))}

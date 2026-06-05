@@ -32,6 +32,7 @@ import { AddMemberModal } from '@/components/dashboard/patron/AddMemberModal';
 import { CreditMemberModal } from '@/components/dashboard/patron/CreditMemberModal';
 import { CreateOrganizationForm } from '@/components/dashboard/patron/CreateOrganizationForm';
 import { FundOrganizationModal } from '@/components/dashboard/patron/FundOrganizationModal';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 
 const containerVariants: Variants = {
@@ -102,6 +103,7 @@ const PLANS = [
 ];
 
 export default function PatronOrganizationPage() {
+    const currency = useCurrencySymbol();
     const [page, setPage] = useState(1);
     const [activeTab, setActiveTab] = useState<'copatrons' | 'transactions'>('copatrons');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -117,7 +119,7 @@ export default function PatronOrganizationPage() {
     const stats = useMemo(() => [
         {
             label: 'Organization Wallet',
-            value: `₦${(meta?.walletBalance || 0).toLocaleString()}`,
+            value: `${currency}${(meta?.walletBalance || 0).toLocaleString()}`,
             icon: Wallet,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50'
@@ -339,7 +341,7 @@ export default function PatronOrganizationPage() {
                                                     </div>
                                                 </div>
                                                 <p className={cn("text-sm font-black tracking-tighter", tx.type === 'credit' ? "text-emerald-600" : "text-rose-600")}>
-                                                    {tx.type === 'credit' ? '+' : '-'}₦{tx.amount.toLocaleString()}
+                                                    {tx.type === 'credit' ? '+' : '-'}{currency}{tx.amount.toLocaleString()}
                                                 </p>
                                             </div>
                                         ))

@@ -44,6 +44,7 @@ import LoadingScreen from '@/components/LoadingScreen'
 import { useGetPimCardsQuery, useGetPimCardsSummaryQuery, usePurchasePimCardMutation, useVerifyCardPurchasePaymentMutation, useInitiateCardPurchasePaymentMutation, type PaymentAccountDetail, type PimCard } from '@/store/api/pimCardApi'
 import { useGetUserQuery } from '@/store/api/userApi'
 import { toast } from 'sonner'
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol'
 
 // ─── Paga inline checkout helpers ────────────────────────────────────────────
 declare global { interface Window { PagaCheckout: { setOptions: (o: any) => void; openCheckout: () => void } } }
@@ -67,9 +68,10 @@ async function loadPagaScript(): Promise<void> {
     if (!window.PagaCheckout) throw new Error('PagaCheckout not defined after load');
 }
 
-const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
-    <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
-)
+const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => {
+    const currency = useCurrencySymbol()
+    return <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>{currency}</span>
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -97,8 +99,8 @@ export interface PimCardsSummary {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = (n: number | undefined | null) =>
-    n == null ? '₦0.00' : `₦${n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fmt = (n: number | undefined | null, currency = '₦') =>
+    n == null ? `${currency}0.00` : `${currency}${n.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const fmtDate = (iso: string | undefined | null) =>
     iso ? new Date(iso).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
@@ -127,6 +129,7 @@ const Skeleton = ({ className }: { className?: string }) => (
 
 const CardVisual = ({ code, amount }: { code: string; amount: number }) => {
     const [copied, setCopied] = useState(false)
+    const currency = useCurrencySymbol()
 
     const copy = () => {
         navigator.clipboard.writeText(code)
@@ -159,7 +162,7 @@ const CardVisual = ({ code, amount }: { code: string; amount: number }) => {
                 {/* Amount — bottom left */}
                 <div className="absolute bottom-4 left-5">
                     <p className="text-white/50 text-[9px] font-semibold uppercase tracking-widest mb-0.5">Amount</p>
-                    <p className="text-base font-black text-white drop-shadow">{fmt(amount)}</p>
+                    <p className="text-base font-black text-white drop-shadow">{fmt(amount, currency)}</p>
                 </div>
 
                 {/* Code — bottom right */}
@@ -183,6 +186,7 @@ const CardVisual = ({ code, amount }: { code: string; amount: number }) => {
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 const ActivationCards = () => {
+    const currency = useCurrencySymbol()
     const [isMounted, setIsMounted] = useState(false)
     const [quantity, setQuantity] = useState(2)
     const [isOpen, setIsOpen] = useState(false)
@@ -492,7 +496,7 @@ const ActivationCards = () => {
                                     </Label>
                                     <div className="relative">
                                         <Input
-                                            value={loading ? 'Loading…' : fmt(effectiveBase)}
+                                            value={loading ? 'Loading…' : fmt(effectiveBase, currency)}
                                             disabled
                                             className="h-12 pr-10 text-base font-bold border-none bg-muted/40"
                                         />
@@ -518,17 +522,17 @@ const ActivationCards = () => {
                                 <div className="p-5 space-y-3 border rounded-2xl bg-linear-to-br from-primary/10 to-emerald-500/5 border-primary/15">
                                     <div className="flex items-center justify-between text-sm font-medium">
                                         <span className="overflow-hidden text-muted-foreground whitespace-nowrap text-ellipsis">Subtotal</span>
-                                        <span className="flex-shrink-0 font-bold">{fmt(subtotal)}</span>
+                                        <span className="flex-shrink-0 font-bold">{fmt(subtotal, currency)}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm font-medium">
                                         <span className="overflow-hidden text-muted-foreground whitespace-nowrap text-ellipsis">Service Charge</span>
-                                        <span className="flex-shrink-0 font-bold">{fmt(charge)}</span>
+                                        <span className="flex-shrink-0 font-bold">{fmt(charge, currency)}</span>
                                     </div>
                                     <div className="flex items-center justify-between pt-3 border-t border-primary/10">
                                         <div>
                                             <p className="text-[10px] font-black text-primary uppercase tracking-[.18em] mb-1">Total Amount</p>
                                             <p className="text-3xl font-black text-primary">
-                                                {fmt(totalAmount)}
+                                                {fmt(totalAmount, currency)}
                                             </p>
                                         </div>
                                         <div className="p-3 bg-primary/10 rounded-xl">
@@ -955,7 +959,7 @@ const ActivationCards = () => {
                     <div className="p-8 pb-12 space-y-6">
                         <div className="pb-2 space-y-2 text-center">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Amount to Transfer</p>
-                            <h3 className="text-4xl font-black tracking-tighter text-zinc-900">₦{paymentDetails?.amount.toLocaleString()}</h3>
+                            <h3 className="text-4xl font-black tracking-tighter text-zinc-900">{currency}{paymentDetails?.amount.toLocaleString()}</h3>
                             <div className="flex items-center justify-center gap-2 mt-2">
                                 <Badge variant="outline" className="px-3 py-1 font-bold bg-amber-50 text-amber-700 border-amber-200">
                                     <Clock size={12} className="mr-1.5" />

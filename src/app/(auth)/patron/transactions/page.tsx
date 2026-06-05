@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useGetPatronTransactionsQuery } from '@/store/api/patronApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import Link from 'next/link';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -47,6 +48,7 @@ const itemVariants: Variants = {
 };
 
 export default function PatronTransactionsPage() {
+    const currency = useCurrencySymbol();
     const [page, setPage] = useState(1);
     
     const { data: transactionsData, isLoading } = useGetPatronTransactionsQuery({ page, limit: 10 });
@@ -112,7 +114,7 @@ export default function PatronTransactionsPage() {
                                                     </div>
                                                     <div className="flex items-baseline gap-1 text-right">
                                                         <span className="text-lg font-black tracking-tighter text-rose-600">
-                                                            -₦{tx.amount.toLocaleString()}
+                                                            -{currency}{tx.amount.toLocaleString()}
                                                         </span>
                                                     </div>
                                                 </div>

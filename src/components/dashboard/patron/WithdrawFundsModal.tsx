@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import type { Wallet as WalletType } from "@/types";
 import { useAppSelector } from "@/store/hooks";
 import { useGetGkwthPricesQuery } from "@/store/api/walletApi";
+import { useCurrencySymbol } from "@/hooks/useCurrencySymbol";
 
 const withdrawSchema = z.object({
     wallet: z.string().min(1, "Please select a wallet"),
@@ -56,6 +57,7 @@ interface WithdrawFundsModalProps {
 
 export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFundsModalProps) {
     const { user } = useAppSelector((state) => state.auth);
+    const currency = useCurrencySymbol();
     const [initiateWithdrawal, { isLoading: isSubmitting }] = useInitiateWithdrawalMutation();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const gkwthPrice = Number(pricesResponse?.data?.gkwthPurchasePrice) || 0;
@@ -82,7 +84,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
         }
 
         if (selectedWallet.type === 'direct' && values.amount < 1000) {
-            toast.error("Minimum withdrawal from direct wallet is ₦1,000");
+            toast.error(`Minimum withdrawal from direct wallet is ${currency}1,000`);
             return;
         }
 
@@ -184,7 +186,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                                                 items={wallets
                                                     .filter(w => w.type !== 'patronage')
                                                     .map(w => ({
-                                                        label: `${w.type === 'direct' ? 'Wallet' : w.type === 'indirect' ? 'Gkwth Wallet' : 'Patronage Wallet'} (${w.type === 'direct' || w.type === 'patronage' ? '₦' : ''} ${w.amount.toLocaleString()}${w.type === 'indirect' ? ' gkwth' : ''})`,
+                                                        label: `${w.type === 'direct' ? 'Wallet' : w.type === 'indirect' ? 'Gkwth Wallet' : 'Patronage Wallet'} (${w.type === 'direct' || w.type === 'patronage' ? currency : ''} ${w.amount.toLocaleString()}${w.type === 'indirect' ? ' gkwth' : ''})`,
                                                         value: w.id?.toString() || ""
                                                     }))
                                                 }
@@ -212,7 +214,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                                                 </FormLabel>
                                                 <FormControl>
                                                     <div className="relative">
-                                                        {!isIndirect && <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-zinc-400">₦</span>}
+                                                        {!isIndirect && <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-zinc-400">{currency}</span>}
                                                         <Input 
                                                             type="number" 
                                                             step={isIndirect ? "0.01" : "1"}
@@ -228,7 +230,7 @@ export function WithdrawFundsModal({ open, onOpenChange, wallets }: WithdrawFund
                                                 </FormControl>
                                                 {isIndirect && field.value > 0 && (
                                                     <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1 mt-1">
-                                                        ≈ ₦{(field.value * gkwthPrice).toLocaleString()}
+                                                        ≈ {currency}{(field.value * gkwthPrice).toLocaleString()}
                                                     </p>
                                                 )}
                                                 <FormMessage className="text-[10px] font-bold" />

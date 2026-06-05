@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { WithdrawFundsModal } from '@/components/dashboard/patron/WithdrawFundsModal';
 import { PagaFundingModal } from '@/components/dashboard/patron/PagaFundingModal';
 import { useAppSelector } from '@/store/hooks';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -46,6 +47,7 @@ const itemVariants: Variants = {
 
 export default function PatronWalletPage() {
     const { user } = useAppSelector((state) => state.auth);
+    const currency = useCurrencySymbol();
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
     const [isFundingModalOpen, setIsFundingModalOpen] = useState(false);
     const { data: walletsData, isLoading: isLoadingWallets } = useGetWalletsQuery();
@@ -114,7 +116,7 @@ export default function PatronWalletPage() {
                         <div className="mt-auto">
                             <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">Available Balance</p>
                             <h2 className="text-4xl sm:text-5xl font-black text-zinc-900 tracking-tighter mt-2">
-                                {withdrawableWallet?.type == 'direct' && '₦'} {(withdrawableWallet?.amount || 0).toLocaleString()} {withdrawableWallet?.type == 'indirect' && 'gkwth'}
+                                {withdrawableWallet?.type == 'direct' && currency} {(withdrawableWallet?.amount || 0).toLocaleString()} {withdrawableWallet?.type == 'indirect' && 'gkwth'}
                             </h2>
 
                             <div className="mt-8 p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
@@ -162,7 +164,7 @@ export default function PatronWalletPage() {
                                 {isParentPatronage ? "Available to Organization" : "Reserved Sponsorship Funds"}
                             </p>
                             <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tighter mt-2">
-                                ₦{(patronageWallet?.amount || 0).toLocaleString()}
+                                {currency}{(patronageWallet?.amount || 0).toLocaleString()}
                             </h2>
 
                             <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/5">

@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Building2, Shield, Loader2, CheckCircle2, Wallet, ArrowRight, Copy } from 'lucide-react';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 interface FundOrganizationModalProps {
     initialName: string;
@@ -20,6 +21,7 @@ interface FundOrganizationModalProps {
 }
 
 export function FundOrganizationModal({ initialName, initialPlan, onSuccess }: FundOrganizationModalProps) {
+    const currency = useCurrencySymbol();
     const [name, setName] = useState(initialName || '');
     const [planId, setPlanId] = useState(initialPlan || 'Bronze');
     const [amount, setAmount] = useState('');
@@ -69,7 +71,7 @@ export function FundOrganizationModal({ initialName, initialPlan, onSuccess }: F
 
         if (selectedPlan) {
             if (numAmount < selectedPlan.minAmount || numAmount > selectedPlan.maxAmount) {
-                toast.error(`Amount for ${selectedPlan.name} must be between ₦${selectedPlan.minAmount.toLocaleString()} and ₦${selectedPlan.maxAmount.toLocaleString()}`);
+                toast.error(`Amount for ${selectedPlan.name} must be between ${currency}${selectedPlan.minAmount.toLocaleString()} and ${currency}${selectedPlan.maxAmount.toLocaleString()}`);
                 return;
             }
         }
@@ -156,7 +158,7 @@ export function FundOrganizationModal({ initialName, initialPlan, onSuccess }: F
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount (₦)</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount ({currency})</Label>
                                         <div className="relative group">
                                             <Wallet className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 z-10 pointer-events-none transition-colors group-focus-within:text-indigo-600" size={20} />
                                             <Input 
@@ -174,7 +176,7 @@ export function FundOrganizationModal({ initialName, initialPlan, onSuccess }: F
                                     <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
                                         <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Plan Requirement</p>
                                         <p className="text-xs font-bold text-indigo-900">
-                                            Min: ₦{selectedPlan.minAmount.toLocaleString()} — Max: ₦{selectedPlan.maxAmount.toLocaleString()}
+                                            Min: {currency}{selectedPlan.minAmount.toLocaleString()} — Max: {currency}{selectedPlan.maxAmount.toLocaleString()}
                                         </p>
                                     </div>
                                 )}
@@ -219,7 +221,7 @@ export function FundOrganizationModal({ initialName, initialPlan, onSuccess }: F
                                 
                                 <div className="text-center p-4 bg-orange-50 rounded-2xl">
                                     <p className="text-sm font-bold text-orange-800">
-                                        Please transfer exactly ₦{paymentData.amount.toLocaleString()} to the account above.
+                                        Please transfer exactly {currency}{paymentData.amount.toLocaleString()} to the account above.
                                     </p>
                                 </div>
 

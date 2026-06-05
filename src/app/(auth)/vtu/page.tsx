@@ -33,6 +33,7 @@ import {
     useSubCableMutation
 } from '@/store/api/vtuApi';
 import type { Wallet, VtuDataBundle, VtuCablePackage, BuyAirtimeRequest, BuyDataRequest, SubCableRequest } from '@/types';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 // --- Schemas ---
 const airtimeSchema = z.object({
@@ -81,6 +82,7 @@ const VTU_TABS = [
 ] as const;
 
 export default function VtuPage() {
+    const currency = useCurrencySymbol();
     const [activeTab, setActiveTab] = useState<'airtime' | 'data' | 'cable'>('airtime');
 
     // API Hooks
@@ -124,7 +126,7 @@ export default function VtuPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs text-slate-500 uppercase font-semibold">Wallet</p>
-                                    <p className="font-bold text-slate-800">₦{wallet.amount.toLocaleString()}</p>
+                                    <p className="font-bold text-slate-800">{currency}{wallet.amount.toLocaleString()}</p>
                                 </div>
                             </div>
                         ))}
@@ -396,7 +398,7 @@ function AirtimeForm({ wallets, onBuy, loading }: AirtimeFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="amount" className="text-slate-700">Amount (₦)</Label>
+                    <Label htmlFor="amount" className="text-slate-700">Amount ({currency})</Label>
                     <Input
                         id="amount"
                         type="number"
@@ -423,7 +425,7 @@ function AirtimeForm({ wallets, onBuy, loading }: AirtimeFormProps) {
                                 <SelectLabel>Wallet</SelectLabel>
                                 {wallets.filter(wallet => wallet?.type === 'direct').map((wallet) => (
                                     <SelectItem key={wallet.id} value={String(wallet.id)}>
-                                        {wallet.id === 0 ? 'Loading...' : `${wallet.type.replace('_', ' ')} (₦${wallet.amount.toLocaleString()})`}
+                                        {wallet.id === 0 ? 'Loading...' : `${wallet.type.replace('_', ' ')} (${currency}${wallet.amount.toLocaleString()})`}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -438,7 +440,7 @@ function AirtimeForm({ wallets, onBuy, loading }: AirtimeFormProps) {
                             
                             {wallets?.filter(wallet => wallet?.type === 'direct').map((wallet) => (
                                 <SelectItem key={wallet.id} value={String(wallet.id)}>
-                                    {wallet.type.replace('_', ' ')} (₦{wallet.amount.toLocaleString()})
+                                    {wallet.type.replace('_', ' ')} ({currency}{wallet.amount.toLocaleString()})
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -559,7 +561,7 @@ function DataForm({ dataBundles, wallets, onBuy, loading }: DataFormProps) {
                                 <SelectLabel>Data Bundles</SelectLabel>
                                 {availableBundles.map((bundle: VtuDataBundle) => (
                                     <SelectItem key={bundle.variation_id} value={String(bundle.variation_id)}>
-                                        {bundle.data_plan} - ₦{(parseFloat(bundle.reseller_price) + 5).toLocaleString()}
+                                        {bundle.data_plan} - {currency}{(parseFloat(bundle.reseller_price) + 5).toLocaleString()}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -595,7 +597,7 @@ function DataForm({ dataBundles, wallets, onBuy, loading }: DataFormProps) {
                                 <SelectLabel>Wallet</SelectLabel>
                                 {wallets.filter(wallet => wallet?.type === 'direct').map((wallet) => (
                                     <SelectItem key={wallet.id} value={String(wallet.id)}>
-                                        {wallet.type.replace('_', ' ')} (₦{wallet.amount.toLocaleString()})
+                                        {wallet.type.replace('_', ' ')} ({currency}{wallet.amount.toLocaleString()})
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -717,7 +719,7 @@ function CableForm({ providers, packages, wallets, onSub, loading }: CableFormPr
                                 <SelectLabel>Packages</SelectLabel>
                                 {availablePkgs.map((pkg: VtuCablePackage) => (
                                     <SelectItem key={pkg.variation_id} value={String(pkg.variation_id)}>
-                                        {pkg.package_bouquet} - ₦{(parseFloat(pkg.price) + 5).toLocaleString()}
+                                        {pkg.package_bouquet} - {currency}{(parseFloat(pkg.price) + 5).toLocaleString()}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -755,7 +757,7 @@ function CableForm({ providers, packages, wallets, onSub, loading }: CableFormPr
                                 <SelectLabel>Wallet</SelectLabel>
                                 {wallets.filter(wallet => wallet?.type === 'direct').map((wallet) => (
                                     <SelectItem key={wallet.id} value={String(wallet.id)}>
-                                        {wallet.type.replace('_', ' ')} (₦{wallet.amount.toLocaleString()})
+                                        {wallet.type.replace('_', ' ')} ({currency}{wallet.amount.toLocaleString()})
                                     </SelectItem>
                                 ))}
                             </SelectGroup>

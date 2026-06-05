@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { PagaVirtualAccountDetails } from '@/types';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 type Stage = 'amount' | 'account' | 'polling' | 'success' | 'timeout';
 
@@ -24,6 +25,7 @@ export default function PatronPaymentPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { isAuthenticated, user } = useAppSelector((s) => s.auth);
+    const currency = useCurrencySymbol();
 
     function handleLogout() {
         dispatch(logout());
@@ -74,11 +76,11 @@ export default function PatronPaymentPage() {
             return false;
         }
         if (num < min) {
-            setAmountError(`Minimum amount for your plan is ₦${min.toLocaleString()}.`);
+            setAmountError(`Minimum amount for your plan is ${currency}${min.toLocaleString()}.`);
             return false;
         }
         if (isFinite(max) && num > max) {
-            setAmountError(`Maximum amount for your plan is ₦${max.toLocaleString()}.`);
+            setAmountError(`Maximum amount for your plan is ${currency}${max.toLocaleString()}.`);
             return false;
         }
         setAmountError('');
@@ -168,11 +170,11 @@ export default function PatronPaymentPage() {
                         <div className="grid grid-cols-3 gap-2 text-center">
                             <div className="bg-zinc-50 rounded-xl p-2.5 border border-zinc-100">
                                 <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-0.5">Min Deposit</p>
-                                <p className="text-xs font-black text-zinc-800">₦{plan.minAmount.toLocaleString()}</p>
+                                <p className="text-xs font-black text-zinc-800">{currency}{plan.minAmount.toLocaleString()}</p>
                             </div>
                             <div className="bg-zinc-50 rounded-xl p-2.5 border border-zinc-100">
                                 <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider mb-0.5">Max Deposit</p>
-                                <p className="text-xs font-black text-zinc-800">₦{plan.maxAmount.toLocaleString()}</p>
+                                <p className="text-xs font-black text-zinc-800">{currency}{plan.maxAmount.toLocaleString()}</p>
                             </div>
                             <div className="bg-[#6639ff]/5 rounded-xl p-2.5 border border-[#6639ff]/20">
                                 <p className="text-[9px] text-[#6639ff] font-bold uppercase tracking-wider mb-0.5">Returns</p>
@@ -205,15 +207,15 @@ export default function PatronPaymentPage() {
                                 >
                                     <div className="space-y-2">
                                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                                            Deposit Amount (₦)
+                                            Deposit Amount ({currency})
                                         </Label>
                                         <div className="relative">
                                             <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300 pointer-events-none" size={18} />
                                             <Input
                                                 type="text"
-                                                placeholder={plan ? `₦${plan.minAmount.toLocaleString()} – ₦${plan.maxAmount.toLocaleString()}` : 'Enter amount'}
+                                                placeholder={plan ? `${currency}${plan.minAmount.toLocaleString()} – ${currency}${plan.maxAmount.toLocaleString()}` : 'Enter amount'}
                                                 className="h-14 rounded-2xl bg-zinc-50 border-none pl-12 pr-4 font-black text-xl text-zinc-900 placeholder:text-zinc-300 focus-visible:ring-2 focus-visible:ring-[#6639ff]/30"
-                                                value={amount ? `₦${Number(amount).toLocaleString()}` : ''}
+                                                value={amount ? `${currency}${Number(amount).toLocaleString()}` : ''}
                                                 onChange={(e) => {
                                                     const rawValue = e.target.value.replace(/\D/g, '');
                                                     setAmount(rawValue);
@@ -228,7 +230,7 @@ export default function PatronPaymentPage() {
                                         )}
                                         {plan && (
                                             <p className="text-[10px] text-zinc-400 font-bold">
-                                                Allowed range: ₦{plan.minAmount.toLocaleString()} – ₦{plan.maxAmount.toLocaleString()}
+                                                Allowed range: {currency}{plan.minAmount.toLocaleString()} – {currency}{plan.maxAmount.toLocaleString()}
                                             </p>
                                         )}
                                     </div>
@@ -240,7 +242,7 @@ export default function PatronPaymentPage() {
                                                 Transfer exactly the amount shown to ensure instant processing.
                                             </p>
                                             <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-wider">
-                                                Note: A service charge of ₦50,000 applies to this activation.
+                                                Note: A service charge of {currency}50,000 applies to this activation.
                                             </p>
                                         </div>
                                     </div>
@@ -319,7 +321,7 @@ export default function PatronPaymentPage() {
                                             <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5 mb-1">
                                                 <Wallet size={10} /> Amount to Pay
                                             </Label>
-                                            <p className="font-black text-[#6639ff] text-2xl tracking-tighter">₦{fundingData.amount.toLocaleString()}</p>
+                                            <p className="font-black text-[#6639ff] text-2xl tracking-tighter">{currency}{fundingData.amount.toLocaleString()}</p>
                                         </div>
                                     </div>
 

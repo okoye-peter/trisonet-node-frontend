@@ -43,17 +43,20 @@ import { TransferModal } from '@/components/wallets/TransferModal';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
 import { toast } from 'sonner';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 type TabType = 'overview' | 'fund' | 'sell';
 
-const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => (
-    <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>₦</span>
-);
+const NairaIcon = ({ size = 24, className }: { size?: number, className?: string }) => {
+    const currency = useCurrencySymbol();
+    return <span className={cn("font-bold flex items-center justify-center", className)} style={{ fontSize: size }}>{currency}</span>;
+};
 
 export default function GkwthWalletPage() {
     const router = useRouter();
     const dispatch = useDispatch();
     const user = useSelector((state: RootState) => state.auth.user);
+    const currency = useCurrencySymbol();
     const { data: walletsResponse, isLoading: isWalletsLoading, refetch: refetchWallets } = useGetWalletsQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const { data: banksResponse } = useGetBanksQuery();
@@ -377,7 +380,7 @@ export default function GkwthWalletPage() {
                             </h1>
                         </div>
                         <p className="text-indigo-300/80 font-medium text-sm">
-                            ≈ ₦{((indirectWallet?.amount ?? 1) - 1 > 0 ? ((Number(indirectWallet?.amount ?? 1) - 1) * salePrice) : 0).toLocaleString()}
+                            ≈ {currency}{((indirectWallet?.amount ?? 1) - 1 > 0 ? ((Number(indirectWallet?.amount ?? 1) - 1) * salePrice) : 0).toLocaleString()}
                         </p>
                         <div className="flex gap-2">
                             <Badge className="bg-indigo-500/20 text-indigo-400 border-none px-4 py-1 rounded-full font-bold">
@@ -443,7 +446,7 @@ export default function GkwthWalletPage() {
                                                     <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{(indirectWallet.amount > 1 ? (indirectWallet.amount - 1) : 0).toLocaleString()}</h3>
                                                 </div>
                                                 <p className="text-[10px] font-bold text-zinc-400 mt-1">
-                                                    ≈ ₦{((indirectWallet.amount > 1 ? (indirectWallet.amount - 1) : 0) * salePrice).toLocaleString()}
+                                                    ≈ {currency}{((indirectWallet.amount > 1 ? (indirectWallet.amount - 1) : 0) * salePrice).toLocaleString()}
                                                 </p>
                                             </CardContent>
                                         </Card>
@@ -521,7 +524,7 @@ export default function GkwthWalletPage() {
                                             <p className="text-sm text-zinc-500 font-medium italic">Buy GKWTH assets instantly.</p>
                                         </div>
                                     </div>
-                                    <p className="text-lg text-zinc-400 font-bold mb-4">Unit Price: <span className="text-zinc-600">₦{salePrice.toLocaleString()}.00</span></p>
+                                    <p className="text-lg text-zinc-400 font-bold mb-4">Unit Price: <span className="text-zinc-600">{currency}{salePrice.toLocaleString()}.00</span></p>
 
                                     <form onSubmit={handleFund} className="space-y-6">
                                         <div className="space-y-2">
@@ -541,7 +544,7 @@ export default function GkwthWalletPage() {
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="text-[10px] font-black text-indigo-600 uppercase tracking-widest ml-1"
                                                 >
-                                                    ≈ ₦{(Number(fundQuantity) * salePrice).toLocaleString()}
+                                                    ≈ {currency}{(Number(fundQuantity) * salePrice).toLocaleString()}
                                                 </motion.p>
                                             )}
                                         </div>
@@ -549,8 +552,8 @@ export default function GkwthWalletPage() {
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Price</Label>
                                             <div className="relative">
-                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold text-zinc-400">₦</div>
-                                                <Input 
+                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold text-zinc-400">{currency}</div>
+                                                <Input
                                                     value={fundQuantity ? (Number(fundQuantity) * salePrice).toLocaleString() : '0'}
                                                     readOnly
                                                     className="h-14 pl-12 text-xl font-bold rounded-xl bg-zinc-100/50 border-none cursor-not-allowed"
@@ -731,7 +734,7 @@ export default function GkwthWalletPage() {
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="text-[10px] font-black text-emerald-600 uppercase tracking-widest ml-1"
                                                 >
-                                                    ≈ ₦{(Number(withdrawData.amount) * purchasePrice).toLocaleString()}
+                                                    ≈ {currency}{(Number(withdrawData.amount) * purchasePrice).toLocaleString()}
                                                 </motion.p>
                                             )}
                                         </div>
@@ -739,8 +742,8 @@ export default function GkwthWalletPage() {
                                         <div className="space-y-2">
                                             <Label className="text-sm font-bold text-zinc-500 ml-1">Price</Label>
                                             <div className="relative">
-                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold text-zinc-400">₦</div>
-                                                <Input 
+                                                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-lg font-bold text-zinc-400">{currency}</div>
+                                                <Input
                                                     value={withdrawData.amount ? (Number(withdrawData.amount) * purchasePrice).toLocaleString() : '0'}
                                                     readOnly
                                                     className="h-14 pl-12 text-xl font-bold rounded-xl bg-zinc-100/50 border-none cursor-not-allowed"
@@ -802,7 +805,7 @@ export default function GkwthWalletPage() {
                             <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 text-center space-y-3 shadow-sm">
                                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Amount to Transfer</p>
                                 <div className="flex items-center justify-center gap-3">
-                                    <span className="text-3xl md:text-4xl font-black text-indigo-600">₦</span>
+                                    <span className="text-3xl md:text-4xl font-black text-indigo-600">{currency}</span>
                                     <h1 className="text-4xl md:text-6xl font-black text-zinc-900 tracking-tighter">
                                         {paymentDetails?.amount?.toLocaleString()}
                                     </h1>

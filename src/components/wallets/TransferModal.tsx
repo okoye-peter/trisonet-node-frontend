@@ -36,15 +36,16 @@ import { useTransferMutation, useGetWalletsQuery, useGetGkwthPricesQuery } from 
 import { useGetUserByTransferIdQuery } from '@/store/api/userApi';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
-const transferSchema = z.object({
+const createTransferSchema = (currency: string) => z.object({
     receiverTransferId: z.string().min(3, 'Invalid account number'),
     senderWalletId: z.string().min(1, 'Please select a wallet'),
-    amount: z.number().min(100, 'Minimum transfer amount is ₦100'),
+    amount: z.number().min(100, `Minimum transfer amount is ${currency}100`),
     pin: z.string().length(4, 'PIN must be 4 digits'),
 });
 
-type TransferFormValues = z.infer<typeof transferSchema>;
+type TransferFormValues = z.infer<ReturnType<typeof createTransferSchema>>;
 
 interface TransferModalProps {
     open: boolean;
@@ -54,6 +55,7 @@ interface TransferModalProps {
 export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     const [isSuccess, setIsSuccess] = useState(false);
     const [transferData, setTransferData] = useState<{ reference: string } | null>(null);
+    const currency = useCurrencySymbol();
 
     const { data: walletsResponse } = useGetWalletsQuery();
     const wallets = (walletsResponse?.data || []).filter(w => w.type !== 'earning');
@@ -64,7 +66,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     const gkwthPrice = Number(prices?.gkwthSalePrice) || 0;
 
     const form = useForm<TransferFormValues>({
-        resolver: zodResolver(transferSchema),
+        resolver: zodResolver(createTransferSchema(currency)),
         defaultValues: {
             receiverTransferId: '',
             senderWalletId: '',
@@ -107,7 +109,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
             : selectedWallet.amount;
 
         if (values.amount > availableAmount) {
-            toast.error(`Insufficient balance. Max available: ${isGkwth ? '' : '₦'}${availableAmount.toLocaleString()}${isGkwth ? ' gkwth' : ''}`);
+            toast.error(`Insufficient balance. Max available: ${isGkwth ? '' : currency}${availableAmount.toLocaleString()}${isGkwth ? ' gkwth' : ''}`);
             return;
         }
 
@@ -196,7 +198,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                     "absolute top-1/2 -translate-y-1/2 text-zinc-400 font-bold",
                                                     isGkwth ? "left-3 text-xs" : "left-4"
                                                 )}>
-                                                    {isGkwth ? 'gkwth' : '₦'}
+                                                    {isGkwth ? 'gkwth' : currency}
                                                 </span>
                                                 <Input
                                                     type="number"
@@ -215,7 +217,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest ml-1"
                                                 >
-                                                    ≈ ₦{(form.watch('amount') * gkwthPrice).toLocaleString()}
+                                                    ≈ {currency}{(form.watch('amount') * gkwthPrice).toLocaleString()}
                                                 </motion.p>
                                             )}
                                         </div>
@@ -231,14 +233,14 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                             if (!selectedWallet) return undefined;
                                                             return selectedWallet.type === 'indirect'
                                                                 ? `${((selectedWallet.amount > 1 ? selectedWallet.amount - 1 : 0)).toLocaleString()} gkwth`
-                                                                : `₦${selectedWallet.amount.toLocaleString()}`;
+                                                                : `${currency}${selectedWallet.amount.toLocaleString()}`;
                                                         })()}
                                                     </SelectValue>
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {wallets.map((wallet) => (
                                                         <SelectItem key={wallet.id} value={wallet.id?.toString() || ''}>
-                                                            {`${wallet.type === 'indirect' ? '' : '₦'}${wallet.type === 'indirect' ? (wallet.amount > 1 ? wallet.amount - 1 : 0).toLocaleString() : wallet.amount.toLocaleString()}${wallet.type === 'indirect' ? ' gkwth' : ''}`}
+                                                            {`${wallet.type === 'indirect' ? '' : currency}${wallet.type === 'indirect' ? (wallet.amount > 1 ? wallet.amount - 1 : 0).toLocaleString() : wallet.amount.toLocaleString()}${wallet.type === 'indirect' ? ' gkwth' : ''}`}
                                                         </SelectItem>
                                                     ))}
                                                 </SelectContent>
@@ -299,7 +301,7 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                 <div className="text-center space-y-1">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Transferred</p>
                                     <h3 className="text-4xl md:text-5xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100">
-                                        {isGkwth ? '' : '₦'}{form.getValues('amount').toLocaleString()}{isGkwth ? ' gkwth' : ''}
+                                        {isGkwth ? '' : currency}{form.getValues('amount').toLocaleString()}{isGkwth ? ' gkwth' : ''}
                                     </h3>
                                 </div>
 

@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import type { WardStats } from '@/types';
 import { toast } from 'sonner';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 import { useGenerateWardSlotVirtualAccountMutation, useVerifyWardSlotPurchaseMutation } from '@/store/api/walletApi';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -49,6 +50,7 @@ interface PaymentDetail {
 }
 
 export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseModalProps) {
+    const currency = useCurrencySymbol();
     const [generateVirtualAccount, { isLoading: isGenerating }] = useGenerateWardSlotVirtualAccountMutation();
     const [verifyPurchase, { isLoading: isVerifying }] = useVerifyWardSlotPurchaseMutation();
     const queryClient = useQueryClient();
@@ -186,7 +188,7 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
                                 <div className="space-y-3">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Price Per Slot</Label>
                                     <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">₦</span>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">{currency}</span>
                                         <Input 
                                             readOnly 
                                             value={type === 'limited' ? pricePerSlot.toLocaleString() : unlimitedPrice.toLocaleString()} 
@@ -214,7 +216,7 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
                                 <div className="relative z-10">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-indigo-100/60">Total Amount Payable</p>
                                     <div className="mt-2 flex items-baseline gap-2">
-                                        <span className="text-2xl font-bold opacity-60">₦</span>
+                                        <span className="text-2xl font-bold opacity-60">{currency}</span>
                                         <h3 className="text-4xl font-black tracking-tighter">
                                             {total.toLocaleString()}
                                         </h3>
@@ -251,7 +253,7 @@ export function SlotPurchaseModal({ open, onOpenChange, stats }: SlotPurchaseMod
                         <div className="p-8 space-y-6">
                             <div className="text-center space-y-2">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount to Transfer</p>
-                                <h3 className="text-4xl font-black tracking-tighter text-zinc-900">₦{paymentDetail.amount.toLocaleString()}</h3>
+                                <h3 className="text-4xl font-black tracking-tighter text-zinc-900">{currency}{paymentDetail.amount.toLocaleString()}</h3>
                                 <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 font-bold flex items-center gap-1 mx-auto w-fit px-3 py-1">
                                     <AlertCircle size={12} />
                                     Expires at {paymentDetail.expiry_date}

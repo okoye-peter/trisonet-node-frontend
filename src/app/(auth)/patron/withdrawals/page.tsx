@@ -24,8 +24,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { WithDrawal, WithdrawalRequest } from '@/types';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store/hooks';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 export default function PatronWithdrawalsPage() {
+    const currency = useCurrencySymbol();
     const [orderBy, setOrderBy] = useState<'asc' | 'desc'>('desc');
 
     const transactionColumns: ColumnDef<WithDrawal>[] = [
@@ -51,7 +53,7 @@ export default function PatronWithdrawalsPage() {
                 const isGkwth = row.original.oldBalance?.includes('gkwth');
                 return (
                     <div className="font-black text-zinc-900 min-w-[120px]">
-                        {isGkwth ? '' : '₦'}{Number(row.original.amount).toLocaleString()} {isGkwth ? 'gkwth' : ''}
+                        {isGkwth ? '' : currency}{Number(row.original.amount).toLocaleString()} {isGkwth ? 'gkwth' : ''}
                     </div>
                 );
             }
@@ -105,7 +107,7 @@ export default function PatronWithdrawalsPage() {
                 const amount = isGkwth ? row.original.gkwthAmount : row.original.amountRequested;
                 return (
                     <div className="font-black text-zinc-900 min-w-[120px]">
-                        {isGkwth ? '' : '₦'}{Number(amount).toLocaleString()} {isGkwth ? 'gkwth' : ''}
+                        {isGkwth ? '' : currency}{Number(amount).toLocaleString()} {isGkwth ? 'gkwth' : ''}
                     </div>
                 );
             }

@@ -25,8 +25,10 @@ import { WithdrawalModal } from '@/components/earnings/WithdrawalModal';
 import ConvertEarningsModal from '@/components/earnings/ConvertEarningsModal';
 import { ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 export default function EarningsPage() {
+    const currency = useCurrencySymbol();
     const { data: walletsResponse } = useGetWalletsQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const { data: userResponse } = useGetUserQuery();
@@ -81,7 +83,7 @@ export default function EarningsPage() {
                         <span className="text-zinc-400 text-[10px] font-bold ml-1">assets</span>
                     </div>
                     <span className="text-[10px] text-zinc-400 font-medium ml-2">
-                        ≈ ₦{(Number(row.original.amount) * purchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ≈ {currency}{(Number(row.original.amount) * purchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                 </div>
             )
@@ -216,7 +218,7 @@ export default function EarningsPage() {
                                 <span className="mr-1 text-sm italic text-white/60"> Asset</span>
                             </div>
                             <p className="text-white/40 text-[10px] font-bold">
-                                Total ≈ ₦{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}
+                                Total ≈ {currency}{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}
                             </p>
                         </div>
                         <button 

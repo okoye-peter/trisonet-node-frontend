@@ -24,6 +24,7 @@ import { useMemo, useState } from 'react';
 import { CreateOrganizationForm } from '@/components/dashboard/patron/CreateOrganizationForm';
 import { FundOrganizationModal } from '@/components/dashboard/patron/FundOrganizationModal';
 import { ROLES } from '@/types';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 
 const containerVariants: Variants = {
@@ -50,6 +51,7 @@ const itemVariants: Variants = {
 
 export default function PatronDashboardPage() {
     const user = useAppSelector((state) => state.auth.user);
+    const currency = useCurrencySymbol();
     console.log('data',user )
     const [page, setPage] = useState(1);
     
@@ -89,7 +91,7 @@ export default function PatronDashboardPage() {
             {
                 label: 'Patron Balance',
                 value: patronBalance,
-                prefix: '₦',
+                prefix: currency,
                 icon: Wallet,
                 color: 'text-emerald-600',
                 bg: 'bg-emerald-50',
@@ -98,7 +100,7 @@ export default function PatronDashboardPage() {
             {
                 label: 'Patronage Wallet',
                 value: patronageWalletBalance,
-                prefix: '₦',
+                prefix: currency,
                 icon: CreditCard,
                 color: 'text-blue-600',
                 bg: 'bg-blue-50',
@@ -255,7 +257,7 @@ export default function PatronDashboardPage() {
                                                                 "font-black text-sm tracking-tighter",
                                                                 tx.type === 'credit' ? "text-emerald-600" : "text-rose-600"
                                                             )}>
-                                                                {tx.type === 'credit' ? '+' : '-'}₦{tx.amount.toLocaleString()}
+                                                                {tx.type === 'credit' ? '+' : '-'}{currency}{tx.amount.toLocaleString()}
                                                             </span>
                                                         </div>
                                                         <p className="text-[10px] text-zinc-400 mt-1 font-bold line-clamp-1">{tx.description}</p>

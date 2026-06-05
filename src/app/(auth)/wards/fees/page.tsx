@@ -16,9 +16,10 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import LoadingScreen from '@/components/LoadingScreen';
 import type { InfantSchoolFee, PaginatedResult } from '@/types';
-
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 export default function WardsFeesPage() {
+    const currency = useCurrencySymbol();
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
 
@@ -86,7 +87,7 @@ export default function WardsFeesPage() {
             header: "Amount",
             cell: ({ row }) => (
                 <div className="font-black text-zinc-900">
-                    ₦{row.original.amount?.toLocaleString() || '0'}
+                    {currency}{row.original.amount?.toLocaleString() || '0'}
                 </div>
             )
         },

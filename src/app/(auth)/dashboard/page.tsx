@@ -47,6 +47,7 @@ import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 import { Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGetGkwthPricesQuery, useGetWalletHistoryQuery } from '@/store/api/walletApi';
@@ -174,6 +175,7 @@ const itemVariants: Variants = {
 export default function DashboardPage() {
     const router = useRouter();
     const { user } = useAppSelector((state) => state.auth);
+    const currency = useCurrencySymbol();
     // showWelcome starts false — we check sessionStorage client-side to decide whether to show.
     // This prevents the video from appearing on EVERY page refresh.
     const [showWelcome, setShowWelcome] = useState(false);
@@ -254,7 +256,7 @@ export default function DashboardPage() {
             {
                 label: 'Wallet',
                 value: dashboardStats?.wallets?.find((wallet: WalletType) => wallet.type == 'direct')?.amount ?? 0.00,
-                prefix: '₦',
+                prefix: currency,
                 icon: Wallet,
                 color: 'text-emerald-600',
                 bg: 'bg-emerald-50',
@@ -266,7 +268,7 @@ export default function DashboardPage() {
                 label: 'Capital Asset',
                 value: capitalAssetAmount,
                 suffix: ' gkwth',
-                subValue: `≈ ₦${(capitalAssetAmount * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                subValue: `≈ ${currency}${(capitalAssetAmount * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                 icon: Database,
                 color: 'text-blue-600',
                 bg: 'bg-blue-50',
@@ -471,7 +473,7 @@ export default function DashboardPage() {
                                         <span className="text-3xl font-bold text-indigo-300 mb-1.5">Asset</span>
                                     </div>
                                     <p className="mt-2 text-xs font-bold text-white/40">
-                                        Total ≈ ₦{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        Total ≈ {currency}{(Number(dashboardStats?.wallets?.find(w => w.type === 'earning')?.amount ?? 0) * gkwthPurchasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
                                 </div>
 
@@ -657,15 +659,15 @@ export default function DashboardPage() {
                                                             ? 'bg-emerald-100 text-emerald-700'
                                                             : 'bg-red-100 text-red-700'
                                                     )}>
-                                                        {isCredit ? '+' : ''}{diff >= 0 ? '' : '-'}₦{Math.abs(diff).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        {isCredit ? '+' : ''}{diff >= 0 ? '' : '-'}{currency}{Math.abs(diff).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </Badge>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-2 text-sm font-bold text-zinc-700">
-                                                <span>₦{oldBal != null ? Number(oldBal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}</span>
+                                                <span>{currency}{oldBal != null ? Number(oldBal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}</span>
                                                 <ArrowRight size={14} className="text-zinc-400 shrink-0" />
                                                 <span className={cn(isCredit ? 'text-emerald-600' : 'text-red-600')}>
-                                                    ₦{newBal != null ? Number(newBal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+                                                    {currency}{newBal != null ? Number(newBal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
                                                 </span>
                                             </div>
                                         </div>

@@ -21,8 +21,10 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { toast } from 'sonner';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 export default function LoansPage() {
+    const currency = useCurrencySymbol();
     const user = useSelector((state: RootState) => state.auth.user);
     const { data: walletsResponse, isLoading: isWalletsLoading } = useGetWalletsQuery();
     const { data: pricesResponse } = useGetGkwthPricesQuery();
@@ -175,13 +177,13 @@ export default function LoansPage() {
                                         <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100 text-center">
                                             <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Amount to Receive</p>
                                             <div className="flex items-baseline gap-2 justify-center">
-                                                <span className="text-lg font-bold text-emerald-500">₦</span>
+                                                <span className="text-lg font-bold text-emerald-500">{currency}</span>
                                                 <span className="text-3xl font-black text-emerald-900">
                                                     {(Number(loanQuantity) * loanPrice).toLocaleString()}
                                                 </span>
                                             </div>
                                             <p className="text-[10px] text-emerald-500 font-bold mt-2 italic">
-                                                *Valued at ₦{loanPrice.toLocaleString()}
+                                                *Valued at {currency}{loanPrice.toLocaleString()}
                                             </p>
                                         </div>
                                     </div>

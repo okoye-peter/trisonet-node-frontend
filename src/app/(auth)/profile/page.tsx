@@ -780,7 +780,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="mt-16">
                                 <h2 className="text-xl font-black text-zinc-900 leading-tight capitalize">{user?.name || 'User Name'}</h2>
-                                <p className="text-sm text-zinc-400 font-bold uppercase tracking-wider mt-1">Member Since 2024</p>
+                                <p className="text-sm text-zinc-400 font-bold uppercase tracking-wider mt-1">Member Since {user?.createdAt ? new Date(user.createdAt).getFullYear() : '—'}</p>
                                 <div className="mt-4 flex justify-center gap-2">
                                     <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-indigo-700 ring-1 ring-inset ring-indigo-600/10">
                                         <Award size={12} className="text-indigo-500" /> Gold Tier

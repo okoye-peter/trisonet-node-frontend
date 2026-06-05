@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { useCreatePatronGroupMutation, useGetPatronPlansQuery } from '@/store/api/patronApi';
 import { useAppSelector } from '@/store/hooks';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 const planStyles: Record<string, { color: string, bg: string }> = {
     bronze: { color: 'text-orange-700', bg: 'bg-orange-100' },
@@ -27,7 +28,8 @@ export function CreateOrganizationForm({
     initialData?: { name?: string; plan?: string; amount?: number };
 }) {
     const user = useAppSelector((state) => state.auth.user);
-    
+    const currency = useCurrencySymbol();
+
     const [name, setName] = useState(initialData?.name || '');
     const [type, setType] = useState('group');
     const [planId, setPlanId] = useState(initialData?.plan || 'Bronze');
@@ -54,7 +56,7 @@ export function CreateOrganizationForm({
         }
 
         if (numAmount < selectedPlan.minAmount || numAmount > selectedPlan.maxAmount) {
-            toast.error(`Amount for ${selectedPlan.name} must be between ₦${selectedPlan.minAmount.toLocaleString()} and ₦${selectedPlan.maxAmount.toLocaleString()}`);
+            toast.error(`Amount for ${selectedPlan.name} must be between ${currency}${selectedPlan.minAmount.toLocaleString()} and ${currency}${selectedPlan.maxAmount.toLocaleString()}`);
             return;
         }
 
@@ -111,11 +113,11 @@ export function CreateOrganizationForm({
                                 <div className="p-4 bg-white rounded-2xl border border-zinc-100 flex items-center justify-between">
                                     <div>
                                         <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Total Amount to Send</p>
-                                        <p className="text-2xl font-black text-zinc-900">₦{paymentData.amount.toLocaleString()}</p>
+                                        <p className="text-2xl font-black text-zinc-900">{currency}{paymentData.amount.toLocaleString()}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Includes Charges</p>
-                                        <p className="text-sm font-bold text-zinc-500">₦{paymentData.charge.toLocaleString()}</p>
+                                        <p className="text-sm font-bold text-zinc-500">{currency}{paymentData.charge.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +175,7 @@ export function CreateOrganizationForm({
                                             <span className="text-sm font-bold text-zinc-500">Plan Range</span>
                                         </div>
                                         <div className="font-black text-zinc-900 tracking-tight">
-                                            ₦{(selectedPlan.minAmount / 1000000).toLocaleString()}M - {selectedPlan.maxAmount >= 1000000000 ? `₦${(selectedPlan.maxAmount / 1000000000).toLocaleString()}B` : `₦${(selectedPlan.maxAmount / 1000000).toLocaleString()}M`}
+                                            {currency}{(selectedPlan.minAmount / 1000000).toLocaleString()}M - {selectedPlan.maxAmount >= 1000000000 ? `${currency}${(selectedPlan.maxAmount / 1000000000).toLocaleString()}B` : `${currency}${(selectedPlan.maxAmount / 1000000).toLocaleString()}M`}
                                         </div>
                                     </div>
                                 )}
@@ -181,7 +183,7 @@ export function CreateOrganizationForm({
 
 
                         <div className="space-y-4">
-                            <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2 block">Initial Funding Amount (₦)</Label>
+                            <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] mb-2 block">Initial Funding Amount ({currency})</Label>
                             <div className="relative group">
                                 <Wallet className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-400 z-10 pointer-events-none transition-colors group-focus-within:text-indigo-600" size={22} />
                                 <Input 
@@ -195,7 +197,7 @@ export function CreateOrganizationForm({
                                 />
                             </div>
                             <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest pl-2">
-                                Minimum required: ₦{selectedPlan ? selectedPlan.minAmount.toLocaleString() : '1,000,000'}
+                                Minimum required: {currency}{selectedPlan ? selectedPlan.minAmount.toLocaleString() : '1,000,000'}
                             </p>
                         </div>
                     </div>

@@ -24,6 +24,7 @@ import api from '@/lib/axios';
 import type { Ward, WardStats } from '@/types';
 import LoadingScreen from '@/components/LoadingScreen';
 import { SlotPurchaseModal } from '@/components/wards/SlotPurchaseModal';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 const wardColumns: ColumnDef<Ward>[] = [
     {
@@ -112,6 +113,7 @@ const itemVariants: Variants = {
 };
 
 export default function WardsPage() {
+    const currency = useCurrencySymbol();
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
 
     const { data: statsResponse, isLoading: statsLoading } = useQuery<{ data: WardStats }>({
@@ -137,7 +139,7 @@ export default function WardsPage() {
         {
             label: 'Price Per Slot',
             value: stats?.pricePerSlot ?? 0,
-            prefix: '₦',
+            prefix: currency,
             icon: CreditCard,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
@@ -146,7 +148,7 @@ export default function WardsPage() {
         {
             label: 'Unlimited Price',
             value: stats?.unlimitedSlotPrice ?? 0,
-            prefix: '₦',
+            prefix: currency,
             icon: Zap,
             color: 'text-amber-600',
             bg: 'bg-amber-50',

@@ -28,13 +28,14 @@ import { useCreditPatronMemberMutation, useGetPatronMembersQuery } from "@/store
 import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { cn } from "@/lib/utils";
+import { useCurrencySymbol } from "@/hooks/useCurrencySymbol";
 
-const creditSchema = z.object({
+const createCreditSchema = (currency: string) => z.object({
     member_id: z.string().min(1, "Please select a member"),
-    amount: z.coerce.number().min(1000, "Minimum credit amount is ₦1,000"),
+    amount: z.coerce.number().min(1000, `Minimum credit amount is ${currency}1,000`),
 });
 
-type CreditValues = z.infer<typeof creditSchema>;
+type CreditValues = z.infer<ReturnType<typeof createCreditSchema>>;
 
 interface CreditMemberModalProps {
     open: boolean;
@@ -43,6 +44,7 @@ interface CreditMemberModalProps {
 }
 
 export function CreditMemberModal({ open, onOpenChange, currentBalance }: CreditMemberModalProps) {
+    const currency = useCurrencySymbol();
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebounce(searchQuery, 500);
     
@@ -56,7 +58,7 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
     const [creditMember, { isLoading: isSubmitting }] = useCreditPatronMemberMutation();
 
     const form = useForm<CreditValues>({
-        resolver: zodResolver(creditSchema),
+        resolver: zodResolver(createCreditSchema(currency)),
         defaultValues: {
             member_id: "",
             amount: 1000,
@@ -114,7 +116,7 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Org. Balance</p>
-                                        <p className="text-lg font-black text-zinc-900 tracking-tighter">₦{currentBalance.toLocaleString()}</p>
+                                        <p className="text-lg font-black text-zinc-900 tracking-tighter">{currency}{currentBalance.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>
@@ -147,7 +149,7 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
                                         <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount to Credit</FormLabel>
                                         <FormControl>
                                             <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-zinc-400">₦</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-zinc-400">{currency}</span>
                                                 <Input type="number" className="h-14 rounded-xl bg-zinc-50 border-none pl-10 pr-4 font-black text-xl text-zinc-900 placeholder:text-zinc-300 transition-all focus-visible:ring-2 focus-visible:ring-purple-600/20" {...field} />
                                             </div>
                                         </FormControl>

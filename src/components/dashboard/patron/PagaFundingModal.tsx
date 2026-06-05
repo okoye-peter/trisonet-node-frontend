@@ -32,6 +32,7 @@ import {
 import { PagaVirtualAccountDetails } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 interface PagaFundingModalProps {
     open: boolean;
@@ -39,6 +40,7 @@ interface PagaFundingModalProps {
 }
 
 export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) {
+    const currency = useCurrencySymbol();
     const [amount, setAmount] = useState<string>('');
     const [virtualAccount, setVirtualAccount] = useState<PagaVirtualAccountDetails | null>(null);
     const [fundingData, setFundingData] = useState<{ reference: string, amount: number } | null>(null);
@@ -50,7 +52,7 @@ export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) 
     const handleInitiate = async () => {
         const numAmount = parseFloat(amount);
         if (isNaN(numAmount) || numAmount < 1000) {
-            toast.error('Please enter a valid amount (minimum ₦1,000)');
+            toast.error(`Please enter a valid amount (minimum ${currency}1,000)`);
             return;
         }
 
@@ -145,7 +147,7 @@ export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) 
                                 className="space-y-6"
                             >
                                 <div className="space-y-3">
-                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Funding Amount (₦)</Label>
+                                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Funding Amount ({currency})</Label>
                                     <div className="relative">
                                         <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={18} />
                                         <Input 
@@ -227,7 +229,7 @@ export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) 
                                             <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-2">
                                                 <Wallet size={10} /> Amount to Pay
                                             </Label>
-                                            <p className="font-black text-emerald-600 text-2xl tracking-tighter">₦{fundingData?.amount.toLocaleString()}</p>
+                                            <p className="font-black text-emerald-600 text-2xl tracking-tighter">{currency}{fundingData?.amount.toLocaleString()}</p>
                                         </div>
                                     </div>
 
@@ -236,7 +238,7 @@ export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) 
                                             <CheckCircle2 size={14} className="text-zinc-400" />
                                         </div>
                                         <p className="text-[10px] font-bold text-zinc-500 leading-snug">
-                                            Transfer exactly ₦{fundingData?.amount.toLocaleString()} to the account above. Your wallet will be credited automatically.
+                                            Transfer exactly {currency}{fundingData?.amount.toLocaleString()} to the account above. Your wallet will be credited automatically.
                                         </p>
                                     </div>
                                 </div>

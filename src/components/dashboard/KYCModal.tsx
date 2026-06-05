@@ -33,10 +33,9 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCameraMode, setIsCameraMode] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
-    const [verificationMethod, setVerificationMethod] = useState<'bvn' | 'nin'>('bvn');
-    const [globalVerificationMethod, setGlobalVerificationMethod] = useState<'face' | 'passport'>('face');
+    const [verificationMethod, setVerificationMethod] = useState<'bvn' | 'nin' | 'face' | 'passport'>('bvn');
     const isNigerian = user?.country?.toLowerCase() === 'nigeria';
-    
+
     const [mounted, setMounted] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -102,12 +101,12 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (isNigerian && bvn.length !== 11) {
-            toast.error('Invalid BVN. Must be 11 digits.');
+        if ((verificationMethod === 'bvn' || verificationMethod === 'nin') && bvn.length !== 11) {
+            toast.error(`Invalid ${verificationMethod.toUpperCase()}. Must be 11 digits.`);
             return;
         }
 
-        if (!isNigerian && globalVerificationMethod === 'passport' && bvn.trim().length < 5) {
+        if (verificationMethod === 'passport' && bvn.trim().length < 5) {
             toast.error('Please provide a valid passport number.');
             return;
         }
@@ -123,19 +122,19 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
             const formData = new FormData();
             formData.append('name', name);
 
-            let endpoint = '/kyc/face-verify';
+            let endpoint: string;
 
-            if (isNigerian) {
-                if (verificationMethod === 'bvn') {
-                    formData.append('bvn', bvn);
-                    endpoint = '/kyc/verify';
-                } else {
-                    formData.append('nin', bvn);
-                    endpoint = '/kyc/nin-verify';
-                }
-            } else if (globalVerificationMethod === 'passport') {
+            if (verificationMethod === 'bvn') {
+                formData.append('bvn', bvn);
+                endpoint = '/kyc/verify';
+            } else if (verificationMethod === 'nin') {
+                formData.append('nin', bvn);
+                endpoint = '/kyc/nin-verify';
+            } else if (verificationMethod === 'passport') {
                 formData.append('passportNumber', bvn.trim());
                 endpoint = '/kyc/passport-verify';
+            } else {
+                endpoint = '/kyc/face-verify';
             }
             
             formData.append('image', passportImage);
@@ -218,7 +217,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                             Identity Verification
                                         </h3>
                                         <p className="mt-1 text-sm font-bold tracking-widest uppercase text-zinc-400">
-                                            {isNigerian ? "KYC Level 1" : "Global KYC"}
+                                            {isNigerian ? 'KYC Level 1' : 'Global KYC'}
                                         </p>
                                     </div>
                                 </div>
@@ -245,115 +244,35 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     </div>
                                 </div>
 
-                                {/* Verification Method Selector (non-Nigeria) */}
-                                {!isNigerian && (
-                                    <div className="space-y-3">
-                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
-                                            Verification Method
-                                        </label>
-                                        <div className="flex p-1 border bg-zinc-100/80 rounded-2xl border-zinc-200/50">
+                                {/* Verification Method Selector */}
+                                <div className="space-y-3">
+                                    <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
+                                        Verification Method
+                                    </label>
+                                    <div className="flex p-1 border bg-zinc-100/80 rounded-2xl border-zinc-200/50">
+                                        {(['bvn', 'nin', ...(!isNigerian ? ['face', 'passport'] : [])] as ('bvn' | 'nin' | 'face' | 'passport')[]).map((method) => (
                                             <button
+                                                key={method}
                                                 type="button"
                                                 onClick={() => {
-                                                    setGlobalVerificationMethod('face');
+                                                    setVerificationMethod(method);
                                                     setBvn('');
                                                 }}
                                                 className={cn(
                                                     "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                    globalVerificationMethod === 'face'
+                                                    verificationMethod === method
                                                         ? "bg-white text-indigo-600 shadow-sm"
                                                         : "text-zinc-500 hover:text-zinc-700"
                                                 )}
                                             >
-                                                Face Only
+                                                {method}
                                             </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setGlobalVerificationMethod('passport');
-                                                    setBvn('');
-                                                }}
-                                                className={cn(
-                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                    globalVerificationMethod === 'passport'
-                                                        ? "bg-white text-indigo-600 shadow-sm"
-                                                        : "text-zinc-500 hover:text-zinc-700"
-                                                )}
-                                            >
-                                                Passport
-                                            </button>
-                                        </div>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
 
-                                {/* Passport Number Input (non-Nigeria, passport method) */}
-                                {!isNigerian && globalVerificationMethod === 'passport' && (
-                                    <div className="space-y-3">
-                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
-                                            International Passport Number
-                                        </label>
-                                        <div className="relative group">
-                                            <div className="absolute inset-y-0 flex items-center transition-colors left-4 text-zinc-400 group-hover:text-indigo-600">
-                                                <AlertCircle size={18} />
-                                            </div>
-                                            <Input
-                                                type="text"
-                                                placeholder="Enter passport number"
-                                                value={bvn}
-                                                onChange={(e) => setBvn(e.target.value.toUpperCase())}
-                                                className="pl-12 text-lg font-bold tracking-widest transition-all h-14 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 placeholder:tracking-normal placeholder:font-medium"
-                                                required
-                                            />
-                                        </div>
-                                        <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
-                                            * Your passport number is required for identity verification and anti-fraud measures.
-                                        </p>
-                                    </div>
-                                )}
-
-                                 {/* Verification Method Selector (Nigeria only) */}
-                                {isNigerian && (
-                                    <div className="space-y-3">
-                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
-                                            Verification Method
-                                        </label>
-                                        <div className="flex p-1 border bg-zinc-100/80 rounded-2xl border-zinc-200/50">
-                                            <button 
-                                                type="button"
-                                                onClick={() => {
-                                                    setVerificationMethod('bvn');
-                                                    setBvn('');
-                                                }}
-                                                className={cn(
-                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                    verificationMethod === 'bvn' 
-                                                        ? "bg-white text-indigo-600 shadow-sm" 
-                                                        : "text-zinc-500 hover:text-zinc-700"
-                                                )}
-                                            >
-                                                BVN
-                                            </button>
-                                            <button 
-                                                type="button"
-                                                onClick={() => {
-                                                    setVerificationMethod('nin');
-                                                    setBvn('');
-                                                }}
-                                                className={cn(
-                                                    "flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                                    verificationMethod === 'nin' 
-                                                        ? "bg-white text-indigo-600 shadow-sm" 
-                                                        : "text-zinc-500 hover:text-zinc-700"
-                                                )}
-                                            >
-                                                NIN
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ID Number Section (Nigeria only) */}
-                                {isNigerian && (
+                                {/* BVN / NIN Number Input */}
+                                {(verificationMethod === 'bvn' || verificationMethod === 'nin') && (
                                     <div className="space-y-3">
                                         <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
                                             {verificationMethod === 'bvn' ? 'Bank Verification Number (BVN)' : 'National Identification Number (NIN)'}
@@ -374,6 +293,31 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                         </div>
                                         <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
                                             * Your {verificationMethod.toUpperCase()} is required for identity verification and anti-fraud measures.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Passport Number Input */}
+                                {verificationMethod === 'passport' && (
+                                    <div className="space-y-3">
+                                        <label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-500">
+                                            International Passport Number
+                                        </label>
+                                        <div className="relative group">
+                                            <div className="absolute inset-y-0 flex items-center transition-colors left-4 text-zinc-400 group-hover:text-indigo-600">
+                                                <AlertCircle size={18} />
+                                            </div>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter passport number"
+                                                value={bvn}
+                                                onChange={(e) => setBvn(e.target.value.toUpperCase())}
+                                                className="pl-12 text-lg font-bold tracking-widest transition-all h-14 rounded-2xl bg-zinc-50/50 border-zinc-100 focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-100/50 placeholder:tracking-normal placeholder:font-medium"
+                                                required
+                                            />
+                                        </div>
+                                        <p className="text-[10px] font-bold text-zinc-400 italic ml-1">
+                                            * Your passport number is required for identity verification and anti-fraud measures.
                                         </p>
                                     </div>
                                 )}
@@ -527,7 +471,12 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                     
                                     <Button
                                         type="submit"
-                                        disabled={isSubmitting || (isNigerian && bvn.length !== 11) || (!isNigerian && globalVerificationMethod === 'passport' && bvn.trim().length < 5) || !passportImage}
+                                        disabled={
+                                            isSubmitting ||
+                                            ((verificationMethod === 'bvn' || verificationMethod === 'nin') && bvn.length !== 11) ||
+                                            (verificationMethod === 'passport' && bvn.trim().length < 5) ||
+                                            !passportImage
+                                        }
                                         className="flex-2 h-16 rounded-3xl bg-zinc-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-zinc-200 transition-all hover:bg-zinc-800 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100"
                                     >
                                         {isSubmitting ? (

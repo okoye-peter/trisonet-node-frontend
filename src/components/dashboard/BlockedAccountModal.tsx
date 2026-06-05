@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { useGeneratePukVirtualAccountMutation, useUnblockWithPukMutation } from '@/store/api/userApi';
+import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 interface AccountDetail {
     account_name: string;
@@ -26,6 +27,7 @@ interface BlockedAccountModalProps {
 }
 
 export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: BlockedAccountModalProps) {
+    const currency = useCurrencySymbol();
     const [step, setStep] = useState<Step>('main');
     const [accountDetail, setAccountDetail] = useState<AccountDetail | null>(null);
     const [puk, setPuk] = useState('');
@@ -166,7 +168,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                             { label: 'Bank', value: accountDetail.bank_name, key: 'bank' },
                                             { label: 'Account Name', value: accountDetail.account_name, key: 'name' },
                                             { label: 'Account Number', value: accountDetail.account_number, key: 'number' },
-                                            { label: 'Amount', value: `₦${Number(accountDetail.amount).toLocaleString()}`, key: 'amount' },
+                                            { label: 'Amount', value: `${currency}${Number(accountDetail.amount).toLocaleString()}`, key: 'amount' },
                                             { label: 'Expires At', value: accountDetail.expires_at, key: 'expires' },
                                         ].map(({ label, value, key }) => (
                                             <div key={key} className="flex items-center justify-between px-4 py-3">
