@@ -34,8 +34,6 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
     const [isCameraMode, setIsCameraMode] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [verificationMethod, setVerificationMethod] = useState<'bvn' | 'nin' | 'face' | 'passport'>('bvn');
-    const isNigerian = user?.country?.toLowerCase() === 'nigeria';
-
     const [mounted, setMounted] = useState(false);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -217,7 +215,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                             Identity Verification
                                         </h3>
                                         <p className="mt-1 text-sm font-bold tracking-widest uppercase text-zinc-400">
-                                            {isNigerian ? 'KYC Level 1' : 'Global KYC'}
+                                            Identity Verification
                                         </p>
                                     </div>
                                 </div>
@@ -250,7 +248,7 @@ export default function KYCModal({ isOpen, onClose, onSuccess, isMandatory = fal
                                         Verification Method
                                     </label>
                                     <div className="flex p-1 border bg-zinc-100/80 rounded-2xl border-zinc-200/50">
-                                        {(['bvn', 'nin', ...(!isNigerian ? ['face', 'passport'] : [])] as ('bvn' | 'nin' | 'face' | 'passport')[]).map((method) => (
+                                        {(['bvn', 'nin', 'face', 'passport'] as ('bvn' | 'nin' | 'face' | 'passport')[]).map((method) => (
                                             <button
                                                 key={method}
                                                 type="button"

@@ -51,6 +51,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
 
     useEffect(() => {
+        if (sessionStorage.getItem('hasSeenWelcome')) {
+            setWelcomeVideoDone(true);
+        }
         const handler = () => setWelcomeVideoDone(true);
         window.addEventListener('welcomeVideoEnded', handler);
         return () => window.removeEventListener('welcomeVideoEnded', handler);
