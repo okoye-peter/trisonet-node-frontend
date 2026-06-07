@@ -21,11 +21,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-    walletApi, 
-    useGetWalletsQuery, 
-    useInitiateDirectWalletFundingMutation, 
-    useLazyCheckFundingStatusQuery 
+import {
+    walletApi,
+    useGetWalletsQuery,
+    useInitiateDirectWalletFundingMutation,
+    useLazyCheckFundingStatusQuery,
+    useGetGkwthPricesQuery
 } from '@/store/api/walletApi';
 import { useGetBanksQuery, useResolveAccountMutation, useGetUserBankQuery } from '@/store/api/bankApi';
 import { useInitiateWithdrawalMutation } from '@/store/api/withdrawalApi';
@@ -98,6 +99,9 @@ export default function WalletsPage() {
 
     const { data: walletsResponse, isLoading: isWalletsLoading, refetch: refetchWallets } = useGetWalletsQuery();
     const { data: banksResponse } = useGetBanksQuery();
+    const { data: pricesResponse } = useGetGkwthPricesQuery();
+    const commissionPrice = Number(pricesResponse?.data?.commissionPrice) || 0;
+    const isNigerian = profile?.country?.toLowerCase() === 'nigeria';
     const [resolveAccount, { isLoading: isResolving }] = useResolveAccountMutation();
     const [initiateWithdrawal, { isLoading: isWithdrawing }] = useInitiateWithdrawalMutation();
 
@@ -678,7 +682,7 @@ export default function WalletsPage() {
                                                 <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Amount to Withdraw</Label>
                                                 <div className="relative">
                                                     <div className="absolute text-xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">{currency}</div>
-                                                    <Input 
+                                                    <Input
                                                         value={withdrawData.amount}
                                                         onChange={(e) => {
                                                             const val = e.target.value;
@@ -689,6 +693,19 @@ export default function WalletsPage() {
                                                         type="number"
                                                     />
                                                 </div>
+                                                {/* Show NGN equivalent for non-Nigerian users */}
+                                                {!isNigerian && withdrawData.amount && Number(withdrawData.amount) > 0 && commissionPrice > 0 && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: -4 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="flex items-center gap-2 ml-1 mt-1"
+                                                    >
+                                                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">You receive ≈</span>
+                                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                                            ₦{(Number(withdrawData.amount) * commissionPrice).toLocaleString()}
+                                                        </span>
+                                                    </motion.div>
+                                                )}
                                             </div>
                                             <div className="space-y-2">
                                                 <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">

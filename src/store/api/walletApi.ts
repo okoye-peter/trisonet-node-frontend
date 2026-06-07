@@ -22,7 +22,7 @@ export const walletApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['Wallet'],
         }),
-        getGkwthPrices: builder.query<AppResponse<{ loanPurchasePrice: string; gkwthSalePrice: string; gkwthPurchasePrice: string }>, void>({
+        getGkwthPrices: builder.query<AppResponse<{ loanPurchasePrice: string; gkwthSalePrice: string; gkwthPurchasePrice: string; commissionPrice: string }>, void>({
             query: () => 'wallet/gkwth/prices',
         }),
         purchaseGkwth: builder.mutation<AppResponse<{ account_detail: { account_name: string; bank_name: string; account_number: string; amount: number; expiry_date: string; reference: string } }>, { quantity: number }>({

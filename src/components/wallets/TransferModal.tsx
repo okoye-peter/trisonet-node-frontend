@@ -28,7 +28,8 @@ import {
     CheckCircle2,
     User as UserIcon,
     AlertCircle,
-    ShieldCheck
+    ShieldCheck,
+    ArrowRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,11 +38,12 @@ import { useGetUserByTransferIdQuery } from '@/store/api/userApi';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
+import { useAppSelector } from '@/store/hooks';
 
-const createTransferSchema = (currency: string) => z.object({
+const createTransferSchema = (currency: string, isNigerian: boolean) => z.object({
     receiverTransferId: z.string().min(3, 'Invalid account number'),
     senderWalletId: z.string().min(1, 'Please select a wallet'),
-    amount: z.number().min(100, `Minimum transfer amount is ${currency}100`),
+    amount: z.number().min(isNigerian ? 100 : 1, `Minimum transfer amount is ${currency}${isNigerian ? '100' : '1'}`),
     pin: z.string().length(4, 'PIN must be 4 digits'),
 });
 
@@ -56,6 +58,8 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     const [isSuccess, setIsSuccess] = useState(false);
     const [transferData, setTransferData] = useState<{ reference: string } | null>(null);
     const currency = useCurrencySymbol();
+    const authUser = useAppSelector((state) => state.auth.user);
+    const senderIsNigerian = authUser?.country?.toLowerCase() === 'nigeria';
 
     const { data: walletsResponse } = useGetWalletsQuery();
     const wallets = (walletsResponse?.data || []).filter(w => w.type !== 'earning');
@@ -64,9 +68,10 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const prices = pricesResponse?.data;
     const gkwthPrice = Number(prices?.gkwthSalePrice) || 0;
+    const commissionPrice = Number(prices?.commissionPrice) || 0;
 
     const form = useForm<TransferFormValues>({
-        resolver: zodResolver(createTransferSchema(currency)),
+        resolver: zodResolver(createTransferSchema(currency, senderIsNigerian)),
         defaultValues: {
             receiverTransferId: '',
             senderWalletId: '',
@@ -212,13 +217,29 @@ export function TransferModal({ open, onOpenChange }: TransferModalProps) {
                                                 />
                                             </div>
                                             {isGkwth && form.watch('amount') > 0 && (
-                                                <motion.p 
+                                                <motion.p
                                                     initial={{ opacity: 0, y: -5 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest ml-1"
                                                 >
                                                     ≈ {currency}{(form.watch('amount') * gkwthPrice).toLocaleString()}
                                                 </motion.p>
+                                            )}
+                                            {/* Cross-country conversion hint: non-Nigerian sending to Nigerian */}
+                                            {!isGkwth && !senderIsNigerian && receiver?.country?.toLowerCase() === 'nigeria' && form.watch('amount') > 0 && commissionPrice > 0 && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: -5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="flex items-center gap-1.5 ml-1"
+                                                >
+                                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                                        ${form.watch('amount').toLocaleString()}
+                                                    </span>
+                                                    <ArrowRight size={10} className="text-zinc-400" />
+                                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                                        ₦{(form.watch('amount') * commissionPrice).toLocaleString()}
+                                                    </span>
+                                                </motion.div>
                                             )}
                                         </div>
                                         <div className="space-y-2">
