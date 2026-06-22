@@ -44,34 +44,34 @@ export default function MigrationRequestModal({ isOpen, onClose }: MigrationRequ
                             className="relative w-full max-w-lg overflow-hidden bg-[#162a35] border border-cyan-500/20 rounded-[2.5rem] p-8 md:p-10 shadow-2xl flex flex-col items-center text-center text-white"
                         >
                             {/* Blue/Cyan Glow Ring */}
-                            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60" />
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-60" />
                             
                             {/* Checkmark Circle */}
-                            <div className="flex items-center justify-center h-24 w-24 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 shadow-xl shadow-cyan-500/20 mb-8 border border-white/10 relative">
-                                <div className="absolute inset-0 rounded-full bg-cyan-400/20 animate-ping opacity-75" />
-                                <Check size={40} className="text-white relative z-10" strokeWidth={3} />
+                            <div className="relative flex items-center justify-center w-24 h-24 mb-8 border rounded-full shadow-xl bg-gradient-to-br from-cyan-400 to-blue-600 shadow-cyan-500/20 border-white/10">
+                                <div className="absolute inset-0 rounded-full opacity-75 bg-cyan-400/20 animate-ping" />
+                                <Check size={40} className="relative z-10 text-white" strokeWidth={3} />
                             </div>
 
                             {/* Headline */}
-                            <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white mb-4">
+                            <h2 className="mb-4 text-2xl font-black tracking-tight text-white md:text-3xl">
                                 🎉 Migration Request Received!
                             </h2>
 
                             {/* Subheadline */}
-                            <p className="text-sm md:text-base text-zinc-300 leading-relaxed max-w-md mb-8">
-                                Your <span className="text-cyan-400 font-extrabold">Level 2 Migration</span> request has been <span className="text-emerald-400 font-extrabold">successfully submitted</span> and is now under review.
+                            <p className="max-w-md mb-8 text-sm leading-relaxed md:text-base text-zinc-300">
+                                Your <span className="font-extrabold text-cyan-400">Level 1 Migration</span> request has been <span className="font-extrabold text-emerald-400">successfully submitted</span> and is now under review.
                             </p>
 
                             {/* Inner Info Box */}
                             <div className="w-full bg-[#0d1f27] border border-cyan-500/10 rounded-3xl p-6 mb-8 text-left">
-                                <p className="text-xs md:text-sm text-zinc-300 leading-relaxed">
-                                    Your account is currently <span className="text-amber-400 font-extrabold">active</span> and fully accessible while we process your upgrade. You will be notified once your Level 2 account migration is complete.
+                                <p className="text-xs leading-relaxed md:text-sm text-zinc-300">
+                                    Your account is currently <span className="font-extrabold text-amber-400">active</span> and fully accessible while we process your upgrade. You will be notified once your Level 1 account migration is complete.
                                 </p>
                             </div>
 
                             {/* Greeting */}
-                            <p className="text-xs md:text-sm text-zinc-400 mb-8">
-                                Welcome back, <span className="text-white font-bold">{user?.name || 'Member'}</span> 👋
+                            <p className="mb-8 text-xs md:text-sm text-zinc-400">
+                                Welcome back, <span className="font-bold text-white">{user?.name || 'Member'}</span> 👋
                             </p>
 
                             {/* Got It Button */}

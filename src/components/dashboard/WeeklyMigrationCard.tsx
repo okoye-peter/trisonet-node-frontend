@@ -25,7 +25,7 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Weekly Migration</p>
-                            <p className="text-sm font-bold text-zinc-900">Level 2 Queue</p>
+                            <p className="text-sm font-bold text-zinc-900">Level 1 Queue</p>
                         </div>
                     </div>
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${

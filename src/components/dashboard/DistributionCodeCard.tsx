@@ -20,16 +20,16 @@ export default function DistributionCodeCard({ username, onShowQR }: Distributio
     };
 
     return (
-        <Card className="relative overflow-hidden border-none bg-zinc-900 rounded-3xl shadow-2xl group transition-all duration-500 hover:shadow-indigo-500/10">
+        <Card className="relative overflow-hidden transition-all duration-500 border-none shadow-2xl bg-zinc-900 rounded-3xl group hover:shadow-indigo-500/10">
             {/* Background elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mt-10 -mr-10 transition-transform duration-700 group-hover:scale-150" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/20 rounded-full blur-2xl -mb-8 -ml-8" />
+            <div className="absolute top-0 right-0 w-32 h-32 -mt-10 -mr-10 transition-transform duration-700 rounded-full bg-indigo-500/20 blur-3xl group-hover:scale-150" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 -mb-8 -ml-8 rounded-full bg-purple-500/20 blur-2xl" />
             
-            <CardContent className="p-6 relative z-10 flex flex-col h-full justify-between">
+            <CardContent className="relative z-10 flex flex-col justify-between h-full p-6">
                 <div>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white/10 text-white flex items-center justify-center backdrop-blur-md border border-white/10">
+                            <div className="flex items-center justify-center w-10 h-10 text-white border rounded-xl bg-white/10 backdrop-blur-md border-white/10">
                                 <Share2 size={18} />
                             </div>
                             <div>
@@ -41,15 +41,15 @@ export default function DistributionCodeCard({ username, onShowQR }: Distributio
                             variant="ghost"
                             size="icon-sm"
                             onClick={onShowQR}
-                            className="bg-white/5 text-white hover:bg-white/20 rounded-xl transition-all"
+                            className="text-white transition-all bg-white/5 hover:bg-white/20 rounded-xl"
                             title="Show QR Code"
                         >
                             <QrCode size={16} />
                         </Button>
                     </div>
                     
-                    <p className="text-xs font-medium text-zinc-400 mb-4 line-clamp-2">
-                        Share this code to build your partner network and progress to Level 2.
+                    <p className="mb-4 text-xs font-medium text-zinc-400 line-clamp-2">
+                        Share this code to build your partner network and progress to Level 1.
                     </p>
                 </div>
 
