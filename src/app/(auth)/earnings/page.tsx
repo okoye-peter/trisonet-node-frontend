@@ -221,13 +221,13 @@ export default function EarningsPage() {
                                 Total ≈ {currency}{(earningWallet ? earningWallet.amount * purchasePrice : 0).toLocaleString()}
                             </p>
                         </div>
-                        <button 
+                        {/* <button 
                             onClick={() => setIsWithdrawModalOpen(true)}
-                            className="h-12 px-4 py-1 rounded-2xl bg-white/20 hover:bg-white text-white hover:text-emerald-600 flex items-center justify-center transition-all duration-300 shadow-lg shadow-black/5 group/btn text-sm font-black uppercase tracking-wider italic"
+                            className="flex items-center justify-center h-12 px-4 py-1 text-sm italic font-black tracking-wider text-white uppercase transition-all duration-300 shadow-lg rounded-2xl bg-white/20 hover:bg-white hover:text-emerald-600 shadow-black/5 group/btn"
                             title="Withdraw Funds"
                         >
                             Withdraw
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>

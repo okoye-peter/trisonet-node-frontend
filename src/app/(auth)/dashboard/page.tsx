@@ -32,6 +32,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import type { Partner, Wallet as WalletType, DashboardStats } from '@/types';
+import { ROLES } from '@/types';
 import { MAX_ASSET_DEPOT } from '@/lib/constants';
 import { Variants } from 'framer-motion';
 import LoadingScreen from '@/components/LoadingScreen';
@@ -218,6 +219,16 @@ export default function DashboardPage() {
         }
     })
 
+    const isLevel1Customer = user?.level === 1 && user?.role === ROLES.CUSTOMER;
+    const { data: pendingMigrationResponse } = useQuery<{ data: { pendingCount: number; weeklyExpected: number } }>({
+        queryKey: ['pendingMigrationCount'],
+        queryFn: async () => {
+            const res = await api.get('/user/pending_migration/count');
+            return res.data;
+        },
+        enabled: isLevel1Customer,
+    })
+
     const dashboardStats = dashboardStatsResponse?.data;
     const { data: pricesResponse } = useGetGkwthPricesQuery();
     const gkwthSalePrice = Number(pricesResponse?.data?.gkwthSalePrice) || 0;
@@ -327,9 +338,14 @@ export default function DashboardPage() {
             {/* Main Stats Grid */}
             <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Level 1 Only: Progress Card */}
-                {user?.level === 1 && (
+                {isLevel1Customer && (
                     <div className="sm:col-span-2 lg:col-span-2">
-                        <Level1ProgressCard totalSales={dashboardStats?.migrationSales ?? 0} isPendingLevel2Migration={!!user?.isPendingLevel2Migration} />
+                        <Level1ProgressCard
+                            totalSales={dashboardStats?.migrationSales ?? 0}
+                            isPendingLevel2Migration={!!user?.isPendingLevel2Migration}
+                            pendingMigrationCount={pendingMigrationResponse?.data?.pendingCount}
+                            weeklyExpectedMigration={pendingMigrationResponse?.data?.weeklyExpected}
+                        />
                     </div>
                 )}
 
