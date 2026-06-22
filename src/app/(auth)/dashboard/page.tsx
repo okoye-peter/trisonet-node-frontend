@@ -42,6 +42,7 @@ import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import PIMCardModal from '@/components/dashboard/PIMCardModal';
 import Level1ProgressCard from '@/components/dashboard/Level1ProgressCard';
+import WeeklyMigrationCard from '@/components/dashboard/WeeklyMigrationCard';
 import DistributionCodeCard from '@/components/dashboard/DistributionCodeCard';
 import ActivationActionCard from '@/components/dashboard/ActivationActionCard';
 import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
@@ -344,8 +345,16 @@ export default function DashboardPage() {
                         <Level1ProgressCard
                             totalSales={dashboardStats?.migrationSales ?? 0}
                             isPendingLevel2Migration={!!user?.isPendingLevel2Migration}
-                            pendingMigrationCount={pendingMigrationResponse?.pendingCount}
-                            weeklyExpectedMigration={pendingMigrationResponse?.weeklyExpected}
+                        />
+                    </div>
+                )}
+
+                {/* Level 1 Only: Weekly Migration Card */}
+                {isLevel1Customer && (
+                    <div className="sm:col-span-2 lg:col-span-2">
+                        <WeeklyMigrationCard
+                            pendingCount={pendingMigrationResponse?.pendingCount}
+                            weeklyExpected={pendingMigrationResponse?.weeklyExpected}
                         />
                     </div>
                 )}
