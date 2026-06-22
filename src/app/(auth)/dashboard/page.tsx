@@ -31,6 +31,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
+import axios from 'axios';
 import type { Partner, Wallet as WalletType, DashboardStats } from '@/types';
 import { ROLES } from '@/types';
 import { MAX_ASSET_DEPOT } from '@/lib/constants';
@@ -220,11 +221,10 @@ export default function DashboardPage() {
     })
 
     const isLevel1Customer = user?.level === 1 && user?.role === ROLES.CUSTOMER;
-    const phpApiUrl = process.env.NEXT_PUBLIC_PHP_API_URL || 'https://app.trisonet.com/api';
     const { data: pendingMigrationResponse } = useQuery<{ pendingCount: number; weeklyExpected: number }>({
         queryKey: ['pendingMigrationCount'],
         queryFn: async () => {
-            const res = await api.get(`${phpApiUrl}/user/pending_migration/count`);
+            const res = await axios.get('/api/migration-count');
             return res.data;
         },
         enabled: isLevel1Customer,
