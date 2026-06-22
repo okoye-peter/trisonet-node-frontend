@@ -220,10 +220,11 @@ export default function DashboardPage() {
     })
 
     const isLevel1Customer = user?.level === 1 && user?.role === ROLES.CUSTOMER;
-    const { data: pendingMigrationResponse } = useQuery<{ data: { pendingCount: number; weeklyExpected: number } }>({
+    const phpApiUrl = process.env.NEXT_PUBLIC_PHP_API_URL || 'https://app.trisonet.com/api';
+    const { data: pendingMigrationResponse } = useQuery<{ pendingCount: number; weeklyExpected: number }>({
         queryKey: ['pendingMigrationCount'],
         queryFn: async () => {
-            const res = await api.get('/user/pending_migration/count');
+            const res = await api.get(`${phpApiUrl}/user/pending_migration/count`);
             return res.data;
         },
         enabled: isLevel1Customer,
@@ -343,8 +344,8 @@ export default function DashboardPage() {
                         <Level1ProgressCard
                             totalSales={dashboardStats?.migrationSales ?? 0}
                             isPendingLevel2Migration={!!user?.isPendingLevel2Migration}
-                            pendingMigrationCount={pendingMigrationResponse?.data?.pendingCount}
-                            weeklyExpectedMigration={pendingMigrationResponse?.data?.weeklyExpected}
+                            pendingMigrationCount={pendingMigrationResponse?.pendingCount}
+                            weeklyExpectedMigration={pendingMigrationResponse?.weeklyExpected}
                         />
                     </div>
                 )}
@@ -629,13 +630,13 @@ export default function DashboardPage() {
             {/* Wallet History Dialog */}
             <Dialog open={isWalletHistoryOpen} onOpenChange={setIsWalletHistoryOpen}>
                 <DialogContent className="sm:max-w-[560px] rounded-3xl border-none shadow-2xl p-0 overflow-hidden">
-                    <div className="p-6 bg-emerald-600 text-white">
+                    <div className="p-6 text-white bg-emerald-600">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-xl font-black">
                                 <History size={20} className="text-emerald-200" />
                                 Wallet History
                             </DialogTitle>
-                            <DialogDescription className="text-emerald-100/70 font-medium mt-1">
+                            <DialogDescription className="mt-1 font-medium text-emerald-100/70">
                                 Balance changes for your wallet.
                             </DialogDescription>
                         </DialogHeader>
@@ -664,9 +665,9 @@ export default function DashboardPage() {
                                     hour: '2-digit', minute: '2-digit',
                                 });
                                 return (
-                                    <div key={log.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                    <div key={log.id} className="flex items-center justify-between p-4 border rounded-2xl bg-zinc-50 border-zinc-100">
                                         <div className="space-y-1">
-                                            <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">
+                                            <div className="flex items-center gap-2 text-xs font-medium text-zinc-400">
                                                 <span>{date}</span>
                                                 {diff != null && (
                                                     <Badge className={cn(
@@ -703,7 +704,7 @@ export default function DashboardPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="rounded-xl font-bold text-xs h-8"
+                                    className="h-8 text-xs font-bold rounded-xl"
                                     disabled={!walletHistoryResponse?.data?.meta?.hasPreviousPage || isWalletHistoryFetching}
                                     onClick={() => setWalletHistoryPage(p => p - 1)}
                                 >
@@ -712,7 +713,7 @@ export default function DashboardPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="rounded-xl font-bold text-xs h-8"
+                                    className="h-8 text-xs font-bold rounded-xl"
                                     disabled={!walletHistoryResponse?.data?.meta?.hasNextPage || isWalletHistoryFetching}
                                     onClick={() => setWalletHistoryPage(p => p + 1)}
                                 >
