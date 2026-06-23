@@ -350,14 +350,12 @@ export default function DashboardPage() {
                 )}
 
                 {/* Level 1 Only: Weekly Migration Card */}
-                {isLevel1Customer && (
-                    <div className="sm:col-span-2 lg:col-span-2">
-                        <WeeklyMigrationCard
-                            pendingCount={pendingMigrationResponse?.pendingCount}
-                            weeklyExpected={pendingMigrationResponse?.weeklyExpected}
-                        />
-                    </div>
-                )}
+                <div className="sm:col-span-2 lg:col-span-2">
+                    <WeeklyMigrationCard
+                        pendingCount={pendingMigrationResponse?.pendingCount}
+                        weeklyExpected={pendingMigrationResponse?.weeklyExpected}
+                    />
+                </div>
 
                 {/* Level 1 Only: Activation Action */}
                 {user?.level === 1 && !user?.status && (
