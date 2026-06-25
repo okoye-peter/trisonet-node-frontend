@@ -222,13 +222,14 @@ export default function DashboardPage() {
     })
 
     const isLevel1Customer = user?.level === 1 && user?.role === ROLES.CUSTOMER;
+    const isCustomer = (user?.level === 1 || user?.level === 2) && user?.role === ROLES.CUSTOMER;
     const { data: pendingMigrationResponse } = useQuery<{ pendingCount: number; weeklyExpected: number }>({
         queryKey: ['pendingMigrationCount'],
         queryFn: async () => {
             const res = await axios.get('/api/migration-count');
             return res.data;
         },
-        enabled: isLevel1Customer,
+        enabled: isCustomer,
     })
 
     const dashboardStats = dashboardStatsResponse?.data;
@@ -356,6 +357,7 @@ export default function DashboardPage() {
                         weeklyExpected={pendingMigrationResponse?.weeklyExpected}
                     />
                 </div>
+                
 
                 {/* Level 1 Only: Activation Action */}
                 {user?.level === 1 && !user?.status && (

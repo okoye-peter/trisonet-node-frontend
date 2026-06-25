@@ -55,7 +55,7 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                             <span className="text-[9px] font-black uppercase tracking-wider text-indigo-500">Expected</span>
                         </div>
                         <p className="text-3xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-400 font-medium mt-1">this week's target</p>
+                        <p className="text-[9px] text-zinc-400 font-medium mt-1">this week&apos;s target</p>
                     </div>
                 </div>
 
