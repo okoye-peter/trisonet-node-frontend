@@ -626,7 +626,7 @@ const ActivationCards = () => {
                             {loading ? (
                                 <Skeleton className="w-full h-52 rounded-3xl" />
                             ) : activeCard ? (
-                                <CardVisual code={activeCard.code} amount={activeCard.amount} />
+                                <CardVisual code={activeCard.code} amount={(summary?.availableSlots ?? 0) * activeCard.pricePerUser} />
                             ) : (
                                 <div className="flex flex-col items-center justify-center w-full gap-3 border-2 border-dashed h-52 rounded-3xl border-muted-foreground/20 text-muted-foreground">
                                     <CreditCard className="w-10 h-10 opacity-30" />
