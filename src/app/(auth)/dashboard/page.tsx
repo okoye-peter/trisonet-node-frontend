@@ -47,6 +47,7 @@ import DistributionCodeCard from '@/components/dashboard/DistributionCodeCard';
 import ActivationActionCard from '@/components/dashboard/ActivationActionCard';
 import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
 import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
+import MigrationQueueModal from '@/components/dashboard/modals/MigrationQueueModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
@@ -153,6 +154,8 @@ const partnerColumns: ColumnDef<Partner>[] = [
     },
 ];
 
+let migrationModalShownThisLoad = false;
+
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -193,6 +196,7 @@ export default function DashboardPage() {
     const [isPimModalOpen, setIsPimModalOpen] = useState(false);
     const [isBuyPimModalOpen, setIsBuyPimModalOpen] = useState(false);
     const [isWalletHistoryOpen, setIsWalletHistoryOpen] = useState(false);
+    const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
     const [walletHistoryPage, setWalletHistoryPage] = useState(1);
 
     const { refetch: refetchUser } = useGetUserQuery();
@@ -231,6 +235,12 @@ export default function DashboardPage() {
         },
         enabled: isCustomer,
     })
+
+    useEffect(() => {
+        if (!pendingMigrationResponse || migrationModalShownThisLoad) return;
+        migrationModalShownThisLoad = true;
+        setIsMigrationModalOpen(true);
+    }, [pendingMigrationResponse]);
 
     const dashboardStats = dashboardStatsResponse?.data;
     const { data: pricesResponse } = useGetGkwthPricesQuery();
@@ -755,6 +765,13 @@ export default function DashboardPage() {
                     refetchStats();
                 }}
                 activationData={dashboardStats?.activation}
+            />
+
+            <MigrationQueueModal
+                isOpen={isMigrationModalOpen}
+                onClose={() => setIsMigrationModalOpen(false)}
+                pendingCount={pendingMigrationResponse?.pendingCount ?? 0}
+                weeklyExpected={pendingMigrationResponse?.weeklyExpected ?? 0}
             />
 
         </motion.div>

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowUpCircle, CalendarDays } from 'lucide-react';
+import { ArrowUpCircle, CalendarDays, Target } from 'lucide-react';
 
 interface WeeklyMigrationCardProps {
     pendingCount?: number;
@@ -11,6 +11,7 @@ interface WeeklyMigrationCardProps {
 
 export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected = 0 }: WeeklyMigrationCardProps) {
     const weeklyPercent = weeklyExpected > 0 ? Math.min(Math.round((pendingCount / weeklyExpected) * 100), 100) : 0;
+    const remaining = Math.max(0, weeklyExpected - pendingCount);
 
     return (
         <Card className="relative overflow-hidden transition-all duration-500 bg-white border-none shadow-sm rounded-3xl hover:shadow-xl group">
@@ -39,14 +40,14 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                     </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-3 mb-6">
                     <div className="p-4 rounded-2xl bg-amber-50">
                         <div className="flex items-center gap-1.5 mb-2">
                             <ArrowUpCircle size={13} className="text-amber-500" />
                             <span className="text-[9px] font-black uppercase tracking-wider text-amber-500">Pending</span>
                         </div>
-                        <p className="text-3xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-400 font-medium mt-1">migrations queued</p>
+                        <p className="text-2xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
+                        <p className="text-[9px] text-zinc-400 font-medium mt-1">queued</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-indigo-50">
@@ -54,8 +55,17 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                             <CalendarDays size={13} className="text-indigo-500" />
                             <span className="text-[9px] font-black uppercase tracking-wider text-indigo-500">Expected</span>
                         </div>
-                        <p className="text-3xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-400 font-medium mt-1">this week&apos;s target</p>
+                        <p className="text-2xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
+                        <p className="text-[9px] text-zinc-400 font-medium mt-1">this week</p>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl ${remaining === 0 ? 'bg-emerald-50' : 'bg-zinc-50'}`}>
+                        <div className="flex items-center gap-1.5 mb-2">
+                            <Target size={13} className={remaining === 0 ? 'text-emerald-500' : 'text-zinc-400'} />
+                            <span className={`text-[9px] font-black uppercase tracking-wider ${remaining === 0 ? 'text-emerald-500' : 'text-zinc-400'}`}>Remaining</span>
+                        </div>
+                        <p className="text-2xl font-black tracking-tighter text-zinc-900">{remaining.toLocaleString()}</p>
+                        <p className="text-[9px] text-zinc-400 font-medium mt-1">to complete</p>
                     </div>
                 </div>
 
