@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
             setUsername(values.username);
             resetPasswordForm.setValue('username', values.username);
             setStep('reset-password');
-            toast.success('OTP sent to your username!');
+            toast.success('OTP sent successfully!');
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };
             toast.error(err.response?.data?.message || 'Failed to send OTP.');
@@ -93,9 +93,9 @@ export default function ForgotPasswordPage() {
     if (step === 'success') {
         return (
             <AuthLayout title="Success!" description="Your password has been reset successfully.">
-                <div className="flex flex-col items-center space-y-6 text-center py-4">
-                    <div className="rounded-full bg-green-50 p-4 text-green-600 shadow-sm border border-green-100">
-                        <CheckCircle2 className="h-16 w-16" />
+                <div className="flex flex-col items-center py-4 space-y-6 text-center">
+                    <div className="p-4 text-green-600 border border-green-100 rounded-full shadow-sm bg-green-50">
+                        <CheckCircle2 className="w-16 h-16" />
                     </div>
                     <div className="space-y-2">
                         <h3 className="text-xl font-bold text-[#040021]">Ready to Sign In</h3>
@@ -108,7 +108,7 @@ export default function ForgotPasswordPage() {
                         className="w-full h-12 bg-[#6639ff] hover:bg-[#5229db] text-white font-bold uppercase tracking-wider rounded-md transition-all shadow-lg shadow-[#6639ff]/20"
                     >
                         <span className="flex items-center justify-center gap-2">
-                            Go to Login <i className="fas fa-arrow-right text-xs"></i>
+                            Go to Login <i className="text-xs fas fa-arrow-right"></i>
                         </span>
                     </Button>
                 </div>
@@ -153,10 +153,10 @@ export default function ForgotPasswordPage() {
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                                 ) : (
                                     <span className="flex items-center justify-center gap-2">
-                                        Send OTP <i className="fas fa-paper-plane text-xs"></i>
+                                        Send OTP <i className="text-xs fas fa-paper-plane"></i>
                                     </span>
                                 )}
                             </Button>
@@ -166,7 +166,7 @@ export default function ForgotPasswordPage() {
                                 className="w-full h-11 text-[#8f98a8] hover:text-[#040021] font-semibold transition-colors"
                             >
                                 <span className="flex items-center justify-center gap-2">
-                                    <ArrowLeft className="h-4 w-4" />
+                                    <ArrowLeft className="w-4 h-4" />
                                     Back to login
                                 </span>
                             </Button>
@@ -250,10 +250,10 @@ export default function ForgotPasswordPage() {
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                                 ) : (
                                     <span className="flex items-center justify-center gap-2">
-                                        Reset Password <i className="fas fa-check text-xs"></i>
+                                        Reset Password <i className="text-xs fas fa-check"></i>
                                     </span>
                                 )}
                             </Button>
