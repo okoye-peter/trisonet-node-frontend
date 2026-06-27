@@ -21,20 +21,20 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
             <CardContent className="relative p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center w-10 h-10 text-amber-600 rounded-xl bg-amber-50">
-                            <CalendarDays size={20} />
+                        <div className="flex items-center justify-center w-12 h-12 text-amber-600 rounded-2xl bg-amber-50">
+                            <CalendarDays size={24} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Weekly Migration</p>
-                            <p className="text-sm font-bold text-zinc-900">Level 1 Queue</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">Weekly Migration</p>
+                            <p className="text-base font-black text-zinc-900">Level 1 Queue</p>
                         </div>
                     </div>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wider ${
                         weeklyPercent >= 100
-                            ? 'bg-emerald-50 text-emerald-600'
+                            ? 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200'
                             : weeklyPercent >= 50
-                                ? 'bg-amber-50 text-amber-600'
-                                : 'bg-zinc-50 text-zinc-500'
+                                ? 'bg-amber-50 text-amber-600 ring-1 ring-amber-200'
+                                : 'bg-zinc-50 text-zinc-500 ring-1 ring-zinc-200'
                     }`}>
                         {weeklyPercent}% filled
                     </span>
@@ -43,34 +43,34 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                 <div className="grid grid-cols-3 gap-3 mb-6">
                     <div className="p-4 rounded-2xl bg-amber-50">
                         <div className="flex items-center gap-1.5 mb-2">
-                            <ArrowUpCircle size={13} className="text-amber-500" />
-                            <span className="text-[9px] font-black uppercase tracking-wider text-amber-500">Pending</span>
+                            <ArrowUpCircle size={14} className="text-amber-500" />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">In Queue</span>
                         </div>
-                        <p className="text-2xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-400 font-medium mt-1">queued</p>
+                        <p className="text-3xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
+                        <p className="text-[10px] text-zinc-400 font-semibold mt-1">queued</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-indigo-50">
                         <div className="flex items-center gap-1.5 mb-2">
-                            <CalendarDays size={13} className="text-indigo-500" />
-                            <span className="text-[9px] font-black uppercase tracking-wider text-indigo-500">Expected</span>
+                            <CalendarDays size={14} className="text-indigo-500" />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500">Target</span>
                         </div>
-                        <p className="text-2xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-400 font-medium mt-1">this week</p>
+                        <p className="text-3xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
+                        <p className="text-[10px] text-zinc-400 font-semibold mt-1">this week</p>
                     </div>
 
-                    <div className={`p-4 rounded-2xl ${remaining === 0 ? 'bg-emerald-50' : 'bg-zinc-50'}`}>
+                    <div className={`p-4 rounded-2xl ${remaining === 0 ? 'bg-emerald-50' : 'bg-red-100 ring-2 ring-red-400 ring-offset-2 animate-pulse'}`}>
                         <div className="flex items-center gap-1.5 mb-2">
-                            <Target size={13} className={remaining === 0 ? 'text-emerald-500' : 'text-zinc-400'} />
-                            <span className={`text-[9px] font-black uppercase tracking-wider ${remaining === 0 ? 'text-emerald-500' : 'text-zinc-400'}`}>Remaining</span>
+                            <Target size={remaining === 0 ? 14 : 16} className={remaining === 0 ? 'text-emerald-500' : 'text-red-600 animate-bounce'} />
+                            <span className={`text-[10px] font-black uppercase tracking-wider ${remaining === 0 ? 'text-emerald-500' : 'text-red-600'}`}>Needed</span>
                         </div>
-                        <p className="text-2xl font-black tracking-tighter text-zinc-900">{remaining.toLocaleString()}</p>
-                        <p className="text-[9px] text-zinc-400 font-medium mt-1">to complete</p>
+                        <p className={`text-3xl font-black tracking-tighter ${remaining === 0 ? 'text-zinc-900' : 'text-red-700'}`}>{remaining.toLocaleString()}</p>
+                        <p className={`text-[10px] font-semibold mt-1 ${remaining === 0 ? 'text-zinc-400' : 'text-red-500'}`}>still needed</p>
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-zinc-400">
+                    <div className="flex justify-between text-[11px] font-black uppercase tracking-wider text-zinc-400">
                         <span>Weekly Progress</span>
                         <span>{weeklyPercent}%</span>
                     </div>
@@ -82,6 +82,11 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                             className="absolute top-0 left-0 h-full rounded-full bg-linear-to-r from-amber-400 via-orange-400 to-amber-500"
                         />
                     </div>
+                    <p className="text-sm font-semibold text-zinc-500 pt-1">
+                        {remaining === 0
+                            ? 'Weekly target reached — migrations can proceed.'
+                            : `${remaining.toLocaleString()} more ${remaining === 1 ? 'person needs' : 'people need'} to queue this week.`}
+                    </p>
                 </div>
             </CardContent>
         </Card>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Users, Target, ArrowUpCircle, CalendarDays } from 'lucide-react';
+import { Users, Target, ArrowUpCircle, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MigrationQueueModalProps {
@@ -23,14 +23,12 @@ export default function MigrationQueueModal({ isOpen, onClose, pendingCount, wee
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-                    onClick={onClose}
                 >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.92, y: 24 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.92, y: 24 }}
                         transition={{ type: 'spring', stiffness: 320, damping: 28 }}
-                        onClick={(e) => e.stopPropagation()}
                         className="relative w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-3xl"
                     >
                         {/* Header */}
@@ -43,23 +41,15 @@ export default function MigrationQueueModal({ isOpen, onClose, pendingCount, wee
                                         <Users size={22} className="text-white" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-black uppercase tracking-[0.25em] text-white/60">Live Update</p>
-                                        <h2 className="text-lg font-black leading-tight text-white">Migration Queue</h2>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70">Live Update</p>
+                                        <h2 className="text-2xl font-black leading-tight text-white">Migration Queue</h2>
                                     </div>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    onClick={onClose}
-                                    className="p-2 transition-all text-white/70 hover:bg-white/20 hover:text-white rounded-xl"
-                                >
-                                    <X size={16} />
-                                </Button>
                             </div>
 
                             {/* Progress bar */}
                             <div className="relative mt-5 space-y-1.5">
-                                <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-white/60">
+                                <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-white/80">
                                     <span>Weekly Progress</span>
                                     <span>{fillPercent}% filled</span>
                                 </div>
@@ -80,28 +70,28 @@ export default function MigrationQueueModal({ isOpen, onClose, pendingCount, wee
                                 {/* Pending */}
                                 <div className="flex flex-col items-center justify-center p-4 text-center rounded-2xl bg-amber-50">
                                     <ArrowUpCircle size={16} className="mb-2 text-amber-500" />
-                                    <p className="text-2xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
-                                    <p className="text-[8px] font-black uppercase tracking-widest text-amber-500 mt-1 leading-tight">In Queue</p>
+                                    <p className="text-3xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mt-1 leading-tight">In Queue</p>
                                 </div>
 
                                 {/* Expected */}
                                 <div className="flex flex-col items-center justify-center p-4 text-center rounded-2xl bg-indigo-50">
                                     <CalendarDays size={16} className="mb-2 text-indigo-500" />
-                                    <p className="text-2xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
-                                    <p className="text-[8px] font-black uppercase tracking-widest text-indigo-500 mt-1 leading-tight">Total Expected</p>
+                                    <p className="text-3xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-1 leading-tight">Weekly Target</p>
                                 </div>
 
                                 {/* Remaining */}
-                                <div className={`flex flex-col items-center justify-center p-4 rounded-2xl text-center ${remaining === 0 ? 'bg-emerald-50' : 'bg-red-50 animate-pulse'}`}>
-                                    <Target size={16} className={`mb-2 ${remaining === 0 ? 'text-emerald-500' : 'text-red-500'}`} />
-                                    <p className={`text-2xl font-black tracking-tighter ${remaining === 0 ? 'text-zinc-900' : 'text-red-600'}`}>{remaining.toLocaleString()}</p>
-                                    <p className={`text-[8px] font-black uppercase tracking-widest mt-1 leading-tight ${remaining === 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                        Total left
+                                <div className={`flex flex-col items-center justify-center p-4 rounded-2xl text-center ${remaining === 0 ? 'bg-emerald-50' : 'bg-red-100 ring-2 ring-red-400 ring-offset-2 animate-pulse'}`}>
+                                    <Target size={remaining === 0 ? 16 : 20} className={`mb-2 ${remaining === 0 ? 'text-emerald-500' : 'text-red-600 animate-bounce'}`} />
+                                    <p className={`text-3xl font-black tracking-tighter ${remaining === 0 ? 'text-zinc-900' : 'text-red-700'}`}>{remaining.toLocaleString()}</p>
+                                    <p className={`text-[10px] font-black uppercase tracking-widest mt-1 leading-tight ${remaining === 0 ? 'text-emerald-500' : 'text-red-600'}`}>
+                                        Still Needed
                                     </p>
                                 </div>
                             </div>
 
-                            <p className="text-[11px] font-medium text-zinc-400 text-center leading-relaxed px-2">
+                            <p className="text-sm font-semibold text-zinc-500 text-center leading-relaxed px-2">
                                 {remaining === 0
                                     ? 'The weekly migration target has been reached. Migrations can proceed.'
                                     : `${remaining.toLocaleString()} more ${remaining === 1 ? 'person needs' : 'people need'} to queue before all pending migrations can be processed.`}
@@ -109,7 +99,7 @@ export default function MigrationQueueModal({ isOpen, onClose, pendingCount, wee
 
                             <Button
                                 onClick={onClose}
-                                className="w-full h-11 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white text-[10px] font-black uppercase tracking-widest transition-all"
+                                className="w-full h-12 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-widest transition-all"
                             >
                                 Got it
                             </Button>
