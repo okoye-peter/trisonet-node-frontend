@@ -71,37 +71,45 @@ export default function MigrationQueueModal({ isOpen, onClose, pendingCount, wee
                                 <div className="flex flex-col items-center justify-center p-4 text-center rounded-2xl bg-amber-50">
                                     <ArrowUpCircle size={16} className="mb-2 text-amber-500" />
                                     <p className="text-3xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mt-1 leading-tight">In Queue</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mt-1 leading-tight">Number Gotten</p>
                                 </div>
 
                                 {/* Expected */}
                                 <div className="flex flex-col items-center justify-center p-4 text-center rounded-2xl bg-indigo-50">
                                     <CalendarDays size={16} className="mb-2 text-indigo-500" />
                                     <p className="text-3xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-1 leading-tight">Weekly Target</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mt-1 leading-tight">This Week Target</p>
                                 </div>
 
                                 {/* Remaining */}
-                                <div className={`flex flex-col items-center justify-center p-4 rounded-2xl text-center ${remaining === 0 ? 'bg-emerald-50' : 'bg-red-100 ring-2 ring-red-400 ring-offset-2 animate-pulse'}`}>
-                                    <Target size={remaining === 0 ? 16 : 20} className={`mb-2 ${remaining === 0 ? 'text-emerald-500' : 'text-red-600 animate-bounce'}`} />
+                                <div className={`flex flex-col items-center justify-center p-4 rounded-2xl text-center ${remaining === 0 ? 'bg-emerald-50' : 'bg-red-100 ring-2 ring-red-400 ring-offset-2'}`}>
+                                    <Target size={remaining === 0 ? 16 : 20} className={`mb-2 ${remaining === 0 ? 'text-emerald-500' : 'text-red-600'}`} />
                                     <p className={`text-3xl font-black tracking-tighter ${remaining === 0 ? 'text-zinc-900' : 'text-red-700'}`}>{remaining.toLocaleString()}</p>
                                     <p className={`text-[10px] font-black uppercase tracking-widest mt-1 leading-tight ${remaining === 0 ? 'text-emerald-500' : 'text-red-600'}`}>
-                                        Still Needed
+                                        Number Remaining
                                     </p>
                                 </div>
                             </div>
 
-                            <p className="text-sm font-semibold text-zinc-500 text-center leading-relaxed px-2">
+                            {/* <p className="px-2 text-sm font-semibold leading-relaxed text-center text-zinc-500">
                                 {remaining === 0
                                     ? 'The weekly migration target has been reached. Migrations can proceed.'
                                     : `${remaining.toLocaleString()} more ${remaining === 1 ? 'person needs' : 'people need'} to queue before all pending migrations can be processed.`}
-                            </p>
+                            </p> */}
+
+                            {remaining > 0 && (
+                                <p className="text-base font-black tracking-wide text-center text-red-600 uppercase animate-pulse">
+                                    Caution!
+                                    <br />
+                                    You must participate in Trisonet migration structure now
+                                </p>
+                            )}
 
                             <Button
                                 onClick={onClose}
-                                className="w-full h-12 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-black uppercase tracking-widest transition-all"
+                                className="w-full h-12 text-xs font-black tracking-widest text-white uppercase transition-all rounded-2xl bg-zinc-900 hover:bg-zinc-800"
                             >
-                                Got it
+                                Yes, I agree.
                             </Button>
                         </div>
                     </motion.div>

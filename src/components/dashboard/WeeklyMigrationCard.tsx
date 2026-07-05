@@ -44,7 +44,7 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                     <div className="p-4 rounded-2xl bg-amber-50">
                         <div className="flex items-center gap-1.5 mb-2">
                             <ArrowUpCircle size={14} className="text-amber-500" />
-                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">In Queue</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-500">Number Gotten</span>
                         </div>
                         <p className="text-3xl font-black tracking-tighter text-zinc-900">{pendingCount.toLocaleString()}</p>
                         <p className="text-[10px] text-zinc-400 font-semibold mt-1">queued</p>
@@ -53,7 +53,7 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                     <div className="p-4 rounded-2xl bg-indigo-50">
                         <div className="flex items-center gap-1.5 mb-2">
                             <CalendarDays size={14} className="text-indigo-500" />
-                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500">Target</span>
+                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500">This Week Target</span>
                         </div>
                         <p className="text-3xl font-black tracking-tighter text-zinc-900">{weeklyExpected.toLocaleString()}</p>
                         <p className="text-[10px] text-zinc-400 font-semibold mt-1">this week</p>
@@ -62,7 +62,7 @@ export default function WeeklyMigrationCard({ pendingCount = 0, weeklyExpected =
                     <div className={`p-4 rounded-2xl ${remaining === 0 ? 'bg-emerald-50' : 'bg-red-100 ring-2 ring-red-400 ring-offset-2 animate-pulse'}`}>
                         <div className="flex items-center gap-1.5 mb-2">
                             <Target size={remaining === 0 ? 14 : 16} className={remaining === 0 ? 'text-emerald-500' : 'text-red-600 animate-bounce'} />
-                            <span className={`text-[10px] font-black uppercase tracking-wider ${remaining === 0 ? 'text-emerald-500' : 'text-red-600'}`}>Needed</span>
+                            <span className={`text-[10px] font-black uppercase tracking-wider ${remaining === 0 ? 'text-emerald-500' : 'text-red-600'}`}>Number Remaining</span>
                         </div>
                         <p className={`text-3xl font-black tracking-tighter ${remaining === 0 ? 'text-zinc-900' : 'text-red-700'}`}>{remaining.toLocaleString()}</p>
                         <p className={`text-[10px] font-semibold mt-1 ${remaining === 0 ? 'text-zinc-400' : 'text-red-500'}`}>still needed</p>
