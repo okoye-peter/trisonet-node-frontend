@@ -28,7 +28,7 @@ import { ROLES, User } from '@/types';
 
 
 const loginSchema = z.object({
-    emailOrUsername: z.string().min(1, { message: 'Email or username is required.' }),
+    emailOrUsername: z.string().min(1, { message: 'Email or Partnership name is required.' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 });
 
@@ -119,12 +119,12 @@ export default function LoginPage() {
                         name="emailOrUsername"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="text-[#040021] font-semibold">Email or Username</FormLabel>
+                                <FormLabel className="text-[#040021] font-semibold">Email or Partnership name</FormLabel>
                                 <FormControl>
                                     <div className="relative group">
                                         <UserCircle className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
-                                            placeholder="Enter email or username"
+                                            placeholder="Enter email or Partnership name"
                                             className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
                                             {...field}
                                         />
@@ -162,7 +162,7 @@ export default function LoginPage() {
                                             onClick={() => setShowPassword(!showPassword)}
                                             className="absolute right-3 top-3 text-[#8f98a8] hover:text-[#040021] transition-colors"
                                         >
-                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
                                     </div>
                                 </FormControl>
@@ -176,10 +176,10 @@ export default function LoginPage() {
                         disabled={isLoading}
                     >
                         {isLoading ? (
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         ) : (
                             <span className="flex items-center justify-center gap-2">
-                                Sign In <i className="fas fa-arrow-right text-xs"></i>
+                                Sign In <i className="text-xs fas fa-arrow-right"></i>
                             </span>
                         )}
                     </Button>
@@ -196,7 +196,7 @@ export default function LoginPage() {
             </div>
             <div className="flex flex-col items-center gap-3">
                 <Link href="/register/patron" className='text-[#6639ff] hover:text-[#371e87] text-sm font-semibold'>Register as a patron</Link>
-                <a href="https://app.trisonet.com/login" className='text-zinc-500 hover:text-zinc-800 text-sm font-medium'>Login as an Infant or Coordinator</a>
+                <a href="https://app.trisonet.com/login" className='text-sm font-medium text-zinc-500 hover:text-zinc-800'>Login as an Infant or Coordinator</a>
             </div>
         </AuthLayout>
     );
