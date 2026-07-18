@@ -4,6 +4,7 @@ export type SidebarSubItem = {
     label: string;
     href: string;
     icon: LucideIcon;
+    badge?: number;
 };
 
 export type SidebarItem = {

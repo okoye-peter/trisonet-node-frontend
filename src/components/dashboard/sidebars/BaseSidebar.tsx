@@ -132,14 +132,21 @@ export function BaseSidebar({ isOpen, onClose, items, isKycVerified = true }: Ba
                                                                     href={sub.href}
                                                                     onClick={onClose}
                                                                     className={cn(
-                                                                        "flex items-center gap-3 px-4 py-2.5 text-[12px] font-bold transition-all duration-200 rounded-lg mx-2",
+                                                                        "flex items-center justify-between gap-3 px-4 py-2.5 text-[12px] font-bold transition-all duration-200 rounded-lg mx-2",
                                                                         isSubActive
                                                                             ? "text-indigo-600 bg-indigo-50/80"
                                                                             : "text-zinc-400 hover:text-indigo-600 hover:bg-white"
                                                                     )}
                                                                 >
-                                                                    <sub.icon size={14} className={cn(isSubActive ? "opacity-100" : "opacity-40")} />
-                                                                    {sub.label}
+                                                                    <span className="flex items-center gap-3">
+                                                                        <sub.icon size={14} className={cn(isSubActive ? "opacity-100" : "opacity-40")} />
+                                                                        {sub.label}
+                                                                    </span>
+                                                                    {sub.badge !== undefined && sub.badge > 0 && (
+                                                                        <span className="inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-black text-white">
+                                                                            {sub.badge}
+                                                                        </span>
+                                                                    )}
                                                                 </Link>
                                                             </li>
                                                         );

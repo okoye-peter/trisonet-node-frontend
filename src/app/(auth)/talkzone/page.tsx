@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageSquare,
@@ -22,7 +23,7 @@ import {
 import { useAppSelector } from '@/store/hooks';
 import { useAppDispatch } from '@/store/hooks';
 import { io, Socket } from 'socket.io-client';
-import { chatApi } from '@/store/api/chatApi';
+import { chatApi, type ChatUser } from '@/store/api/chatApi';
 import {
     useGetUserFriendsQuery,
     useGetChatWithFriendQuery,
@@ -59,8 +60,17 @@ function UserAvatar({ name, className }: { name: string; className?: string }) {
 }
 
 export default function TalkzonePage() {
+    return (
+        <Suspense fallback={<div className="flex h-[calc(100vh-220px)] items-center justify-center md:h-[calc(100vh-120px)]"><Loader2 className="h-8 w-8 animate-spin text-indigo-600" /></div>}>
+            <TalkzonePageContent />
+        </Suspense>
+    );
+}
+
+function TalkzonePageContent() {
     const dispatch = useAppDispatch();
     const { user, token } = useAppSelector((state) => state.auth);
+    const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState<TabType>('inbox');
     const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
     const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -176,6 +186,18 @@ export default function TalkzonePage() {
         }
     }, [selectedFriendId, markRead]);
 
+    // Deep-link support: e.g. a "Message Seller" button elsewhere in the app links to
+    // /talkzone?friend=<userId>&name=<userName> to preselect a thread, even for a user
+    // who isn't yet in the follow-based friends list (auction counterparts, etc).
+    useEffect(() => {
+        const friendParam = searchParams.get('friend');
+        if (friendParam) {
+            setSelectedFriendId(friendParam);
+            setActiveTab('inbox');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!messageInput.trim()) return;
@@ -259,7 +281,12 @@ export default function TalkzonePage() {
         filteredAddMemberFriends.length > 0 &&
         !filteredAddMemberFriends.some(f => f.username === addMemberInput || f.email === addMemberInput);
 
-    const selectedFriend = friends.find(f => f.id === selectedFriendId);
+    const deepLinkName = searchParams.get('name');
+    const selectedFriend = friends.find(f => f.id === selectedFriendId) || (
+        selectedFriendId && deepLinkName
+            ? ({ id: selectedFriendId, name: deepLinkName, email: '', username: '', picture_url: '', pictureUrl: '', is_online: false } as ChatUser)
+            : undefined
+    );
     const selectedGroup = groups.find(g => g.id === selectedGroupId);
 
     return (

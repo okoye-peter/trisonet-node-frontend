@@ -15,6 +15,7 @@ import {
     Receipt,
     Wallet,
     Briefcase,
+    Gavel,
     TrendingUp,
     MessageSquare,
     Film,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
+import { useGetAuctionsQuery } from '@/store/api/auctionApi';
 import { BaseSidebar } from './BaseSidebar';
 import { SidebarItem, SidebarProps } from './types';
 
@@ -30,6 +32,8 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
     const { user } = useAppSelector((state) => state.auth);
     const { data: notificationResponse } = useGetNotificationsQuery({ limit: 0 });
     const unreadCount = notificationResponse?.data?.unreadCount || 0;
+    const { data: activeAuctionsResponse } = useGetAuctionsQuery({ status: 'active', limit: 1 }, { skip: user?.level === 1 || !user?.canAccessAuction });
+    const activeAuctionCount = activeAuctionsResponse?.data?.meta?.totalItems || 0;
 
     const isKycVerified = user?.level === 1 || user?.hasVerifiedLevel2 !== false;
 
@@ -41,10 +45,14 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             { label: 'Utility Bills', href: '/vtu', icon: Receipt },
             { label: 'Wallet', href: '/wallets', icon: Wallet },
             { label: 'Gkwth Business', href: '/wallets/gkwth', icon: Briefcase },
+            { label: 'GKWTH Auction', href: '/wallets/gkwth/auction', icon: Gavel, badge: activeAuctionCount },
             { label: 'Upfront Sales', href: '/wallets/loans', icon: TrendingUp },
         ].filter(sub => {
+            if (sub.label === 'GKWTH Auction' && !user?.canAccessAuction) {
+                return false;
+            }
             if (user?.level === 1) {
-                return !['Earnings', 'Upfront Sales'].includes(sub.label);
+                return !['Earnings', 'Upfront Sales', 'GKWTH Auction'].includes(sub.label);
             }
             return true;
         });
@@ -69,7 +77,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             },
             { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
         ];
-    }, [user?.level]);
+    }, [user?.level, user?.canAccessAuction, activeAuctionCount]);
 
     return (
         <BaseSidebar

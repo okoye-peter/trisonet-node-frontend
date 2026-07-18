@@ -93,6 +93,7 @@ export interface User {
     pendingPatronType?: string | null;
     patronActivated?: boolean;
     isPendingLevel2Migration?: boolean;
+    canAccessAuction?: boolean;
     patronPlan?: {
         id: string;
         name: string;
@@ -534,4 +535,123 @@ export interface GuardianWardSlotPurchase {
     reference: string | null;
     createdAt: string;
     updatedAt: string;
+}
+
+export type AuctionStatus = 'scheduled' | 'active' | 'ended' | 'awaiting_payment' | 'completed' | 'cancelled';
+export type AuctionVisibility = 'public' | 'followers' | 'private';
+export type AuctionBidStatus = 'pending' | 'accepted' | 'rejected' | 'superseded' | 'refunded';
+
+export interface AuctionUserSummary {
+    id: string;
+    name: string;
+    pictureUrl: string | null;
+}
+
+export interface AuctionBid {
+    id: string;
+    auctionListingId: string;
+    bidderId: string;
+    amount: number;
+    status: AuctionBidStatus;
+    isBuyItNow: boolean;
+    createdAt: string;
+    bidder?: AuctionUserSummary;
+}
+
+export interface AuctionYourStanding {
+    lastBidAmount: number;
+    position: number | null;
+    totalBidders: number;
+    totalBidsPlaced: number;
+    isOutbid: boolean;
+}
+
+export interface AuctionListing {
+    id: string;
+    sellerId: string;
+    gkwthAmount: number;
+    startingBid: number;
+    buyItNowPrice: number | null;
+    minIncrement: number;
+    visibility: AuctionVisibility;
+    status: AuctionStatus;
+    startsAt: string;
+    endsAt: string;
+    acceptedBidId: string | null;
+    settlementType: 'accepted_bid' | 'buy_it_now' | 'cron_auto_accept' | 'ended_early' | null;
+    claimDeadlineAt: string | null;
+    createdAt: string;
+    seller?: AuctionUserSummary;
+    bids?: AuctionBid[];
+    currentTopBid: number;
+    minNextBid: number;
+    bidCount: number;
+    bidderCount: number;
+    yourStanding?: AuctionYourStanding | null;
+    sellerStats?: { completedAuctions: number };
+}
+
+export interface AuctionSettings {
+    locked: boolean;
+    commissionPercent: number;
+    minGkwthAmount: number;
+    maxPrice: number | null;
+}
+
+export interface AuctionClaimResponse {
+    reference: string;
+    amount: number;
+    expiresAt: string;
+    bankTransfer: {
+        accountName: string | null;
+        bankName: string | null;
+        accountNumber: string | null;
+    };
+    cardPayment: {
+        publicKey: string | undefined;
+        email: string | undefined;
+        phoneNumber: string;
+    };
+}
+
+export interface AuctionTransaction {
+    id: string;
+    auctionListingId: string;
+    winningBidId: string | null;
+    sellerId: string;
+    buyerId: string;
+    gkwthAmount: number;
+    grossAmount: number;
+    platformFee: number;
+    netAmount: number;
+    settlementType: 'accepted_bid' | 'buy_it_now' | 'cron_auto_accept' | 'ended_early';
+    reference: string;
+    createdAt: string;
+    auctionListing?: AuctionListing & { seller?: AuctionUserSummary };
+}
+
+export interface MyAuctionsResponse {
+    active: AuctionListing[];
+    past: (AuctionListing & { transactions: AuctionTransaction[] })[];
+    stats: {
+        activeCount: number;
+        totalBidsReceived: number;
+        totalEarnedAllTime: number;
+    };
+}
+
+export type AuctionBidOutcome = 'active' | 'pending' | 'awaiting_payment' | 'won' | 'lost';
+
+export interface MyBidHistoryItem extends AuctionListing {
+    yourBid: number;
+    outcome: AuctionBidOutcome;
+    transaction: AuctionTransaction | null;
+}
+
+export interface MyBidHistoryResponse extends PaginatedResult<MyBidHistoryItem> {
+    stats: {
+        activeBidsCount: number;
+        wonCount: number;
+        totalSpent: number;
+    };
 }

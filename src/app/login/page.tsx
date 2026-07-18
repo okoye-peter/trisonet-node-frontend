@@ -124,7 +124,7 @@ export default function LoginPage() {
                                     <div className="relative group">
                                         <UserCircle className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <Input
-                                            placeholder="Enter email or Partnership name"
+                                            placeholder="Enter email or partnership name"
                                             className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
                                             {...field}
                                         />

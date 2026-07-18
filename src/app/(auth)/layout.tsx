@@ -3,6 +3,7 @@
 import AuthGuard from '@/components/auth/AuthGuard';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import AdminNoticeModal from '@/components/dashboard/AdminNoticeModal';
+import AuctionWinModal from '@/components/dashboard/AuctionWinModal';
 
 export default function RootDashboardLayout({
     children,
@@ -13,6 +14,7 @@ export default function RootDashboardLayout({
         <AuthGuard>
             <DashboardLayout>{children}</DashboardLayout>
             <AdminNoticeModal />
+            <AuctionWinModal />
         </AuthGuard>
     );
 }

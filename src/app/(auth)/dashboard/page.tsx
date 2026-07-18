@@ -43,6 +43,7 @@ import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import PIMCardModal from '@/components/dashboard/PIMCardModal';
 import Level1ProgressCard from '@/components/dashboard/Level1ProgressCard';
 import WeeklyMigrationCard from '@/components/dashboard/WeeklyMigrationCard';
+import ActiveAuctionBanner from '@/components/dashboard/ActiveAuctionBanner';
 import DistributionCodeCard from '@/components/dashboard/DistributionCodeCard';
 import ActivationActionCard from '@/components/dashboard/ActivationActionCard';
 import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
@@ -323,6 +324,13 @@ export default function DashboardPage() {
             animate="show"
             className="space-y-10"
         >
+            {/* Active Auction Banner - only renders when there's an active auction */}
+            {user?.role === ROLES.CUSTOMER && (user?.level ?? 0) >= 2 && (
+                <motion.div variants={itemVariants}>
+                    <ActiveAuctionBanner />
+                </motion.div>
+            )}
+
             {/* Welcome Header */}
             <motion.div variants={itemVariants} className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -563,16 +571,18 @@ export default function DashboardPage() {
             </div>
 
             {/* School Fees Marquee (Dummy Data for Demo) */}
-            <motion.div variants={itemVariants}>
-                <SchoolFeesMarquee 
-                    transactions={[
-                        { name: 'Oluwaseun A.', amount: 45000 },
-                        { name: 'Chidi E.', amount: 25000 },
-                        { name: 'Amina S.', amount: 60000 },
-                        { name: 'Ibrahim M.', amount: 35000 },
-                    ]} 
-                />
-            </motion.div>
+            {user?.role === ROLES.CUSTOMER && (user?.level ?? 0) >= 2 && (
+                <motion.div variants={itemVariants}>
+                    <SchoolFeesMarquee
+                        transactions={[
+                            { name: 'Oluwaseun A.', amount: 45000 },
+                            { name: 'Chidi E.', amount: 25000 },
+                            { name: 'Amina S.', amount: 60000 },
+                            { name: 'Ibrahim M.', amount: 35000 },
+                        ]}
+                    />
+                </motion.div>
+            )}
 
             {/* Partners Section Header */}
             <motion.div variants={itemVariants} className="flex items-center justify-between px-2">
