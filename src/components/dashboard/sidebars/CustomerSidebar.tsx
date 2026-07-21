@@ -45,7 +45,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             { label: 'Utility Bills', href: '/vtu', icon: Receipt },
             { label: 'Wallet', href: '/wallets', icon: Wallet },
             { label: 'Gkwth Business', href: '/wallets/gkwth', icon: Briefcase },
-            { label: 'GKWTH Auction', href: '/wallets/gkwth/auction', icon: Gavel, badge: activeAuctionCount },
+            
             { label: 'Upfront Sales', href: '/wallets/loans', icon: TrendingUp },
         ].filter(sub => {
             if (sub.label === 'GKWTH Auction' && !user?.canAccessAuction) {
@@ -76,7 +76,21 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
                 subItems: financeSubItems
             },
             { icon: CheckCircle2, label: 'Winning Status', href: '/winnings/status' },
-        ];
+            
+            { 
+                icon: Gavel,
+                label: 'GKWTH Auction', 
+                href: '/wallets/gkwth/auction', 
+            },
+        ].filter(sub => {
+            if (sub.label === 'GKWTH Auction' && !user?.canAccessAuction) {
+                return false;
+            }
+            if (user?.level === 1) {
+                return !['Earnings', 'Upfront Sales', 'GKWTH Auction'].includes(sub.label);
+            }
+            return true;
+        });
     }, [user?.level, user?.canAccessAuction, activeAuctionCount]);
 
     return (

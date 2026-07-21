@@ -22,6 +22,7 @@ import { ROLES } from '@/types';
 import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
 import PublicNoticeBanner from './PublicNoticeBanner';
 import BlockedAccountModal from './BlockedAccountModal';
+import { videoFlags } from '@/lib/videoFlags';
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -48,10 +49,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     });
     const dashboardStats = dashboardStatsResponse?.data;
 
-    const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(false);
+    // Lazily seeded from the in-memory videoFlags module (not sessionStorage) so a remount of
+    // this layout (e.g. AuthGuard swapping loading/children while a background query refetches,
+    // or navigating between finance sub-pages) doesn't forget the video was already
+    // skipped/finished and show it again. It naturally resets on a hard page refresh and is
+    // reset explicitly on logout — see useLogout.
+    const [hasSeenInCurrentVisit, setHasSeenInCurrentVisit] = useState(() => videoFlags.financeSeen);
 
     useEffect(() => {
-        if (sessionStorage.getItem('hasSeenWelcome')) {
+        if (videoFlags.welcomeSeen) {
             setWelcomeVideoDone(true);
         }
         const handler = () => setWelcomeVideoDone(true);
@@ -192,7 +198,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const handleFinanceVideoEnded = () => {
         setShowFinanceVideo(false);
-        setHasSeenInCurrentVisit(true); // Don't show again until reload
+        setHasSeenInCurrentVisit(true);
+        videoFlags.financeSeen = true; // Don't show again until a page refresh or logout
     };
 
     return (

@@ -35,6 +35,7 @@ import axios from 'axios';
 import type { Partner, Wallet as WalletType, DashboardStats } from '@/types';
 import { ROLES } from '@/types';
 import { MAX_ASSET_DEPOT } from '@/lib/constants';
+import { videoFlags } from '@/lib/videoFlags';
 import { Variants } from 'framer-motion';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useEffect, useMemo, useState } from 'react';
@@ -205,10 +206,13 @@ export default function DashboardPage() {
     const unreadCount = notificationResponse?.data?.unreadCount || 0;
     const latestNotifications = notificationResponse?.data?.notifications || [];
 
-    // Show the welcome video on every page load/refresh, but only for level 2 users.
+    // Show the welcome video once per page load (level 2 users only). videoFlags is plain
+    // in-memory state, not sessionStorage — it survives remounts of this page from client-side
+    // navigation, but naturally resets on a hard refresh (and is reset explicitly on logout),
+    // so skipping/finishing it sticks until one of those happens, per product requirement.
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (user?.level === 2) {
+            if (!videoFlags.welcomeSeen && user?.level === 2) {
                 setShowWelcome(true);
             }
             setWelcomeReady(true);
@@ -310,6 +314,7 @@ export default function DashboardPage() {
 
     if (showWelcome) {
         return <WelcomeVideo onEnded={() => {
+            videoFlags.welcomeSeen = true;
             setShowWelcome(false);
             window.dispatchEvent(new Event('welcomeVideoEnded'));
         }} />;
@@ -325,7 +330,7 @@ export default function DashboardPage() {
             className="space-y-10"
         >
             {/* Active Auction Banner - only renders when there's an active auction */}
-            {user?.role === ROLES.CUSTOMER && (user?.level ?? 0) >= 2 && (
+            {user?.role === ROLES.CUSTOMER && (user?.level ?? 0) >= 2 && user?.canAccessAuction && (
                 <motion.div variants={itemVariants}>
                     <ActiveAuctionBanner />
                 </motion.div>
@@ -571,7 +576,7 @@ export default function DashboardPage() {
             </div>
 
             {/* School Fees Marquee (Dummy Data for Demo) */}
-            {user?.role === ROLES.CUSTOMER && (user?.level ?? 0) >= 2 && (
+            {user?.role === ROLES.CUSTOMER && (user?.level ?? 0) >= 2 && user?.canAccessAuction && (
                 <motion.div variants={itemVariants}>
                     <SchoolFeesMarquee
                         transactions={[

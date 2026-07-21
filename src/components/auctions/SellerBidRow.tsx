@@ -37,27 +37,27 @@ export function SellerBidRow({ listingId, bid, isTop }: { listingId: string; bid
     };
 
     return (
-        <div className={`flex items-center gap-3.5 border-b border-zinc-100 px-5 py-3.5 last:border-none ${isWinner ? 'bg-amber-50' : isTop ? 'bg-indigo-50' : ''}`}>
-            <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-black ${isWinner || isTop ? 'bg-amber-100 text-amber-700' : 'bg-zinc-100 text-zinc-400'}`}>
+        <div className={`flex items-center gap-3.5 border-b border-border px-5 py-3.5 last:border-none ${isWinner ? 'bg-amber-50' : isTop ? 'bg-indigo-50' : ''}`}>
+            <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${isWinner || isTop ? 'bg-amber-100 text-amber-700' : 'bg-muted text-muted-foreground'}`}>
                 {isWinner || isTop ? '🏆' : ''}
             </div>
             <AuctionAvatar name={bid.bidder?.name || '?'} className="h-8 w-8 text-xs" />
             <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 truncate text-sm font-semibold text-zinc-900">
+                <div className="flex items-center gap-1.5 truncate text-sm font-semibold text-foreground">
                     {bid.bidder?.name}
                     {isWinner && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Winner</span>}
                     {!isWinner && isTop && <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">Highest</span>}
                 </div>
-                <div className="text-xs text-zinc-400">{formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true })}</div>
+                <div className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true })}</div>
             </div>
-            <div className={`mr-3 text-base font-black ${isActionable || isWinner ? 'text-indigo-700' : 'text-zinc-400'}`}>
+            <div className={`mr-3 text-base font-bold ${isActionable || isWinner ? 'text-indigo-700' : 'text-muted-foreground'}`}>
                 {currency}{bid.amount.toLocaleString()}
             </div>
             {isActionable ? (
                 <>
                     <Link
                         href={`/talkzone?friend=${bid.bidderId}&name=${encodeURIComponent(bid.bidder?.name || '')}`}
-                        className="mr-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-all hover:bg-zinc-100 hover:text-indigo-600"
+                        className="mr-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted hover:text-indigo-600"
                         title="Message bidder"
                     >
                         <MessageCircle size={14} />
@@ -75,14 +75,14 @@ export function SellerBidRow({ listingId, bid, isTop }: { listingId: string; bid
                             type="button"
                             onClick={handleReject}
                             disabled={isAccepting || isRejecting}
-                            className="flex items-center justify-center rounded-lg bg-red-100 px-2.5 py-1.5 text-red-500 transition-all hover:bg-red-200 disabled:opacity-50"
+                            className="flex items-center justify-center rounded-lg bg-destructive/10 px-2.5 py-1.5 text-destructive transition-all hover:bg-destructive/20 disabled:opacity-50"
                         >
                             {isRejecting ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
                         </button>
                     </div>
                 </>
             ) : !isWinner ? (
-                <span className="text-xs font-medium text-zinc-400 capitalize">{bid.status}</span>
+                <span className="text-xs font-medium text-muted-foreground capitalize">{bid.status}</span>
             ) : null}
         </div>
     );

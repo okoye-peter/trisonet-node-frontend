@@ -24,6 +24,7 @@ import api from '@/lib/axios';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginStart, loginSuccess, loginFailure } from '@/store/features/authSlice';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
+import { videoFlags } from '@/lib/videoFlags';
 import { ROLES, User } from '@/types';
 
 
@@ -71,7 +72,7 @@ export default function LoginPage() {
             if (user.level === 2) {
                 setShowWelcomeVideo(true);
             } else {
-                sessionStorage.setItem('hasSeenWelcome', 'true');
+                videoFlags.welcomeSeen = true;
                 if (user.role === ROLES.PATRON) {
                     router.push('/patron/dashboard');
                 } else {
@@ -91,9 +92,9 @@ export default function LoginPage() {
 
     if (showWelcomeVideo) {
         return (
-            <WelcomeVideo 
+            <WelcomeVideo
                 onEnded={() => {
-                    sessionStorage.setItem('hasSeenWelcome', 'true');
+                    videoFlags.welcomeSeen = true;
                     // Use loggedInUser from local state or fallback to store user
                     const currentUser = loggedInUser || user;
                     

@@ -594,6 +594,7 @@ export interface AuctionListing {
 export interface AuctionSettings {
     locked: boolean;
     commissionPercent: number;
+    cardChargePercent: number;
     minGkwthAmount: number;
     maxPrice: number | null;
 }
@@ -611,6 +612,8 @@ export interface AuctionClaimResponse {
         publicKey: string | undefined;
         email: string | undefined;
         phoneNumber: string;
+        amount: number;
+        chargePercent: number;
     };
 }
 

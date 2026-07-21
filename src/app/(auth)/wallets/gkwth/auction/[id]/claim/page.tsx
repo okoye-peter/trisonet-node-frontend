@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Loader2, Copy, CreditCard, Landmark, Gavel } from 'lucide-react';
-import { useGetAuctionQuery, useClaimAuctionMutation } from '@/store/api/auctionApi';
+import { useGetAuctionQuery, useClaimAuctionMutation, useGetAuctionSettingsQuery } from '@/store/api/auctionApi';
 import { CountdownTimer } from '@/components/auctions/CountdownTimer';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import LoadingScreen from '@/components/LoadingScreen';
 import type { AuctionClaimResponse } from '@/types';
 
@@ -45,6 +47,11 @@ export default function ClaimAuctionPage() {
     });
     const auction = data?.data;
 
+    const { data: settingsResponse } = useGetAuctionSettingsQuery();
+    // Prefer the percent the claim was actually generated with; fall back to current settings
+    // before the buyer has claimed yet, so the pre-claim notice can still show a real number.
+    const cardChargePercent = claim?.cardPayment.chargePercent ?? settingsResponse?.data?.cardChargePercent ?? 0;
+
     useEffect(() => {
         if (auction?.status === 'completed') {
             toast.success('Payment confirmed! Your GKWTH has been credited.');
@@ -73,7 +80,7 @@ export default function ClaimAuctionPage() {
 
             window.PagaCheckout.setOptions({
                 publicKey: claim.cardPayment.publicKey || '',
-                amount: Number(claim.amount.toFixed(2)),
+                amount: Number(claim.cardPayment.amount.toFixed(2)),
                 currency: 'NGN',
                 email: claim.cardPayment.email,
                 phoneNumber: claim.cardPayment.phoneNumber,
@@ -113,14 +120,14 @@ export default function ClaimAuctionPage() {
     };
 
     if (isLoading) return <LoadingScreen />;
-    if (!auction) return <div className="py-16 text-center text-zinc-400">Auction not found.</div>;
+    if (!auction) return <div className="py-16 text-center text-muted-foreground">Auction not found.</div>;
 
     if (auction.status === 'cancelled') {
         return (
             <div className="mx-auto max-w-lg py-16 text-center">
-                <Gavel size={40} className="mx-auto mb-4 text-zinc-300" />
-                <h1 className="text-xl font-black text-zinc-900">This claim has expired</h1>
-                <p className="mt-2 text-sm text-zinc-500">
+                <Gavel size={40} className="mx-auto mb-4 text-muted-foreground/40" />
+                <h1 className="text-xl font-bold text-foreground">This claim has expired</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
                     The 48-hour claim window lapsed before payment was completed, so this auction was cancelled.
                 </p>
             </div>
@@ -130,57 +137,50 @@ export default function ClaimAuctionPage() {
     if (auction.status !== 'awaiting_payment') {
         return (
             <div className="mx-auto max-w-lg py-16 text-center">
-                <Gavel size={40} className="mx-auto mb-4 text-zinc-300" />
-                <h1 className="text-xl font-black text-zinc-900">Nothing to claim here</h1>
-                <p className="mt-2 text-sm text-zinc-500">This auction isn&apos;t currently awaiting payment.</p>
+                <Gavel size={40} className="mx-auto mb-4 text-muted-foreground/40" />
+                <h1 className="text-xl font-bold text-foreground">Nothing to claim here</h1>
+                <p className="mt-2 text-sm text-muted-foreground">This auction isn&apos;t currently awaiting payment.</p>
             </div>
         );
     }
 
     return (
         <div className="mx-auto max-w-lg space-y-6">
-            <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-indigo-950 via-indigo-900 to-[#1a1060] p-8">
-                <div className="pointer-events-none absolute -top-20 -right-20 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl" />
-                <div className="relative z-10">
-                    <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-amber-300 backdrop-blur">
-                        🎉 You Won This Auction
+            <div className="border-b border-border pb-6 text-center">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-amber-600">🎉 You Won This Auction</div>
+                <h1 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
+                    {auction.gkwthAmount} <span className="text-indigo-600">GKWTH</span>
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    Complete payment of {currency}{(claim?.amount ?? auction.currentTopBid).toLocaleString()} to receive your GKWTH.
+                </p>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                    Transaction charges apply. Bank transfer has none added by us; card payments include a {cardChargePercent}% processing fee.
+                </p>
+                {auction.claimDeadlineAt && (
+                    <div className="mt-4 flex items-center justify-center gap-2">
+                        <span className="text-xs text-muted-foreground">Time left to claim:</span>
+                        <CountdownTimer endsAt={auction.claimDeadlineAt} />
                     </div>
-                    <h1 className="mb-2 text-2xl font-black text-white md:text-3xl">
-                        {auction.gkwthAmount} <span className="text-indigo-300">GKWTH</span>
-                    </h1>
-                    <p className="text-sm text-white/60">
-                        Complete payment of {currency}{(claim?.amount ?? auction.currentTopBid).toLocaleString()} to receive your GKWTH.
-                    </p>
-                    {auction.claimDeadlineAt && (
-                        <div className="mt-4 flex items-center gap-2">
-                            <span className="text-xs text-white/40">Time left to claim:</span>
-                            <CountdownTimer endsAt={auction.claimDeadlineAt} />
-                        </div>
-                    )}
-                </div>
+                )}
             </div>
 
             {!claim ? (
-                <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-center">
-                    <p className="mb-4 text-sm text-zinc-500">
+                <Card className="p-6 text-center">
+                    <p className="mb-4 text-sm text-muted-foreground">
                         Get your payment details to complete this purchase. If you don&apos;t pay before the deadline, the auction goes back to the seller.
                     </p>
-                    <button
-                        type="button"
-                        onClick={handleClaim}
-                        disabled={isClaiming}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50"
-                    >
+                    <Button type="button" onClick={handleClaim} disabled={isClaiming} className="w-full bg-indigo-600 py-3 text-white hover:bg-indigo-700">
                         {isClaiming ? <Loader2 size={16} className="animate-spin" /> : <Gavel size={16} />}
                         Claim & Get Payment Details
-                    </button>
-                </div>
+                    </Button>
+                </Card>
             ) : (
                 <div className="space-y-4">
-                    <div className="rounded-2xl border border-zinc-200 bg-white">
-                        <div className="flex items-center gap-2.5 border-b border-zinc-100 px-5 py-4">
+                    <Card className="gap-0 py-0">
+                        <div className="flex items-center gap-2.5 border-b border-border px-5 py-4">
                             <Landmark size={16} className="text-indigo-600" />
-                            <div className="text-sm font-bold text-zinc-900">Pay by Bank Transfer</div>
+                            <div className="text-sm font-semibold text-foreground">Pay by Bank Transfer</div>
                         </div>
                         <div className="space-y-3 p-5">
                             {[
@@ -188,42 +188,41 @@ export default function ClaimAuctionPage() {
                                 ['Account Name', claim.bankTransfer.accountName || '—'],
                             ].map(([label, value]) => (
                                 <div key={label} className="flex items-center justify-between">
-                                    <span className="text-sm text-zinc-400">{label}</span>
-                                    <span className="text-sm font-bold text-zinc-900">{value}</span>
+                                    <span className="text-sm text-muted-foreground">{label}</span>
+                                    <span className="text-sm font-bold text-foreground">{value}</span>
                                 </div>
                             ))}
                             <div className="flex items-center justify-between">
-                                <span className="text-sm text-zinc-400">Account Number</span>
+                                <span className="text-sm text-muted-foreground">Account Number</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-base font-black tracking-wider text-zinc-900">{claim.bankTransfer.accountNumber}</span>
+                                    <span className="text-base font-bold tracking-wider text-foreground">{claim.bankTransfer.accountNumber}</span>
                                     <button onClick={copyAccountNumber} className="rounded p-1 text-indigo-600 hover:bg-indigo-50">
                                         <Copy size={14} />
                                     </button>
                                 </div>
                             </div>
-                            <div className="h-px bg-zinc-100" />
+                            <div className="h-px bg-border" />
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-zinc-900">Amount to Pay</span>
+                                <span className="text-sm font-bold text-foreground">Amount to Pay</span>
                                 <span className="text-lg font-black text-indigo-700">{currency}{claim.amount.toLocaleString()}</span>
                             </div>
+                            <p className="text-xs text-muted-foreground">No extra charge for bank transfer.</p>
                         </div>
-                    </div>
+                    </Card>
 
                     <div className="flex items-center gap-3">
-                        <div className="h-px flex-1 bg-zinc-200" />
-                        <span className="text-xs font-bold text-zinc-400">OR</span>
-                        <div className="h-px flex-1 bg-zinc-200" />
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-xs font-bold text-muted-foreground">OR</span>
+                        <div className="h-px flex-1 bg-border" />
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handlePayWithCard}
-                        disabled={isPayingWithCard}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-600 py-3 text-sm font-bold text-indigo-600 transition-all hover:bg-indigo-50 disabled:opacity-50"
-                    >
+                    <Button type="button" variant="outline" onClick={handlePayWithCard} disabled={isPayingWithCard} className="w-full border-indigo-600 py-3 text-indigo-600 hover:bg-indigo-50">
                         {isPayingWithCard ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
-                        Pay With Card Instead
-                    </button>
+                        Pay With Card — {currency}{claim.cardPayment.amount.toLocaleString()}
+                    </Button>
+                    <p className="-mt-2 text-center text-xs text-muted-foreground">
+                        Includes a {claim.cardPayment.chargePercent}% card processing fee ({currency}{(claim.cardPayment.amount - claim.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} extra).
+                    </p>
 
                     <div className="flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-xs text-amber-700">
                         <Loader2 size={14} className="shrink-0 animate-spin" />

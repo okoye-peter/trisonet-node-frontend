@@ -18,17 +18,17 @@ export function CreateAuctionSteps({ current }: { current: number }) {
                                         ? 'bg-indigo-600 text-white'
                                         : isActive
                                             ? 'border-2 border-indigo-600 bg-indigo-50 text-indigo-600'
-                                            : 'bg-zinc-100 text-zinc-400'
+                                            : 'bg-muted text-muted-foreground'
                                 }`}
                             >
                                 {isDone ? <Check size={14} /> : step}
                             </div>
-                            <div className={`mt-1 text-xs font-medium whitespace-nowrap ${isDone || isActive ? 'text-indigo-600' : 'text-zinc-400'}`}>
+                            <div className={`mt-1 text-xs font-medium whitespace-nowrap ${isDone || isActive ? 'text-indigo-600' : 'text-muted-foreground'}`}>
                                 {label}
                             </div>
                         </div>
                         {step < STEPS.length && (
-                            <div className={`mx-1.5 h-0.5 flex-1 ${isDone ? 'bg-indigo-600' : 'bg-zinc-200'}`} />
+                            <div className={`mx-1.5 h-0.5 flex-1 ${isDone ? 'bg-indigo-600' : 'bg-border'}`} />
                         )}
                     </div>
                 );

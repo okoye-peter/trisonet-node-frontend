@@ -15,16 +15,11 @@ import { BidHistoryList } from '@/components/auctions/BidHistoryList';
 import { SellerBidRow } from '@/components/auctions/SellerBidRow';
 import { BidPanel } from '@/components/auctions/BidPanel';
 import { CountdownTimer } from '@/components/auctions/CountdownTimer';
+import { AuctionStatusBadge } from '@/components/auctions/AuctionStatusBadge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import LoadingScreen from '@/components/LoadingScreen';
-
-const STATUS_LABELS: Record<string, string> = {
-    scheduled: 'Scheduled',
-    active: 'Live',
-    ended: 'Ended',
-    awaiting_payment: 'Awaiting Payment',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
-};
 
 export default function AuctionDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -42,7 +37,7 @@ export default function AuctionDetailPage() {
     const [endEarly, { isLoading: isEnding }] = useEndEarlyMutation();
 
     if (isLoading) return <LoadingScreen />;
-    if (!auction) return <div className="py-16 text-center text-zinc-400">Auction not found.</div>;
+    if (!auction) return <div className="py-16 text-center text-muted-foreground">Auction not found.</div>;
 
     const isSeller = user?.id === auction.sellerId;
     // Auth hydrates asynchronously (user can be briefly null right after login), so treat
@@ -72,59 +67,45 @@ export default function AuctionDetailPage() {
 
     return (
         <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-indigo-950 via-indigo-900 to-[#1a1060] p-8">
-                <div className="pointer-events-none absolute -top-20 -right-20 h-80 w-80 rounded-full bg-indigo-400/20 blur-3xl" />
-                <div className="relative z-10 flex flex-wrap items-center gap-6">
-                    <div className="flex-1">
-                        <div className="mb-3 flex flex-wrap items-center gap-2.5">
-                            {isActive ? (
-                                <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-400">
-                                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" /> LIVE
-                                </span>
-                            ) : (
-                                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/60">{STATUS_LABELS[auction.status] || auction.status}</span>
-                            )}
-                            <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-700">{auction.bidCount} Bids</span>
-                            {winningBid && (
-                                <span className="rounded-full bg-amber-400/20 px-3 py-1 text-xs font-bold text-amber-300">
-                                    🏆 Won by {isSeller ? winningBid.bidder?.name : winningBid.bidderId === user?.id ? 'you' : winningBid.bidder?.name}
-                                </span>
-                            )}
-                            <span className="text-xs text-white/40">Auction #{auction.id}</span>
-                        </div>
-                        <h1 className="text-3xl font-black text-white md:text-4xl">
-                            {auction.gkwthAmount} <span className="text-indigo-300">GKWTH</span> Auction
-                        </h1>
-                        <div className="mt-3 flex items-center gap-2.5">
-                            <AuctionAvatar name={auction.seller?.name || '?'} className="h-8 w-8 text-xs" />
-                            <span className="text-sm text-white/70">
-                                Listed by <strong className="text-white">{auction.seller?.name}</strong>
-                            </span>
-                        </div>
+            <div className="flex flex-wrap items-center justify-between gap-6 border-b border-border pb-6">
+                <div className="flex-1">
+                    <div className="mb-3 flex flex-wrap items-center gap-2.5">
+                        <AuctionStatusBadge status={auction.status} pulse={isActive} />
+                        <Badge variant="outline">{auction.bidCount} Bids</Badge>
+                        {winningBid && (
+                            <Badge className="gap-1 bg-amber-100 text-amber-700">
+                                🏆 Won by {isSeller ? winningBid.bidder?.name : winningBid.bidderId === user?.id ? 'you' : winningBid.bidder?.name}
+                            </Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">Auction #{auction.id}</span>
                     </div>
-                    {isActive && (
-                        <div>
-                            <CountdownBlocks endsAt={auction.endsAt} />
-                            <div className="mt-2 text-center text-xs text-white/40">Time Remaining</div>
-                            {isSeller && (
-                                <button
-                                    type="button"
-                                    onClick={handleEndEarly}
-                                    disabled={isEnding}
-                                    className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-red-500/20 px-3 py-1.5 text-xs font-bold text-red-300 transition-all hover:bg-red-500/30 disabled:opacity-50"
-                                >
-                                    {isEnding && <Loader2 size={12} className="animate-spin" />} End Early
-                                </button>
-                            )}
-                        </div>
-                    )}
+                    <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
+                        {auction.gkwthAmount} <span className="text-indigo-600">GKWTH</span> Auction
+                    </h1>
+                    <div className="mt-3 flex items-center gap-2.5">
+                        <AuctionAvatar name={auction.seller?.name || '?'} className="h-8 w-8 text-xs" />
+                        <span className="text-sm text-muted-foreground">
+                            Listed by <strong className="text-foreground">{auction.seller?.name}</strong>
+                        </span>
+                    </div>
                 </div>
+                {isActive && (
+                    <div>
+                        <CountdownBlocks endsAt={auction.endsAt} />
+                        <div className="mt-2 text-center text-xs text-muted-foreground">Time Remaining</div>
+                        {isSeller && (
+                            <Button type="button" variant="destructive" size="sm" onClick={handleEndEarly} disabled={isEnding} className="mt-3 w-full">
+                                {isEnding && <Loader2 size={12} className="animate-spin" />} End Early
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {isWinningBidder && (
                 <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
                     <div>
-                        <div className="text-sm font-black text-amber-900">You won this auction! 🎉</div>
+                        <div className="text-sm font-bold text-amber-900">You won this auction! 🎉</div>
                         <div className="text-xs text-amber-700">
                             Claim it and complete payment before the window closes, or it goes back to the seller.
                         </div>
@@ -142,62 +123,62 @@ export default function AuctionDetailPage() {
             )}
 
             {isAwaitingPayment && isSeller && (
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-5">
+                <Card className="flex-row flex-wrap items-center justify-between gap-4 p-5">
                     <div>
-                        <div className="text-sm font-black text-zinc-900">Waiting for buyer payment</div>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-sm font-bold text-foreground">Waiting for buyer payment</div>
+                        <div className="text-xs text-muted-foreground">
                             {winningBid?.bidder?.name || 'The winning bidder'} has until the deadline to pay, otherwise your GKWTH is returned automatically.
                         </div>
                     </div>
                     {auction.claimDeadlineAt && <CountdownTimer endsAt={auction.claimDeadlineAt} />}
-                </div>
+                </Card>
             )}
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
                 <div className="space-y-4">
-                    <div className="rounded-2xl border border-zinc-200 bg-white p-5">
+                    <Card className="p-5">
                         <div className="grid grid-cols-1 sm:grid-cols-3">
-                            <div className="p-4 sm:border-r border-zinc-100">
-                                <div className="mb-1 text-xs font-medium text-zinc-400">Current Top Bid</div>
+                            <div className="p-4 sm:border-r border-border">
+                                <div className="mb-1 text-xs font-medium text-muted-foreground">Current Top Bid</div>
                                 <div className="text-2xl font-black text-indigo-700">{currency}{auction.currentTopBid.toLocaleString()}</div>
-                                <div className="text-xs text-zinc-400">≈ {currency}{(auction.currentTopBid / auction.gkwthAmount).toLocaleString(undefined, { maximumFractionDigits: 0 })} / GKWTH</div>
+                                <div className="text-xs text-muted-foreground">≈ {currency}{(auction.currentTopBid / auction.gkwthAmount).toLocaleString(undefined, { maximumFractionDigits: 0 })} / GKWTH</div>
                             </div>
-                            <div className="p-4 sm:border-r border-zinc-100">
-                                <div className="mb-1 text-xs font-medium text-zinc-400">Starting Bid</div>
-                                <div className="text-lg font-bold text-zinc-700">{currency}{auction.startingBid.toLocaleString()}</div>
+                            <div className="p-4 sm:border-r border-border">
+                                <div className="mb-1 text-xs font-medium text-muted-foreground">Starting Bid</div>
+                                <div className="text-lg font-bold text-foreground">{currency}{auction.startingBid.toLocaleString()}</div>
                             </div>
                             <div className="p-4">
-                                <div className="mb-1 text-xs font-medium text-zinc-400">Total Bidders</div>
-                                <div className="text-lg font-bold text-zinc-700">{auction.bidderCount} people</div>
-                                <div className="text-xs text-zinc-400">{auction.bidCount} total bids placed</div>
+                                <div className="mb-1 text-xs font-medium text-muted-foreground">Total Bidders</div>
+                                <div className="text-lg font-bold text-foreground">{auction.bidderCount} people</div>
+                                <div className="text-xs text-muted-foreground">{auction.bidCount} total bids placed</div>
                             </div>
                         </div>
                         {isActive && (
                             <>
-                                <div className="mt-4 mb-1 h-1.5 overflow-hidden rounded-full bg-zinc-100">
+                                <div className="mt-4 mb-1 h-1.5 overflow-hidden rounded-full bg-muted">
                                     <div className="h-full rounded-full bg-linear-to-r from-indigo-500 to-indigo-600" style={{ width: `${progressPct}%` }} />
                                 </div>
-                                <div className="flex justify-between text-xs text-zinc-400">
+                                <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>{format(new Date(auction.startsAt), 'MMM d, h:mm a')}</span>
                                     <span>{format(new Date(auction.endsAt), 'MMM d, h:mm a')}</span>
                                 </div>
                             </>
                         )}
-                    </div>
+                    </Card>
 
-                    <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
-                        <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
+                    <Card className="gap-0 overflow-hidden py-0">
+                        <div className="flex items-center justify-between border-b border-border px-5 py-4">
                             <div>
-                                <div className="text-sm font-bold text-zinc-900">{isSeller ? 'Manage Bids' : 'Bid History'}</div>
-                                <div className="text-xs text-zinc-400">
+                                <div className="text-sm font-semibold text-foreground">{isSeller ? 'Manage Bids' : 'Bid History'}</div>
+                                <div className="text-xs text-muted-foreground">
                                     {isSeller ? 'You can accept any bid at any time' : `${auction.bidCount} bids from ${auction.bidderCount} bidders`}
                                 </div>
                             </div>
-                            {isActive && <span className="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-600">Live</span>}
+                            {isActive && <AuctionStatusBadge status="active" />}
                         </div>
                         {isSeller ? (
                             (auction.bids || []).filter((b) => b.status !== 'refunded' && b.status !== 'rejected').length === 0 ? (
-                                <div className="px-5 py-10 text-center text-sm text-zinc-400">No bids yet.</div>
+                                <div className="px-5 py-10 text-center text-sm text-muted-foreground">No bids yet.</div>
                             ) : (
                                 (auction.bids || [])
                                     .filter((b) => b.status !== 'refunded' && b.status !== 'rejected')
@@ -206,11 +187,11 @@ export default function AuctionDetailPage() {
                         ) : (
                             <BidHistoryList bids={auction.bids || []} currentUserId={user?.id} />
                         )}
-                    </div>
+                    </Card>
 
-                    <div className="rounded-2xl border border-zinc-200 bg-white">
-                        <div className="border-b border-zinc-100 px-5 py-4">
-                            <div className="text-sm font-bold text-zinc-900">Auction Details</div>
+                    <Card className="gap-0 py-0">
+                        <div className="border-b border-border px-5 py-4">
+                            <div className="text-sm font-semibold text-foreground">Auction Details</div>
                         </div>
                         <div className="grid grid-cols-2 gap-4 p-5">
                             {[
@@ -221,23 +202,23 @@ export default function AuctionDetailPage() {
                                 ...(winningBid ? [['Winner', winningBid.bidder?.name || '—']] : []),
                             ].map(([label, value]) => (
                                 <div key={label}>
-                                    <div className="mb-1 text-xs text-zinc-400">{label}</div>
-                                    <div className="text-sm font-semibold text-zinc-900">{value}</div>
+                                    <div className="mb-1 text-xs text-muted-foreground">{label}</div>
+                                    <div className="text-sm font-semibold text-foreground">{value}</div>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </Card>
                 </div>
 
                 <div className="space-y-4">
                     {canBid && <BidPanel auction={auction} />}
 
                     {canBid && auction.yourStanding && (
-                        <div className="rounded-2xl border border-zinc-200 bg-white">
-                            <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
-                                <div className="text-sm font-bold text-zinc-900">Your Standing</div>
+                        <Card className="gap-0 py-0">
+                            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                                <div className="text-sm font-semibold text-foreground">Your Standing</div>
                                 {auction.yourStanding.isOutbid && (
-                                    <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700">Outbid</span>
+                                    <Badge className="bg-amber-100 text-amber-700">Outbid</Badge>
                                 )}
                             </div>
                             <div className="space-y-3 p-5">
@@ -253,41 +234,41 @@ export default function AuctionDetailPage() {
                                     </div>
                                 )}
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-zinc-400">Your Last Bid</span>
-                                    <span className="font-bold text-zinc-900">{currency}{auction.yourStanding.lastBidAmount.toLocaleString()}</span>
+                                    <span className="text-muted-foreground">Your Last Bid</span>
+                                    <span className="font-bold text-foreground">{currency}{auction.yourStanding.lastBidAmount.toLocaleString()}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-zinc-400">Your Position</span>
-                                    <span className="font-bold text-amber-500">#{auction.yourStanding.position} of {auction.yourStanding.totalBidders}</span>
+                                    <span className="text-muted-foreground">Your Position</span>
+                                    <span className="font-bold text-amber-600">#{auction.yourStanding.position} of {auction.yourStanding.totalBidders}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-zinc-400">Total Bids Placed</span>
-                                    <span className="font-bold text-zinc-900">{auction.yourStanding.totalBidsPlaced} bids</span>
+                                    <span className="text-muted-foreground">Total Bids Placed</span>
+                                    <span className="font-bold text-foreground">{auction.yourStanding.totalBidsPlaced} bids</span>
                                 </div>
                             </div>
-                        </div>
+                        </Card>
                     )}
 
-                    <div className="rounded-2xl border border-zinc-200 bg-white">
-                        <div className="border-b border-zinc-100 px-5 py-4">
-                            <div className="text-sm font-bold text-zinc-900">About the Seller</div>
+                    <Card className="gap-0 py-0">
+                        <div className="border-b border-border px-5 py-4">
+                            <div className="text-sm font-semibold text-foreground">About the Seller</div>
                         </div>
                         <div className="p-5">
                             <div className="mb-4 flex items-center gap-3.5">
                                 <AuctionAvatar name={auction.seller?.name || '?'} className="h-13 w-13 text-lg" />
                                 <div>
-                                    <div className="text-base font-bold text-zinc-900">{auction.seller?.name}</div>
-                                    <div className="text-xs text-zinc-400">Verified seller</div>
+                                    <div className="text-base font-bold text-foreground">{auction.seller?.name}</div>
+                                    <div className="text-xs text-muted-foreground">Verified seller</div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
-                                <div className="rounded-lg bg-zinc-50 p-3 text-center">
-                                    <div className="text-lg font-black text-zinc-900">{auction.sellerStats?.completedAuctions ?? 0}</div>
-                                    <div className="text-xs text-zinc-400">Completed</div>
+                                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                                    <div className="text-lg font-bold text-foreground">{auction.sellerStats?.completedAuctions ?? 0}</div>
+                                    <div className="text-xs text-muted-foreground">Completed</div>
                                 </div>
-                                <div className="rounded-lg bg-zinc-50 p-3 text-center">
-                                    <div className="text-lg font-black text-zinc-900">{isSeller ? 'You' : 'P2P'}</div>
-                                    <div className="text-xs text-zinc-400">Seller</div>
+                                <div className="rounded-lg bg-muted/50 p-3 text-center">
+                                    <div className="text-lg font-bold text-foreground">{isSeller ? 'You' : 'P2P'}</div>
+                                    <div className="text-xs text-muted-foreground">Seller</div>
                                 </div>
                             </div>
                             {canBid && (
@@ -299,7 +280,7 @@ export default function AuctionDetailPage() {
                                 </Link>
                             )}
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </div>
