@@ -9,6 +9,7 @@ import { useSubmitReviewMutation } from '@/store/api/auctionApi';
 import { format } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { formatGkwth } from '@/lib/utils';
 
 export function AuctionWonSummary({ transaction, newGkwthBalance }: { transaction: AuctionTransaction; newGkwthBalance: number | null }) {
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
@@ -33,7 +34,7 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
         { icon: <Tag size={14} />, bg: 'bg-emerald-100', title: `You placed a bid of ${currency}${transaction.grossAmount.toLocaleString()}` },
         { icon: <CheckCircle2 size={14} />, bg: 'bg-indigo-100', title: `${sellerName} accepted your bid` },
         { icon: <Wallet size={14} />, bg: 'bg-emerald-100', title: `${currency}${transaction.grossAmount.toLocaleString()} debited from your wallet` },
-        { icon: <Zap size={14} />, bg: 'bg-indigo-600 text-white', title: `${transaction.gkwthAmount} GKWTH credited to your wallet`, emphasize: true },
+        { icon: <Zap size={14} />, bg: 'bg-indigo-600 text-white', title: `${formatGkwth(transaction.gkwthAmount)} GKWTH credited to your wallet`, emphasize: true },
     ];
 
     return (
@@ -51,7 +52,7 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
 
                     <div className="mt-7 flex justify-center gap-8">
                         <div>
-                            <div className="text-3xl font-black text-white">{transaction.gkwthAmount}</div>
+                            <div className="text-3xl font-black text-white">{formatGkwth(transaction.gkwthAmount)}</div>
                             <div className="text-xs font-bold tracking-wide text-indigo-300">GKWTH RECEIVED</div>
                         </div>
                         <div className="w-px bg-white/10" />
@@ -68,7 +69,7 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
                     <div className="mb-3.5 text-sm font-semibold text-foreground">Transfer Summary</div>
                     <div className="flex flex-col gap-2.5">
                         <Row label="Transaction ID" value={`#${transaction.reference}`} mono />
-                        <Row label="GKWTH Transferred" value={`${transaction.gkwthAmount} GKWTH → Your Wallet`} emphasize />
+                        <Row label="GKWTH Transferred" value={`${formatGkwth(transaction.gkwthAmount)} GKWTH → Your Wallet`} emphasize />
                         <Row label="Amount Paid" value={`${currency}${transaction.grossAmount.toLocaleString()}`} />
                         <Row label="Seller" value={sellerName} />
                         <Row label="Settled" value={format(new Date(transaction.createdAt), 'MMM d, h:mm a')} />

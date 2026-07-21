@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { SellerBidRow } from './SellerBidRow';
 import { CountdownTimer } from './CountdownTimer';
 import type { AuctionListing } from '@/types';
+import { formatGkwth } from '@/lib/utils';
 
 export function ActiveAuctionCard({ auction }: { auction: AuctionListing }) {
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
@@ -34,7 +35,7 @@ export function ActiveAuctionCard({ auction }: { auction: AuctionListing }) {
         <Card className="gap-0 overflow-hidden py-0">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
                 <div>
-                    <div className="text-sm font-semibold text-foreground">Auction #{auction.id} — {auction.gkwthAmount} GKWTH</div>
+                    <div className="text-sm font-semibold text-foreground">Auction #{auction.id} — {formatGkwth(auction.gkwthAmount)} GKWTH</div>
                     <div className="text-xs text-muted-foreground">
                         {isAwaitingPayment
                             ? 'Waiting for the buyer to complete payment'
@@ -54,7 +55,7 @@ export function ActiveAuctionCard({ auction }: { auction: AuctionListing }) {
 
             <div className="grid grid-cols-2 border-b border-border sm:grid-cols-4">
                 {[
-                    ['GKWTH Amount', auction.gkwthAmount],
+                    ['GKWTH Amount', formatGkwth(auction.gkwthAmount)],
                     ['Top Bid', `${currency}${(auction.currentTopBid / 1000).toFixed(0)}k`],
                     ['Total Bids', auction.bidCount],
                     ['Bidders', auction.bidderCount],

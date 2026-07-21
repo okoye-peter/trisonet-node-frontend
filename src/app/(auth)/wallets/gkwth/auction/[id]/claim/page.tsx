@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import LoadingScreen from '@/components/LoadingScreen';
 import type { AuctionClaimResponse } from '@/types';
+import { formatGkwth } from '@/lib/utils';
 
 const PAGA_SCRIPT_URL = 'https://checkout.paga.com/checkout/inline-js';
 
@@ -149,13 +150,13 @@ export default function ClaimAuctionPage() {
             <div className="border-b border-border pb-6 text-center">
                 <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-amber-600">🎉 You Won This Auction</div>
                 <h1 className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
-                    {auction.gkwthAmount} <span className="text-indigo-600">GKWTH</span>
+                    {formatGkwth(auction.gkwthAmount)} <span className="text-indigo-600">GKWTH</span>
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Complete payment of {currency}{(claim?.amount ?? auction.currentTopBid).toLocaleString()} to receive your GKWTH.
+                    Complete payment of {currency}{(claim?.bankTransfer.amount ?? auction.currentTopBid).toLocaleString()} to receive your GKWTH.
                 </p>
                 <p className="mt-1.5 text-xs text-muted-foreground">
-                    Transaction charges apply. Bank transfer has none added by us; card payments include a {cardChargePercent}% processing fee.
+                    Bank transfer includes Paga&apos;s own transfer fee (already added to the amount shown); card payments include a {cardChargePercent}% processing fee instead.
                 </p>
                 {auction.claimDeadlineAt && (
                     <div className="mt-4 flex items-center justify-center gap-2">
@@ -204,9 +205,9 @@ export default function ClaimAuctionPage() {
                             <div className="h-px bg-border" />
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-bold text-foreground">Amount to Pay</span>
-                                <span className="text-lg font-black text-indigo-700">{currency}{claim.amount.toLocaleString()}</span>
+                                <span className="text-lg font-black text-indigo-700">{currency}{claim.bankTransfer.amount.toLocaleString()}</span>
                             </div>
-                            <p className="text-xs text-muted-foreground">No extra charge for bank transfer.</p>
+                            <p className="text-xs text-muted-foreground">Includes Paga&apos;s transfer fee — send exactly this amount.</p>
                         </div>
                     </Card>
 

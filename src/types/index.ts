@@ -607,6 +607,7 @@ export interface AuctionClaimResponse {
         accountName: string | null;
         bankName: string | null;
         accountNumber: string | null;
+        amount: number;
     };
     cardPayment: {
         publicKey: string | undefined;

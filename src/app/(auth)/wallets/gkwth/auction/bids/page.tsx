@@ -11,6 +11,7 @@ import { AuctionStatusBadge } from '@/components/auctions/AuctionStatusBadge';
 import { AuctionPageHeader } from '@/components/auctions/AuctionPageHeader';
 import { Card } from '@/components/ui/card';
 import LoadingScreen from '@/components/LoadingScreen';
+import { formatGkwth } from '@/lib/utils';
 import type { AuctionBidOutcome } from '@/types';
 
 const FILTERS: { label: string; value: AuctionBidOutcome | 'all' }[] = [
@@ -89,7 +90,7 @@ export default function MyBidsPage() {
 
                             <div className="min-w-0 flex-1">
                                 <div className="truncate text-sm font-semibold text-foreground">
-                                    {auction.gkwthAmount} GKWTH — Auction #{auction.id}
+                                    {formatGkwth(auction.gkwthAmount)} GKWTH — Auction #{auction.id}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                     Seller {auction.seller?.name} · {formatDistanceToNow(new Date(auction.createdAt), { addSuffix: true })}

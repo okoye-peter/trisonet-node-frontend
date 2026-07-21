@@ -20,6 +20,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import LoadingScreen from '@/components/LoadingScreen';
+import { formatGkwth } from '@/lib/utils';
 
 export default function AuctionDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -80,7 +81,7 @@ export default function AuctionDetailPage() {
                         <span className="text-xs text-muted-foreground">Auction #{auction.id}</span>
                     </div>
                     <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-                        {auction.gkwthAmount} <span className="text-indigo-600">GKWTH</span> Auction
+                        {formatGkwth(auction.gkwthAmount)} <span className="text-indigo-600">GKWTH</span> Auction
                     </h1>
                     <div className="mt-3 flex items-center gap-2.5">
                         <AuctionAvatar name={auction.seller?.name || '?'} className="h-8 w-8 text-xs" />

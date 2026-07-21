@@ -6,6 +6,7 @@ import type { AuctionListing } from '@/types';
 import { AuctionAvatar } from './AuctionAvatar';
 import { CountdownTimer } from './CountdownTimer';
 import { AuctionStatusBadge } from './AuctionStatusBadge';
+import { formatGkwth } from '@/lib/utils';
 
 export function AuctionCard({ auction, currentUserId }: { auction: AuctionListing; currentUserId?: string }) {
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
@@ -23,7 +24,7 @@ export function AuctionCard({ auction, currentUserId }: { auction: AuctionListin
         >
             <div className="flex items-start justify-between gap-2 border-b border-border p-4">
                 <div>
-                    <div className="text-2xl font-bold text-foreground">{auction.gkwthAmount} GKWTH</div>
+                    <div className="text-2xl font-bold text-foreground">{formatGkwth(auction.gkwthAmount)} GKWTH</div>
                     <div className="text-xs font-semibold uppercase tracking-wide text-indigo-600">GKWTH for sale</div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5">

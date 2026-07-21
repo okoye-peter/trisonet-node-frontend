@@ -5,6 +5,7 @@ import Marquee from 'react-fast-marquee';
 import { Gavel, ArrowRight } from 'lucide-react';
 import { useGetAuctionsQuery } from '@/store/api/auctionApi';
 import { useAppSelector } from '@/store/hooks';
+import { formatGkwth } from '@/lib/utils';
 
 function formatTimeLeft(endsAt: string) {
     const diff = new Date(endsAt).getTime() - Date.now();
@@ -44,7 +45,7 @@ export default function ActiveAuctionBanner() {
                     <div className="flex items-center gap-8 px-8">
                         {auctions.map((auction) => (
                             <div key={auction.id} className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-white">{auction.gkwthAmount} GKWTH</span>
+                                <span className="text-xs font-bold text-white">{formatGkwth(auction.gkwthAmount)} GKWTH</span>
                                 <div className="w-1 h-1 rounded-full bg-zinc-600" />
                                 <span className="text-xs font-black text-emerald-400">
                                     ₦{auction.currentTopBid.toLocaleString()}

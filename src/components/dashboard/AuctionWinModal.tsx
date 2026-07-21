@@ -15,6 +15,7 @@ import { useAppSelector } from '@/store/hooks';
 import { useGetMyBidHistoryQuery } from '@/store/api/auctionApi';
 import { useAuctionSocket } from '@/hooks/useAuctionSocket';
 import { CountdownTimer } from '@/components/auctions/CountdownTimer';
+import { formatGkwth } from '@/lib/utils';
 
 const REOPEN_INTERVAL = 15 * 60 * 1000;
 
@@ -92,7 +93,7 @@ export default function AuctionWinModal() {
 
                 <div className="space-y-3 px-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        Your bid of ₦{current.yourBid.toLocaleString()} for {current.gkwthAmount} GKWTH won. Complete
+                        Your bid of ₦{current.yourBid.toLocaleString()} for {formatGkwth(current.gkwthAmount)} GKWTH won. Complete
                         payment before the timer runs out to claim your GKWTH — if it expires, you&apos;ll forfeit
                         the win and it won&apos;t be offered again.
                     </p>
