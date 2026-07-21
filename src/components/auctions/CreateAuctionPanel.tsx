@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreateAuctionSteps } from './CreateAuctionSteps';
 import { AuctionPreviewSidebar } from './AuctionPreviewSidebar';
+import { formatGkwth } from '@/lib/utils';
 
 // Keep in sync with MIN/MAX_DURATION_HOURS in backend/src/services/auction.service.ts
 const MIN_DURATION_HOURS = 1;
@@ -47,7 +48,7 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
     const commissionPercent = settingsResponse?.data?.commissionPercent ?? 0.5;
     const gkwthWallet = (walletsResponse?.data || []).find((w) => w.type === 'indirect');
     // A GKWTH wallet must always keep at least 1 GKWTH — the last unit can never be sold or withdrawn.
-    const maxSellableGkwth = Math.max(0, (gkwthWallet?.amount ?? 0) - 1);
+    const maxSellableGkwth = formatGkwth(Math.max(0, (gkwthWallet?.amount ?? 0) - 1));
     const [createAuction, { isLoading }] = useCreateAuctionMutation();
 
     const form = useForm<FormValues>({
