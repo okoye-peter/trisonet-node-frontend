@@ -588,7 +588,7 @@ export interface AuctionListing {
     bidCount: number;
     bidderCount: number;
     yourStanding?: AuctionYourStanding | null;
-    sellerStats?: { completedAuctions: number };
+    sellerStats?: { completedAuctions: number; averageRating: number | null; reviewCount: number };
 }
 
 export interface AuctionSettings {

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Star, Tag, ShieldCheck, Wallet, Zap } from 'lucide-react';
+import { CheckCircle2, Download, Star, Tag, ShieldCheck, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AuctionTransaction } from '@/types';
 import { useSubmitReviewMutation } from '@/store/api/auctionApi';
@@ -33,32 +33,31 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
     const timeline = [
         { icon: <Tag size={14} />, bg: 'bg-emerald-100', title: `You placed a bid of ${currency}${transaction.grossAmount.toLocaleString()}` },
         { icon: <CheckCircle2 size={14} />, bg: 'bg-indigo-100', title: `${sellerName} accepted your bid` },
-        { icon: <Wallet size={14} />, bg: 'bg-emerald-100', title: `${currency}${transaction.grossAmount.toLocaleString()} debited from your wallet` },
         { icon: <Zap size={14} />, bg: 'bg-indigo-600 text-white', title: `${formatGkwth(transaction.gkwthAmount)} GKWTH credited to your wallet`, emphasize: true },
     ];
 
     return (
         <Card className="mt-8 gap-0 overflow-hidden py-0">
-            <div className="relative overflow-hidden rounded-t-xl bg-linear-to-br from-indigo-950 to-slate-900 px-8 py-12 text-center">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(99,102,241,0.3),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.2),transparent_40%)]" />
+            <div className="relative overflow-hidden rounded-t-xl bg-linear-to-br from-indigo-950 to-slate-900 px-8 py-12 text-center print:bg-none print:bg-white print:py-6">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(99,102,241,0.3),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.2),transparent_40%)] print:hidden" />
                 <div className="relative z-10">
-                    <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100">
+                    <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100 print:hidden">
                         <div className="absolute -inset-2 animate-[spin_10s_linear_infinite] rounded-full border-2 border-dashed border-emerald-400" />
                         <CheckCircle2 size={48} className="text-emerald-500" strokeWidth={2.5} />
                     </div>
-                    <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-emerald-400">🎉 Bid Accepted!</div>
-                    <h2 className="mb-1.5 text-3xl font-black text-white">You Won the Auction!</h2>
-                    <p className="text-sm text-white/50">Your bid was accepted by {sellerName}.</p>
+                    <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-emerald-400 print:text-emerald-600">🎉 Bid Accepted!</div>
+                    <h2 className="mb-1.5 text-3xl font-black text-white print:text-black">You Won the Auction!</h2>
+                    <p className="text-sm text-white/50 print:text-black/60">Your bid was accepted by {sellerName}.</p>
 
                     <div className="mt-7 flex justify-center gap-8">
                         <div>
-                            <div className="text-3xl font-black text-white">{formatGkwth(transaction.gkwthAmount)}</div>
-                            <div className="text-xs font-bold tracking-wide text-indigo-300">GKWTH RECEIVED</div>
+                            <div className="text-3xl font-black text-white print:text-black">{formatGkwth(transaction.gkwthAmount)}</div>
+                            <div className="text-xs font-bold tracking-wide text-indigo-300 print:text-indigo-700">GKWTH RECEIVED</div>
                         </div>
-                        <div className="w-px bg-white/10" />
+                        <div className="w-px bg-white/10 print:bg-border" />
                         <div>
-                            <div className="text-3xl font-black text-white">{currency}{(transaction.grossAmount / 1000).toFixed(0)}k</div>
-                            <div className="text-xs font-bold tracking-wide text-indigo-300">PAID</div>
+                            <div className="text-3xl font-black text-white print:text-black">{currency}{transaction.grossAmount.toLocaleString()}</div>
+                            <div className="text-xs font-bold tracking-wide text-indigo-300 print:text-indigo-700">PAID</div>
                         </div>
                     </div>
                 </div>
@@ -66,11 +65,21 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
 
             <div className="p-6">
                 <div className="mb-5 rounded-2xl bg-muted/40 p-5">
-                    <div className="mb-3.5 text-sm font-semibold text-foreground">Transfer Summary</div>
+                    <div className="mb-3.5 flex items-center justify-between">
+                        <div className="text-sm font-semibold text-foreground">Transfer Summary</div>
+                        <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="print:hidden flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                        >
+                            <Download size={13} /> Download Receipt
+                        </button>
+                    </div>
                     <div className="flex flex-col gap-2.5">
                         <Row label="Transaction ID" value={`#${transaction.reference}`} mono />
                         <Row label="GKWTH Transferred" value={`${formatGkwth(transaction.gkwthAmount)} GKWTH → Your Wallet`} emphasize />
                         <Row label="Amount Paid" value={`${currency}${transaction.grossAmount.toLocaleString()}`} />
+                        <Row label="Transaction Charges" value={`${currency}${transaction.platformFee.toLocaleString()}`} />
                         <Row label="Seller" value={sellerName} />
                         <Row label="Settled" value={format(new Date(transaction.createdAt), 'MMM d, h:mm a')} />
                         <div className="my-1 h-px bg-border" />
@@ -94,7 +103,7 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col gap-2.5 print:hidden">
                     <Button onClick={() => router.push('/wallets/gkwth/auction')} className="w-full bg-indigo-600 py-3 text-white hover:bg-indigo-700">
                         Browse More Auctions →
                     </Button>
@@ -103,7 +112,7 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
                     </Button>
                 </div>
 
-                <div className="mt-5 rounded-xl border border-border p-4 text-center">
+                <div className="mt-5 rounded-xl border border-border p-4 text-center print:hidden">
                     <div className="mb-2 text-sm font-semibold text-foreground">Rate your experience with {sellerName}</div>
                     <div className="flex justify-center gap-1.5">
                         {[1, 2, 3, 4, 5].map((star) => (

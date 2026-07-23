@@ -215,14 +215,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[140px]" />
             </div>
 
-            <Topbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-            <PublicNoticeBanner />
-            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
+            <div className="print:hidden">
+                <Topbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+                <PublicNoticeBanner />
+                <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+            </div>
 
             <main className={cn(
                 "pt-28 pb-24 lg:pb-8 transition-all duration-500 relative z-10",
-                "lg:ml-64 px-4 sm:px-6 lg:px-10"
+                "lg:ml-64 px-4 sm:px-6 lg:px-10",
+                "print:m-0 print:p-0"
             )}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -263,7 +265,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
             </AnimatePresence>
 
-            <BottomNav />
+            <div className="print:hidden">
+                <BottomNav />
+            </div>
 
             <KYCModal 
                 key={user?.id ? `kyc-${user.id}` : 'kyc-modal'}

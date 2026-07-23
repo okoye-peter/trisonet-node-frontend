@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { useGetAuctionQuery, useEndEarlyMutation } from '@/store/api/auctionApi';
@@ -268,8 +268,13 @@ export default function AuctionDetailPage() {
                                     <div className="text-xs text-muted-foreground">Completed</div>
                                 </div>
                                 <div className="rounded-lg bg-muted/50 p-3 text-center">
-                                    <div className="text-lg font-bold text-foreground">{isSeller ? 'You' : 'P2P'}</div>
-                                    <div className="text-xs text-muted-foreground">Seller</div>
+                                    <div className="flex items-center justify-center gap-1 text-lg font-bold text-foreground">
+                                        <Star size={14} className="fill-amber-400 text-amber-400" />
+                                        {auction.sellerStats?.averageRating != null ? auction.sellerStats.averageRating.toFixed(1) : '—'}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {auction.sellerStats?.reviewCount ? `${auction.sellerStats.reviewCount} ratings` : 'No ratings yet'}
+                                    </div>
                                 </div>
                             </div>
                             {canBid && (

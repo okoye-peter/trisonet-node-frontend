@@ -39,7 +39,12 @@ export function AuctionCard({ auction, currentUserId }: { auction: AuctionListin
                     <div className="min-w-0">
                         <div className="truncate text-sm font-semibold text-foreground">{auction.seller?.name}</div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Star size={10} className="fill-amber-400 text-amber-400" /> {auction.sellerStats?.completedAuctions ?? 0} auctions
+                            <Star size={10} className="fill-amber-400 text-amber-400" />
+                            {auction.sellerStats?.averageRating != null
+                                ? `${auction.sellerStats.averageRating.toFixed(1)} (${auction.sellerStats.reviewCount})`
+                                : 'No ratings yet'}
+                            <span className="text-muted-foreground/40">·</span>
+                            {auction.sellerStats?.completedAuctions ?? 0} sold
                         </div>
                     </div>
                 </div>
