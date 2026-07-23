@@ -19,8 +19,9 @@ const MAX_DURATION_HOURS = 720; // 30 days
 
 const createSchema = (maxGkwthAmount: number) => z.object({
     gkwthAmount: z.number()
-        .positive('Enter an amount greater than 0')
-        .max(maxGkwthAmount, `You can put up to ${maxGkwthAmount} GKWTH up for sale. 1 GKWTH must always stay in your wallet, so this is the maximum you're able to list right now.`),
+        .min(1, 'Minimum auction amount is 1 GKWTH')
+        .max(maxGkwthAmount, `You can put up to ${maxGkwthAmount} GKWTH up for sale. 1 GKWTH must always stay in your wallet, so this is the maximum you're able to list right now.`)
+        .refine((v) => Math.round(v * 100) === v * 100, 'Amount can have at most 2 decimal places'),
     startingBid: z.number().positive('Enter a starting bid greater than 0'),
     buyItNowPrice: z.number().optional(),
     minIncrement: z.number().positive(),
@@ -113,6 +114,8 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                                 <label className="mb-1.5 block text-sm font-semibold text-foreground">Amount (GKWTH)</label>
                                 <input
                                     type="number"
+                                    min={1}
+                                    step={0.01}
                                     {...form.register('gkwthAmount', { valueAsNumber: true })}
                                     className="w-full rounded-xl border-[1.5px] border-border bg-muted/40 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-indigo-400 focus:bg-background"
                                 />
@@ -120,7 +123,7 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                                     <p className="mt-1 text-xs text-destructive">{form.formState.errors.gkwthAmount.message}</p>
                                 )}
                                 <p className="mt-1.5 text-xs text-muted-foreground">
-                                    Available to sell: {maxSellableGkwth} GKWTH · Minimum: 0.5 GKWTH
+                                    Available to sell: {maxSellableGkwth} GKWTH · Minimum: 1 GKWTH
                                     <span className="block text-muted-foreground">(1 GKWTH always stays in your wallet)</span>
                                 </p>
 
