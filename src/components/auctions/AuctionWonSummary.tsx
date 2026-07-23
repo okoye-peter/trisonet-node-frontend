@@ -38,31 +38,6 @@ export function AuctionWonSummary({ transaction, newGkwthBalance }: { transactio
 
     return (
         <Card className="mt-8 gap-0 overflow-hidden py-0">
-            <div className="relative overflow-hidden rounded-t-xl bg-linear-to-br from-indigo-950 to-slate-900 px-8 py-12 text-center print:bg-none print:bg-white print:py-6">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(99,102,241,0.3),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(139,92,246,0.2),transparent_40%)] print:hidden" />
-                <div className="relative z-10">
-                    <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-emerald-100 print:hidden">
-                        <div className="absolute -inset-2 animate-[spin_10s_linear_infinite] rounded-full border-2 border-dashed border-emerald-400" />
-                        <CheckCircle2 size={48} className="text-emerald-500" strokeWidth={2.5} />
-                    </div>
-                    <div className="mb-2.5 text-xs font-bold uppercase tracking-wide text-emerald-400 print:text-emerald-600">🎉 Bid Accepted!</div>
-                    <h2 className="mb-1.5 text-3xl font-black text-white print:text-black">You Won the Auction!</h2>
-                    <p className="text-sm text-white/50 print:text-black/60">Your bid was accepted by {sellerName}.</p>
-
-                    <div className="mt-7 flex justify-center gap-8">
-                        <div>
-                            <div className="text-3xl font-black text-white print:text-black">{formatGkwth(transaction.gkwthAmount)}</div>
-                            <div className="text-xs font-bold tracking-wide text-indigo-300 print:text-indigo-700">GKWTH RECEIVED</div>
-                        </div>
-                        <div className="w-px bg-white/10 print:bg-border" />
-                        <div>
-                            <div className="text-3xl font-black text-white print:text-black">{currency}{transaction.grossAmount.toLocaleString()}</div>
-                            <div className="text-xs font-bold tracking-wide text-indigo-300 print:text-indigo-700">PAID</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div className="p-6">
                 <div className="mb-5 rounded-2xl bg-muted/40 p-5">
                     <div className="mb-3.5 flex items-center justify-between">
