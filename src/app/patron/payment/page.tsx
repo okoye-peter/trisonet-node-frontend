@@ -25,7 +25,8 @@ export default function PatronPaymentPage() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const { isAuthenticated, user } = useAppSelector((s) => s.auth);
-    const currency = useCurrencySymbol();
+    // const currency = useCurrencySymbol();
+    const currency = '₦';
 
     function handleLogout() {
         dispatch(logout());
@@ -143,7 +144,7 @@ export default function PatronPaymentPage() {
         <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-white to-[#ede9fe] flex items-center justify-center p-4">
             <div className="w-full max-w-lg">
                 {/* Header */}
-                <div className="text-center mb-8 relative">
+                <div className="relative mb-8 text-center">
                     <button
                         onClick={handleLogout}
                         className="absolute right-0 top-0 flex items-center gap-1.5 text-xs font-bold text-zinc-400 hover:text-red-500 transition-colors"
@@ -151,10 +152,10 @@ export default function PatronPaymentPage() {
                         <LogOut size={14} /> Logout
                     </button>
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#6639ff] shadow-lg shadow-[#6639ff]/30 mb-4">
-                        <Lock className="w-7 h-7 text-white" />
+                        <Lock className="text-white w-7 h-7" />
                     </div>
                     <h1 className="text-2xl font-black text-[#040021] tracking-tight">Activate Your Account</h1>
-                    <p className="text-sm text-zinc-500 font-medium mt-1">
+                    <p className="mt-1 text-sm font-medium text-zinc-500">
                         Complete your initial deposit to unlock the patron dashboard.
                     </p>
                 </div>
@@ -185,10 +186,10 @@ export default function PatronPaymentPage() {
                 )}
 
                 {/* Main card */}
-                <div className="bg-white rounded-3xl shadow-xl shadow-zinc-200/80 overflow-hidden border border-zinc-100">
+                <div className="overflow-hidden bg-white border shadow-xl rounded-3xl shadow-zinc-200/80 border-zinc-100">
                     <div className="bg-[#6639ff] px-8 py-6">
-                        <p className="text-white font-black text-xl tracking-tight">Activation Payment</p>
-                        <p className="text-white/60 text-xs font-medium uppercase tracking-widest mt-1">
+                        <p className="text-xl font-black tracking-tight text-white">Activation Payment</p>
+                        <p className="mt-1 text-xs font-medium tracking-widest uppercase text-white/60">
                             Secure transfer
                         </p>
                     </div>
@@ -210,7 +211,7 @@ export default function PatronPaymentPage() {
                                             Deposit Amount ({currency})
                                         </Label>
                                         <div className="relative">
-                                            <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300 pointer-events-none" size={18} />
+                                            <Wallet className="absolute -translate-y-1/2 pointer-events-none left-4 top-1/2 text-zinc-300" size={18} />
                                             <Input
                                                 type="text"
                                                 placeholder={plan ? `${currency}${plan.minAmount.toLocaleString()} – ${currency}${plan.maxAmount.toLocaleString()}` : 'Enter amount'}
@@ -235,7 +236,7 @@ export default function PatronPaymentPage() {
                                         )}
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-3">
+                                    <div className="flex gap-3 p-4 border rounded-2xl bg-amber-50 border-amber-100">
                                         <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={16} />
                                         <div className="space-y-1">
                                             <p className="text-[10px] font-bold text-amber-700 leading-relaxed uppercase tracking-wider">
@@ -270,15 +271,15 @@ export default function PatronPaymentPage() {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="space-y-6"
                                 >
-                                    <div className="text-center space-y-1">
+                                    <div className="space-y-1 text-center">
                                         <div className="h-12 w-12 rounded-full bg-[#6639ff]/10 flex items-center justify-center mx-auto mb-2">
                                             <CheckCircle2 size={24} className="text-[#6639ff]" />
                                         </div>
-                                        <h4 className="font-black text-zinc-900 text-xl tracking-tight">Account Generated</h4>
-                                        <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest">Pay via Bank Transfer</p>
+                                        <h4 className="text-xl font-black tracking-tight text-zinc-900">Account Generated</h4>
+                                        <p className="text-xs font-bold tracking-widest uppercase text-zinc-400">Pay via Bank Transfer</p>
                                     </div>
 
-                                    <div className="p-6 rounded-3xl bg-zinc-50 space-y-5">
+                                    <div className="p-6 space-y-5 rounded-3xl bg-zinc-50">
                                         <div
                                             className="space-y-1 cursor-pointer group"
                                             onClick={() => copyToClipboard(virtualAccount.account_number, 'Account number')}
@@ -287,33 +288,33 @@ export default function PatronPaymentPage() {
                                                 <Hash size={10} /> Account Number
                                             </Label>
                                             <div className="flex items-center justify-between">
-                                                <p className="font-black text-zinc-900 text-3xl tracking-tighter">{virtualAccount.account_number}</p>
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl hover:bg-white group-hover:scale-110 transition-transform">
+                                                <p className="text-3xl font-black tracking-tighter text-zinc-900">{virtualAccount.account_number}</p>
+                                                <Button size="icon" variant="ghost" className="transition-transform h-9 w-9 rounded-xl hover:bg-white group-hover:scale-110">
                                                     <Copy size={15} className="text-zinc-400" />
                                                 </Button>
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-between items-start pt-4 border-t border-zinc-200">
+                                        <div className="flex items-start justify-between pt-4 border-t border-zinc-200">
                                             <div className="space-y-4">
                                                 <div className="space-y-0.5">
                                                     <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
                                                         <Building2 size={10} /> Bank Name
                                                     </Label>
-                                                    <p className="font-black text-zinc-900 text-sm uppercase">{virtualAccount.bank_name}</p>
+                                                    <p className="text-sm font-black uppercase text-zinc-900">{virtualAccount.bank_name}</p>
                                                 </div>
                                                 <div className="space-y-0.5">
                                                     <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center gap-1.5">
                                                         <BadgeCheck size={10} /> Account Name
                                                     </Label>
-                                                    <p className="font-black text-zinc-900 text-sm">{virtualAccount.account_name}</p>
+                                                    <p className="text-sm font-black text-zinc-900">{virtualAccount.account_name}</p>
                                                 </div>
                                             </div>
                                             <div className="space-y-0.5 text-right">
                                                 <Label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 flex items-center justify-end gap-1.5">
                                                     <Clock size={10} /> Expires
                                                 </Label>
-                                                <p className="font-black text-rose-500 text-sm">{virtualAccount.expiry_date}</p>
+                                                <p className="text-sm font-black text-rose-500">{virtualAccount.expiry_date}</p>
                                             </div>
                                         </div>
 
@@ -327,7 +328,7 @@ export default function PatronPaymentPage() {
 
                                     <Button
                                         onClick={handleConfirmTransfer}
-                                        className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-black text-white font-black text-xs uppercase tracking-widest transition-all"
+                                        className="w-full text-xs font-black tracking-widest text-white uppercase transition-all h-14 rounded-2xl bg-zinc-900 hover:bg-black"
                                     >
                                         I Have Made the Transfer
                                     </Button>
@@ -341,7 +342,7 @@ export default function PatronPaymentPage() {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 1.05 }}
-                                    className="py-12 text-center space-y-6"
+                                    className="py-12 space-y-6 text-center"
                                 >
                                     <div className="relative inline-flex">
                                         <div className="h-24 w-24 rounded-full border-4 border-[#6639ff]/10 border-t-[#6639ff] animate-spin" />
@@ -350,8 +351,8 @@ export default function PatronPaymentPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <h4 className="font-black text-zinc-900 text-2xl tracking-tight">Verifying Payment</h4>
-                                        <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-relaxed px-6">
+                                        <h4 className="text-2xl font-black tracking-tight text-zinc-900">Verifying Payment</h4>
+                                        <p className="px-6 text-xs font-bold leading-relaxed tracking-widest uppercase text-zinc-400">
                                             Confirming your transfer — this may take up to 2 minutes. Do not close this page.
                                         </p>
                                     </div>
@@ -369,14 +370,14 @@ export default function PatronPaymentPage() {
                                     key="success"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="py-12 text-center space-y-6"
+                                    className="py-12 space-y-6 text-center"
                                 >
                                     <div className="h-24 w-24 rounded-full bg-[#6639ff] text-white flex items-center justify-center mx-auto shadow-2xl shadow-[#6639ff]/30">
                                         <ShieldCheck size={48} />
                                     </div>
                                     <div className="space-y-2">
-                                        <h4 className="font-black text-zinc-900 text-3xl tracking-tight">Account Activated!</h4>
-                                        <p className="text-sm text-zinc-500 font-medium px-8">
+                                        <h4 className="text-3xl font-black tracking-tight text-zinc-900">Account Activated!</h4>
+                                        <p className="px-8 text-sm font-medium text-zinc-500">
                                             Your payment was confirmed. Your patron account is now active.
                                         </p>
                                     </div>
@@ -395,34 +396,34 @@ export default function PatronPaymentPage() {
                                     key="timeout"
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="py-10 text-center space-y-5"
+                                    className="py-10 space-y-5 text-center"
                                 >
-                                    <div className="h-20 w-20 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mx-auto">
+                                    <div className="flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-amber-50 text-amber-500">
                                         <AlertTriangle size={40} />
                                     </div>
                                     <div className="space-y-2">
-                                        <h4 className="font-black text-zinc-900 text-2xl tracking-tight">Verification Delayed</h4>
-                                        <p className="text-sm text-zinc-500 font-medium px-6">
+                                        <h4 className="text-2xl font-black tracking-tight text-zinc-900">Verification Delayed</h4>
+                                        <p className="px-6 text-sm font-medium text-zinc-500">
                                             Your payment is being processed but confirmation is taking longer than expected.
                                         </p>
                                     </div>
-                                    <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 text-left">
+                                    <div className="p-4 text-left border rounded-2xl bg-zinc-50 border-zinc-100">
                                         <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed mb-1">
                                             Reference number:
                                         </p>
-                                        <p className="text-xs font-black text-zinc-900 select-all break-all">{fundingData?.reference}</p>
+                                        <p className="text-xs font-black break-all select-all text-zinc-900">{fundingData?.reference}</p>
                                     </div>
                                     <div className="flex gap-3">
                                         <Button
                                             variant="outline"
                                             onClick={() => setStage('amount')}
-                                            className="flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-widest border-zinc-200"
+                                            className="flex-1 h-12 text-xs font-bold tracking-widest uppercase rounded-xl border-zinc-200"
                                         >
                                             Try Again
                                         </Button>
                                         <Button
                                             onClick={() => window.open('mailto:support@trisonet.com')}
-                                            className="flex-1 h-12 rounded-xl bg-zinc-900 hover:bg-black text-white font-black text-xs uppercase tracking-widest"
+                                            className="flex-1 h-12 text-xs font-black tracking-widest text-white uppercase rounded-xl bg-zinc-900 hover:bg-black"
                                         >
                                             <Mail size={14} className="mr-1.5" /> Contact Support
                                         </Button>
