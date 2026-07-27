@@ -196,9 +196,16 @@ function BankTab({ user }: BankTabProps) {
     }
 
     const handleSave = async () => {
-        if (!bankData.bank || !bankData.accountNumber) {
+        if (!bankData.bank || !bankData.bankUUID || !bankData.accountNumber) {
             toast.error("Validation failed", {
                 description: "Bank name and account number are required",
+            });
+            return;
+        }
+
+        if (!bankData.accountName) {
+            toast.error("Validation failed", {
+                description: "We couldn't verify this account name. Double-check the account number and bank.",
             });
             return;
         }
@@ -213,6 +220,7 @@ function BankTab({ user }: BankTabProps) {
         try {
             const updateData = {
                 bank: bankData.bank,
+                bankUUID: bankData.bankUUID,
                 accountNumber: bankData.accountNumber,
                 currentPassword: bankData.currentPassword,
             };

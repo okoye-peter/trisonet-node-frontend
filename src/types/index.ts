@@ -366,6 +366,7 @@ export interface UpdateProfileRequest {
 
 export interface UpdateBankRequest {
     bank: string;
+    bankUUID: string;
     accountNumber: string;
     currentPassword: string;
 }
