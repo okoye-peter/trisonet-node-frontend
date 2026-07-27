@@ -26,7 +26,6 @@ const createSchema = (maxGkwthAmount: number, maxStartingBid: number) => z.objec
         .positive('Enter a starting bid greater than 0')
         .max(maxStartingBid, `Starting bid can't exceed ₦${maxStartingBid.toLocaleString()}`),
     buyItNowPrice: z.number().optional(),
-    minIncrement: z.number().positive(),
     durationHours: z.number()
         .min(MIN_DURATION_HOURS, `Duration must be at least ${MIN_DURATION_HOURS} hour`)
         .max(MAX_DURATION_HOURS, `Duration can't be more than ${MAX_DURATION_HOURS} hours (30 days)`),
@@ -40,8 +39,6 @@ const DURATIONS = [
     { hours: 72, label: '3', unit: 'Days' },
     { hours: 168, label: '7', unit: 'Days' },
 ];
-
-const INCREMENTS = [500, 1000, 2000];
 
 export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: string) => void }) {
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
@@ -60,7 +57,6 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
         defaultValues: {
             gkwthAmount: 0,
             startingBid: 0,
-            minIncrement: 1000,
             durationHours: 24,
         },
     });
@@ -74,7 +70,7 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
     const nextStep = async () => {
         const fieldsByStep: Record<number, (keyof FormValues)[]> = {
             1: ['gkwthAmount'],
-            2: ['startingBid', 'buyItNowPrice', 'minIncrement'],
+            2: ['startingBid', 'buyItNowPrice'],
             3: ['durationHours'],
         };
         const valid = await form.trigger(fieldsByStep[step]);
@@ -175,24 +171,6 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                                     ) : Number.isFinite(maxStartingBid) && (
                                         <p className="mt-1 text-xs text-muted-foreground">Maximum starting bid: {currency}{maxStartingBid.toLocaleString()}</p>
                                     )}
-                                </div>
-                                <div className="h-px bg-border" />
-                                <div>
-                                    <label className="mb-1.5 block text-sm font-semibold text-foreground">Minimum Bid Increment ({currency})</label>
-                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                        {INCREMENTS.map((inc) => (
-                                            <button
-                                                key={inc}
-                                                type="button"
-                                                onClick={() => form.setValue('minIncrement', inc)}
-                                                className={`rounded-lg py-2 text-xs font-bold transition-all ${
-                                                    values.minIncrement === inc ? 'bg-indigo-600 text-white' : 'border border-indigo-600 text-indigo-600 hover:bg-indigo-50'
-                                                }`}
-                                            >
-                                                {currency}{inc.toLocaleString()}
-                                            </button>
-                                        ))}
-                                    </div>
                                 </div>
                             </div>
                         </Card>

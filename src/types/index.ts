@@ -573,7 +573,6 @@ export interface AuctionListing {
     gkwthAmount: number;
     startingBid: number;
     buyItNowPrice: number | null;
-    minIncrement: number;
     visibility: AuctionVisibility;
     status: AuctionStatus;
     startsAt: string;
@@ -585,7 +584,6 @@ export interface AuctionListing {
     seller?: AuctionUserSummary;
     bids?: AuctionBid[];
     currentTopBid: number;
-    minNextBid: number;
     bidCount: number;
     bidderCount: number;
     yourStanding?: AuctionYourStanding | null;

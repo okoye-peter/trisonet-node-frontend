@@ -12,15 +12,22 @@ const QUICK_INCREMENTS = [1000, 5000, 10000, 20000];
 export function BidPanel({ auction }: { auction: AuctionListing }) {
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
     const router = useRouter();
-    const [amount, setAmount] = useState<number>(auction.minNextBid);
+    const [amount, setAmount] = useState<number>(0);
     const [placeBid, { isLoading: isBidding }] = usePlaceBidMutation();
     const [buyItNow, { isLoading: isBuying }] = useBuyItNowMutation();
 
     const isActive = auction.status === 'active';
+    // No fixed increment — any amount is fine as long as it beats the current top bid
+    // (or meets the starting bid, if nobody's bid yet).
+    const meetsFloor = auction.bidCount > 0 ? amount > auction.currentTopBid : amount >= auction.currentTopBid;
 
     const handleBid = async () => {
-        if (amount < auction.minNextBid) {
-            toast.error(`Minimum bid is ${currency}${auction.minNextBid.toLocaleString()}`);
+        if (!meetsFloor) {
+            toast.error(
+                auction.bidCount > 0
+                    ? `Your bid must be higher than the current top bid of ${currency}${auction.currentTopBid.toLocaleString()}`
+                    : `Your bid must be at least the starting bid of ${currency}${auction.currentTopBid.toLocaleString()}`
+            );
             return;
         }
         try {
@@ -54,7 +61,9 @@ export function BidPanel({ auction }: { auction: AuctionListing }) {
 
             <div className="relative z-10 mb-1 text-base font-black text-white">Place Your Bid</div>
             <div className="relative z-10 mb-5 text-xs text-white/50">
-                Current top: {currency}{auction.currentTopBid.toLocaleString()} · Min next: {currency}{auction.minNextBid.toLocaleString()}
+                {auction.bidCount > 0
+                    ? `Current top: ${currency}${auction.currentTopBid.toLocaleString()} · your bid must beat it`
+                    : `Starting bid: ${currency}${auction.currentTopBid.toLocaleString()} — name your price`}
                 {auction.buyItNowPrice && (
                     <span className="block">A bid of {currency}{auction.buyItNowPrice.toLocaleString()} or more wins instantly.</span>
                 )}
@@ -69,7 +78,7 @@ export function BidPanel({ auction }: { auction: AuctionListing }) {
                     type="number"
                     value={amount || ''}
                     onChange={(e) => setAmount(Number(e.target.value))}
-                    placeholder={auction.minNextBid.toLocaleString()}
+                    placeholder={`More than ${auction.currentTopBid.toLocaleString()}`}
                     disabled={!isActive}
                     className="flex-1 bg-transparent px-3.5 py-3 font-bold text-white outline-none placeholder:text-white/30"
                 />
@@ -100,7 +109,7 @@ export function BidPanel({ auction }: { auction: AuctionListing }) {
                 className="relative z-10 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50"
             >
                 {isBidding ? <Loader2 size={16} className="animate-spin" /> : <Tag size={16} />}
-                Place Bid — {currency}{(amount || auction.minNextBid).toLocaleString()}
+                {amount ? `Place Bid — ${currency}${amount.toLocaleString()}` : 'Place Bid'}
             </button>
 
             {auction.buyItNowPrice && (

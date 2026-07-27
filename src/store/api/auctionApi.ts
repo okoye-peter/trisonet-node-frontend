@@ -36,7 +36,6 @@ export const auctionApi = apiSlice.injectEndpoints({
             gkwthAmount: number;
             startingBid: number;
             buyItNowPrice?: number;
-            minIncrement?: number;
             durationHours: number;
             visibility?: 'public' | 'followers' | 'private';
         }>({

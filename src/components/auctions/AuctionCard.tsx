@@ -53,7 +53,7 @@ export function AuctionCard({ auction, currentUserId }: { auction: AuctionListin
                     <span className="text-xl font-bold text-indigo-700">{currency}{auction.currentTopBid.toLocaleString()}</span>
                 </div>
                 <div className="mb-3 text-xs text-muted-foreground">
-                    {isEnded ? `Final price · ${auction.bidCount} total bids` : `Min next: ${currency}${auction.minNextBid.toLocaleString()}`}
+                    {isEnded ? `Final price · ${auction.bidCount} total bids` : auction.bidCount > 0 ? 'Bid higher to take the lead' : 'Be the first to bid'}
                 </div>
 
                 <div className="mb-3 flex justify-between rounded-lg bg-muted/50 px-3 py-2">
