@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Search, History, Gavel } from 'lucide-react';
+import { Plus, Search, History, Gavel, Loader2 } from 'lucide-react';
 import { useGetAuctionsQuery } from '@/store/api/auctionApi';
 import { AuctionCard } from '@/components/auctions/AuctionCard';
 import { AuctionPageHeader } from '@/components/auctions/AuctionPageHeader';
@@ -11,7 +11,11 @@ import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useDebounce } from '@/hooks/use-debounce';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useAppSelector } from '@/store/hooks';
+import type { AuctionListing } from '@/types';
+
+const PAGE_SIZE = 12;
 
 const FILTERS = [
     { label: 'All', sort: undefined },
@@ -34,12 +38,35 @@ export default function AuctionBrowsePage() {
     const debouncedSearch = useDebounce(search, 400);
     const filter = FILTERS.find((f) => f.label === activeFilter);
 
-    const { data, isLoading } = useGetAuctionsQuery({ status: 'active', search: debouncedSearch || undefined, sort: filter?.sort });
-    const auctions = data?.data?.data || [];
+    const [page, setPage] = useState(1);
+    const [auctions, setAuctions] = useState<AuctionListing[]>([]);
 
-    const liveCount = auctions.length;
+    // Any change to search/sort starts a fresh list from page 1.
+    useEffect(() => {
+        setPage(1);
+        setAuctions([]);
+    }, [debouncedSearch, filter?.sort]);
 
-    if (isLoading) return <LoadingScreen />;
+    const { data, isLoading, isFetching } = useGetAuctionsQuery({
+        status: 'active',
+        search: debouncedSearch || undefined,
+        sort: filter?.sort,
+        page,
+        limit: PAGE_SIZE,
+    });
+
+    useEffect(() => {
+        const items = data?.data?.data;
+        if (!items) return;
+        setAuctions((prev) => (page === 1 ? items : [...prev, ...items]));
+    }, [data, page]);
+
+    const hasNextPage = data?.data?.meta?.hasNextPage ?? false;
+    const sentinelRef = useInfiniteScroll(() => setPage((p) => p + 1), hasNextPage, isFetching);
+
+    const liveCount = data?.data?.meta?.totalItems ?? auctions.length;
+
+    if (isLoading && page === 1) return <LoadingScreen />;
 
     return (
         <div className="space-y-8">
@@ -105,9 +132,15 @@ export default function AuctionBrowsePage() {
                 </Link> */}
             </div>
 
-            {auctions.length === 0 && (
+            {auctions.length === 0 && !isFetching && (
                 <div className="py-16 text-sm text-center border rounded-2xl border-border bg-card text-muted-foreground">
                     No auctions found. Be the first to list your GKWTH!
+                </div>
+            )}
+
+            {hasNextPage && (
+                <div ref={sentinelRef} className="flex items-center justify-center py-6">
+                    <Loader2 size={18} className="animate-spin text-muted-foreground" />
                 </div>
             )}
 

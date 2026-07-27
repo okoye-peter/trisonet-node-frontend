@@ -26,6 +26,7 @@ export default function PatronPaymentPage() {
     const dispatch = useAppDispatch();
     const { isAuthenticated, user } = useAppSelector((s) => s.auth);
     // const currency = useCurrencySymbol();
+    // const currency = useCurrencySymbol();
     const currency = '₦';
 
     function handleLogout() {

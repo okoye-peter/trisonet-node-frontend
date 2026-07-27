@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
-import { Gavel } from 'lucide-react';
+import { Gavel, Loader2 } from 'lucide-react';
 import { useGetMyBidHistoryQuery } from '@/store/api/auctionApi';
 import { CountdownTimer } from '@/components/auctions/CountdownTimer';
 import { AuctionAvatar } from '@/components/auctions/AuctionAvatar';
@@ -12,7 +12,10 @@ import { AuctionPageHeader } from '@/components/auctions/AuctionPageHeader';
 import { Card } from '@/components/ui/card';
 import LoadingScreen from '@/components/LoadingScreen';
 import { formatGkwth } from '@/lib/utils';
-import type { AuctionBidOutcome } from '@/types';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import type { AuctionBidOutcome, MyBidHistoryItem } from '@/types';
+
+const PAGE_SIZE = 15;
 
 const FILTERS: { label: string; value: AuctionBidOutcome | 'all' }[] = [
     { label: 'All', value: 'all' },
@@ -27,13 +30,33 @@ export default function MyBidsPage() {
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
     const [activeFilter, setActiveFilter] = useState<AuctionBidOutcome | 'all'>('all');
 
-    const { data, isLoading } = useGetMyBidHistoryQuery({ result: activeFilter === 'all' ? undefined : activeFilter });
+    const [page, setPage] = useState(1);
+    const [bids, setBids] = useState<MyBidHistoryItem[]>([]);
+
+    // Switching filters starts a fresh list from page 1.
+    useEffect(() => {
+        setPage(1);
+        setBids([]);
+    }, [activeFilter]);
+
+    const { data, isLoading, isFetching } = useGetMyBidHistoryQuery({
+        result: activeFilter === 'all' ? undefined : activeFilter,
+        page,
+        limit: PAGE_SIZE,
+    });
 
     const result = data?.data;
-    const bids = result?.data || [];
     const stats = result?.stats;
 
-    if (isLoading) return <LoadingScreen />;
+    useEffect(() => {
+        if (!result) return;
+        setBids((prev) => (page === 1 ? result.data : [...prev, ...result.data]));
+    }, [result, page]);
+
+    const hasNextPage = result?.meta?.hasNextPage ?? false;
+    const sentinelRef = useInfiniteScroll(() => setPage((p) => p + 1), hasNextPage, isFetching);
+
+    if (isLoading && page === 1) return <LoadingScreen />;
 
     return (
         <div className="space-y-8">
@@ -65,7 +88,7 @@ export default function MyBidsPage() {
             </div>
 
             <Card className="gap-0 overflow-hidden py-0">
-                {bids.length === 0 ? (
+                {bids.length === 0 && !isFetching ? (
                     <div className="flex flex-col items-center gap-3 py-16 text-center text-muted-foreground">
                         <Gavel size={32} strokeWidth={1.5} className="opacity-30" />
                         <p className="text-sm font-medium">No bids found for this filter.</p>
@@ -116,6 +139,12 @@ export default function MyBidsPage() {
                     ))
                 )}
             </Card>
+
+            {hasNextPage && (
+                <div ref={sentinelRef} className="flex items-center justify-center py-6">
+                    <Loader2 size={18} className="animate-spin text-muted-foreground" />
+                </div>
+            )}
         </div>
     );
 }

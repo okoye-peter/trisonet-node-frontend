@@ -17,12 +17,14 @@ import { formatGkwth } from '@/lib/utils';
 const MIN_DURATION_HOURS = 1;
 const MAX_DURATION_HOURS = 720; // 30 days
 
-const createSchema = (maxGkwthAmount: number) => z.object({
+const createSchema = (maxGkwthAmount: number, maxStartingBid: number) => z.object({
     gkwthAmount: z.number()
         .min(1, 'Minimum auction amount is 1 GKWTH')
         .max(maxGkwthAmount, `You can put up to ${maxGkwthAmount} GKWTH up for sale. 1 GKWTH must always stay in your wallet, so this is the maximum you're able to list right now.`)
         .refine((v) => Math.round(v * 100) === v * 100, 'Amount can have at most 2 decimal places'),
-    startingBid: z.number().positive('Enter a starting bid greater than 0'),
+    startingBid: z.number()
+        .positive('Enter a starting bid greater than 0')
+        .max(maxStartingBid, `Starting bid can't exceed ₦${maxStartingBid.toLocaleString()}`),
     buyItNowPrice: z.number().optional(),
     minIncrement: z.number().positive(),
     durationHours: z.number()
@@ -47,13 +49,14 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
     const { data: walletsResponse } = useGetWalletsQuery();
     const { data: settingsResponse } = useGetAuctionSettingsQuery();
     const commissionPercent = settingsResponse?.data?.commissionPercent ?? 0.5;
+    const maxStartingBid = settingsResponse?.data?.maxPrice ?? Infinity;
     const gkwthWallet = (walletsResponse?.data || []).find((w) => w.type === 'indirect');
     // A GKWTH wallet must always keep at least 1 GKWTH — the last unit can never be sold or withdrawn.
     const maxSellableGkwth = formatGkwth(Math.max(0, (gkwthWallet?.amount ?? 0) - 1));
     const [createAuction, { isLoading }] = useCreateAuctionMutation();
 
     const form = useForm<FormValues>({
-        resolver: zodResolver(createSchema(maxSellableGkwth)),
+        resolver: zodResolver(createSchema(maxSellableGkwth, maxStartingBid)),
         defaultValues: {
             gkwthAmount: 0,
             startingBid: 0,
@@ -167,8 +170,10 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                                         {...form.register('startingBid', { valueAsNumber: true })}
                                         className="w-full rounded-xl border-[1.5px] border-border bg-muted/40 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-indigo-400 focus:bg-background"
                                     />
-                                    {form.formState.errors.startingBid && (
+                                    {form.formState.errors.startingBid ? (
                                         <p className="mt-1 text-xs text-destructive">{form.formState.errors.startingBid.message}</p>
+                                    ) : Number.isFinite(maxStartingBid) && (
+                                        <p className="mt-1 text-xs text-muted-foreground">Maximum starting bid: {currency}{maxStartingBid.toLocaleString()}</p>
                                     )}
                                 </div>
                                 <div className="h-px bg-border" />
