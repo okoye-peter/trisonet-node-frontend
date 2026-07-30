@@ -41,8 +41,18 @@ const registerPatronSchema = z.object({
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
     // confirmPassword: z.string().min(6, { message: 'Please confirm your password.' }),
     patronType: z.enum(['individual', 'group']),
+    groupName: z.string().optional(),
     planId: z.string().min(1, { message: 'Please select a plan.' }),
 })
+.superRefine((data, ctx) => {
+    if (data.patronType === 'group' && !data.groupName?.trim()) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Group name is required.',
+            path: ['groupName'],
+        });
+    }
+});
 // .refine((data) => data.password === data.confirmPassword, {
 //     message: "Passwords don't match",
 //     path: ["confirmPassword"],
@@ -68,9 +78,12 @@ export default function RegisterPatronPage() {
             password: '',
             // confirmPassword: '',
             patronType: 'individual',
+            groupName: '',
             planId: '',
         },
     });
+
+    const patronType = form.watch('patronType');
 
     useEffect(() => {
         api.get('/auth/patron-plans')
@@ -93,6 +106,7 @@ export default function RegisterPatronPage() {
                 phone: values.phone,
                 password: values.password,
                 patronType: values.patronType,
+                groupName: values.patronType === 'group' ? values.groupName : undefined,
                 planId: values.planId,
             });
             const { user, accessToken, refreshToken } = res.data.data;
@@ -153,6 +167,29 @@ export default function RegisterPatronPage() {
                             </FormItem>
                         )}
                     />
+
+                    {patronType === 'group' && (
+                        <FormField
+                            control={form.control}
+                            name="groupName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#040021] font-semibold">Group Name</FormLabel>
+                                    <FormControl>
+                                        <div className="relative group">
+                                            <Shield className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input
+                                                placeholder="e.g. Trisonet Growth Circle"
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
+                                                {...field}
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
 
                     <FormField
                         control={form.control}

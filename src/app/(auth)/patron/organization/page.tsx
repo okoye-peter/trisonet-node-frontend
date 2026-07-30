@@ -103,7 +103,8 @@ const PLANS = [
 ];
 
 export default function PatronOrganizationPage() {
-    const currency = useCurrencySymbol();
+    // const currency = useCurrencySymbol();
+    const currency = '₦';
     const [page, setPage] = useState(1);
     const [activeTab, setActiveTab] = useState<'copatrons' | 'transactions'>('copatrons');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);

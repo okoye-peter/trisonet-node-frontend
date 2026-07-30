@@ -203,6 +203,13 @@ function BankTab({ user }: BankTabProps) {
             return;
         }
 
+        if (!/^\d{10}$/.test(bankData.accountNumber)) {
+            toast.error("Validation failed", {
+                description: "Account number must be exactly 10 digits.",
+            });
+            return;
+        }
+
         if (!bankData.accountName) {
             toast.error("Validation failed", {
                 description: "We couldn't verify this account name. Double-check the account number and bank.",
@@ -363,13 +370,15 @@ function BankTab({ user }: BankTabProps) {
                         <Input
                             className="h-14 px-6 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900"
                             placeholder="0000000000"
+                            inputMode="numeric"
+                            maxLength={10}
                             value={bankData.accountNumber}
                             onChange={(e) => {
-                                const val = e.target.value;
+                                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                                 setBankData(prev => ({ ...prev, accountNumber: val }));
                                 if (val.length === 10 && bankData.bankUUID) {
                                     handleResolveAccount(val, bankData.bankUUID);
-                                } else if (val.length < 10) {
+                                } else {
                                     setBankData(prev => ({ ...prev, accountName: '' }));
                                 }
                             }}

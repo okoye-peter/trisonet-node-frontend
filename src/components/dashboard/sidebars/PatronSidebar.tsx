@@ -28,7 +28,7 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
     const unreadCount = notificationResponse?.data?.unreadCount || 0;
 
     const patronData = dashboardData?.data;
-    const isGroupOwner = !user?.patronId && patronData?.patronGroup?.type === 'group';
+    const belongsToPatronGroup = !!user?.patronGroupId;
     
     const isRestrictedGroupPatron = useMemo(() => {
         if (user?.role !== ROLES.PATRON || user?.pendingPatronType !== 'group') return false;
@@ -53,15 +53,15 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
             return items.filter(item => item.label === 'Dashboard');
         }
 
-        // Hide Organization link if not the group owner
+        // Hide Organization link for patrons who aren't part of a group
         const isMember = !!user?.patronId;
         return items.filter(item => {
-            if (item.label === 'Organization') return isGroupOwner;
+            if (item.label === 'Organization') return belongsToPatronGroup;
             if (item.label === 'Members') return !isMember;
             if (item.label === 'Earnings') return !isMember;
             return true;
         });
-    }, [isGroupOwner, isRestrictedGroupPatron, user?.patronId]);
+    }, [belongsToPatronGroup, isRestrictedGroupPatron, user?.patronId]);
 
 
     return (

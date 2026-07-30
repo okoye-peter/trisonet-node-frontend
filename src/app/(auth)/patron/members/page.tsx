@@ -158,14 +158,14 @@ export default function PatronMembersPage() {
                         <span className="text-[10px] font-bold text-indigo-500 mb-2 uppercase tracking-widest">Linked Slots</span>
                     </div>
                 </Card>
-                <Card className="bg-indigo-600 rounded-[2.5rem] p-6 border-none shadow-xl text-white relative overflow-hidden group">
+                {/* <Card className="bg-indigo-600 rounded-[2.5rem] p-6 border-none shadow-xl text-white relative overflow-hidden group">
                     <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-110 transition-transform" />
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200 mb-1">Growth Index</p>
                     <div className="flex items-end gap-2">
                         <h3 className="text-4xl font-black tracking-tighter">+12%</h3>
                         <span className="text-[10px] font-bold text-indigo-100 mb-2 uppercase tracking-widest">Monthly</span>
                     </div>
-                </Card>
+                </Card> */}
             </div>
 
             <Card className="bg-white rounded-[3rem] border border-zinc-100 shadow-sm overflow-hidden">

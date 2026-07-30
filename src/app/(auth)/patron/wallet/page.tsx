@@ -164,7 +164,7 @@ export default function PatronWalletPage() {
                                 {isParentPatronage ? "Available to Organization" : "Reserved Sponsorship Funds"}
                             </p>
                             <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tighter mt-2">
-                                {currency}{(patronageWallet?.amount || 0).toLocaleString()}
+                                {'₦'}{(patronageWallet?.amount || 0).toLocaleString()}
                             </h2>
 
                             <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/5">

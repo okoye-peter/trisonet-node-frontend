@@ -100,7 +100,7 @@ export default function PatronDashboardPage() {
             {
                 label: 'Patronage Wallet',
                 value: patronageWalletBalance,
-                prefix: currency,
+                prefix: '₦',
                 icon: CreditCard,
                 color: 'text-blue-600',
                 bg: 'bg-blue-50',

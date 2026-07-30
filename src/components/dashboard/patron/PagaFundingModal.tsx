@@ -32,7 +32,9 @@ import {
 import { PagaVirtualAccountDetails } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
+
+// Patronage funding is Naira-only (Paga is a Nigeria-only payment rail).
+const currency = '₦';
 
 interface PagaFundingModalProps {
     open: boolean;
@@ -40,7 +42,6 @@ interface PagaFundingModalProps {
 }
 
 export function PagaFundingModal({ open, onOpenChange }: PagaFundingModalProps) {
-    const currency = useCurrencySymbol();
     const [amount, setAmount] = useState<string>('');
     const [virtualAccount, setVirtualAccount] = useState<PagaVirtualAccountDetails | null>(null);
     const [fundingData, setFundingData] = useState<{ reference: string, amount: number } | null>(null);
