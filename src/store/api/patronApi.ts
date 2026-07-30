@@ -29,6 +29,13 @@ export const patronApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['User'],
         }),
+        getPatronGroupMembers: builder.query<AppResponse<PatronMembersResponse>, { page?: number; search?: string } | void>({
+            query: (params) => ({
+                url: 'patrons/group-members',
+                params: params || {},
+            }),
+            providesTags: ['User'],
+        }),
         getPatronBeneficiaries: builder.query<AppResponse<PatronBeneficiariesResponse>, { page?: number } | void>({
             query: (params) => ({
                 url: 'patrons/beneficiaries',
@@ -113,6 +120,7 @@ export const {
     useGetPatronPlansQuery,
     useGetPatronDashboardQuery,
     useGetPatronMembersQuery,
+    useGetPatronGroupMembersQuery,
     useGetPatronBeneficiariesQuery,
     useAddPatronMemberMutation,
     useCreatePatronGroupMutation,

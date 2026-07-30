@@ -24,7 +24,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useCreditPatronMemberMutation, useGetPatronMembersQuery } from "@/store/api/patronApi";
+import { useCreditPatronMemberMutation, useGetPatronGroupMembersQuery } from "@/store/api/patronApi";
 import { useDebounce } from "@/hooks/use-debounce";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { cn } from "@/lib/utils";
@@ -44,11 +44,12 @@ interface CreditMemberModalProps {
 }
 
 export function CreditMemberModal({ open, onOpenChange, currentBalance }: CreditMemberModalProps) {
-    const currency = useCurrencySymbol();
+    // const currency = useCurrencySymbol();
+    const currency = '₦';
     const [searchQuery, setSearchQuery] = useState("");
     const debouncedSearch = useDebounce(searchQuery, 500);
     
-    const { data: membersData, isFetching } = useGetPatronMembersQuery({ 
+    const { data: membersData, isFetching } = useGetPatronGroupMembersQuery({
         search: debouncedSearch,
         page: 1 
     }, {
@@ -96,11 +97,11 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-[500px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-                <div className="bg-purple-600 p-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+                <div className="relative p-8 overflow-hidden text-white bg-purple-600">
+                    <div className="absolute top-0 right-0 w-40 h-40 translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
                     <DialogHeader className="relative z-10">
                         <DialogTitle className="text-3xl font-black tracking-tighter">Credit Member</DialogTitle>
-                        <DialogDescription className="text-purple-100/70 font-medium">
+                        <DialogDescription className="font-medium text-purple-100/70">
                             Transfer funds from the organization wallet to a member's direct wallet.
                         </DialogDescription>
                     </DialogHeader>
@@ -109,14 +110,14 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="p-8 space-y-6">
                         <div className="space-y-6">
-                            <div className="bg-zinc-50 rounded-2xl p-4 flex items-center justify-between">
+                            <div className="flex items-center justify-between p-4 bg-zinc-50 rounded-2xl">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-zinc-400">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-white shadow-sm rounded-xl text-zinc-400">
                                         <Wallet size={20} />
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Org. Balance</p>
-                                        <p className="text-lg font-black text-zinc-900 tracking-tighter">{currency}{currentBalance.toLocaleString()}</p>
+                                        <p className="text-lg font-black tracking-tighter text-zinc-900">{currency}{currentBalance.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>
@@ -149,8 +150,8 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
                                         <FormLabel className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount to Credit</FormLabel>
                                         <FormControl>
                                             <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-zinc-400">{currency}</span>
-                                                <Input type="number" className="h-14 rounded-xl bg-zinc-50 border-none pl-10 pr-4 font-black text-xl text-zinc-900 placeholder:text-zinc-300 transition-all focus-visible:ring-2 focus-visible:ring-purple-600/20" {...field} />
+                                                <span className="absolute font-black -translate-y-1/2 left-4 top-1/2 text-zinc-400">{currency}</span>
+                                                <Input type="number" className="pl-10 pr-4 text-xl font-black transition-all border-none h-14 rounded-xl bg-zinc-50 text-zinc-900 placeholder:text-zinc-300 focus-visible:ring-2 focus-visible:ring-purple-600/20" {...field} />
                                             </div>
                                         </FormControl>
                                         <FormMessage className="text-[10px] font-bold" />
@@ -164,14 +165,14 @@ export function CreditMemberModal({ open, onOpenChange, currentBalance }: Credit
                                 type="button" 
                                 variant="ghost" 
                                 onClick={handleClose}
-                                className="h-12 px-6 rounded-xl font-bold text-xs uppercase tracking-widest text-zinc-400"
+                                className="h-12 px-6 text-xs font-bold tracking-widest uppercase rounded-xl text-zinc-400"
                             >
                                 Cancel
                             </Button>
                             <Button 
                                 type="submit" 
                                 disabled={isSubmitting}
-                                className="h-12 px-8 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-purple-100 transition-all active:scale-95 disabled:opacity-50"
+                                className="h-12 px-8 text-xs font-black tracking-widest text-white uppercase transition-all bg-purple-600 shadow-xl rounded-xl hover:bg-purple-700 shadow-purple-100 active:scale-95 disabled:opacity-50"
                             >
                                 <TrendingUp size={16} className="mr-2" /> Distribute Funds
                             </Button>
