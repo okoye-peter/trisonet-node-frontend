@@ -17,19 +17,27 @@ import { formatGkwth } from '@/lib/utils';
 const MIN_DURATION_HOURS = 1;
 const MAX_DURATION_HOURS = 720; // 30 days
 
+// startingBid is entered as a price PER GKWTH unit, capped directly by maxStartingBid (the
+// admin's per-unit ceiling). buyItNowPrice, by contrast, is a flat total for the whole lot —
+// it must exceed the total starting bid (startingBid × gkwthAmount). Keep in sync with
+// AuctionService.createListing in the backend.
 const createSchema = (maxGkwthAmount: number, maxStartingBid: number) => z.object({
     gkwthAmount: z.number()
         .min(1, 'Minimum auction amount is 1 GKWTH')
         .max(maxGkwthAmount, `You can put up to ${maxGkwthAmount} GKWTH up for sale. 1 GKWTH must always stay in your wallet, so this is the maximum you're able to list right now.`)
         .refine((v) => Math.round(v * 100) === v * 100, 'Amount can have at most 2 decimal places'),
     startingBid: z.number()
-        .positive('Enter a starting bid greater than 0')
-        .max(maxStartingBid, `Starting bid can't exceed ₦${maxStartingBid.toLocaleString()}`),
+        .positive('Enter a starting price greater than 0')
+        .max(maxStartingBid, `Starting price can't exceed ₦${maxStartingBid.toLocaleString()} per GKWTH`),
     buyItNowPrice: z.number().optional(),
     durationHours: z.number()
         .min(MIN_DURATION_HOURS, `Duration must be at least ${MIN_DURATION_HOURS} hour`)
         .max(MAX_DURATION_HOURS, `Duration can't be more than ${MAX_DURATION_HOURS} hours (30 days)`),
-});
+})
+    .refine((data) => !data.buyItNowPrice || data.buyItNowPrice > data.gkwthAmount * data.startingBid, {
+        message: 'Buy It Now price must be higher than the total starting bid (price × GKWTH amount)',
+        path: ['buyItNowPrice'],
+    });
 
 type FormValues = z.infer<ReturnType<typeof createSchema>>;
 
@@ -160,7 +168,7 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                             </div>
                             <div className="space-y-4 p-5">
                                 <div>
-                                    <label className="mb-1.5 block text-sm font-semibold text-foreground">Starting Bid ({currency})</label>
+                                    <label className="mb-1.5 block text-sm font-semibold text-foreground">Starting Price ({currency} per GKWTH)</label>
                                     <input
                                         type="number"
                                         {...form.register('startingBid', { valueAsNumber: true })}
@@ -168,8 +176,11 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                                     />
                                     {form.formState.errors.startingBid ? (
                                         <p className="mt-1 text-xs text-destructive">{form.formState.errors.startingBid.message}</p>
-                                    ) : Number.isFinite(maxStartingBid) && (
-                                        <p className="mt-1 text-xs text-muted-foreground">Maximum starting bid: {currency}{maxStartingBid.toLocaleString()}</p>
+                                    ) : (
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            This is the price per GKWTH you're willing to sell at — total starting bid = price × {values.gkwthAmount || 0} GKWTH
+                                            {Number.isFinite(maxStartingBid) && ` · You can't sell beyond the maximum of ${currency}${maxStartingBid.toLocaleString()} per GKWTH`}
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -261,7 +272,9 @@ export function CreateAuctionPanel({ onCreated }: { onCreated: (auctionId: strin
                                     {form.formState.errors.buyItNowPrice ? (
                                         <p className="mt-1.5 text-xs text-destructive">{form.formState.errors.buyItNowPrice.message}</p>
                                     ) : (
-                                        <p className="mt-1.5 text-xs text-muted-foreground">If set, anyone can buy immediately — and any bid that reaches this price wins the auction instantly, even before the timer runs out</p>
+                                        <p className="mt-1.5 text-xs text-muted-foreground">
+                                            This is the total price for the whole {values.gkwthAmount || 0} GKWTH lot. If set, anyone can buy immediately — and any bid that reaches this total wins the auction instantly, even before the timer runs out
+                                        </p>
                                     )}
                                 </div>
                             </div>

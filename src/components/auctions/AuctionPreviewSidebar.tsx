@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 
 interface AuctionPreviewSidebarProps {
     gkwthAmount: number;
+    /** Price per GKWTH unit, as entered by the seller — the lot total is this × gkwthAmount. */
     startingBid: number;
     durationHours: number;
     commissionPercent?: number;
@@ -26,15 +27,16 @@ function formatDuration(hours: number): string {
 export function AuctionPreviewSidebar({ gkwthAmount, startingBid, durationHours, commissionPercent = 0.5, isSubmitting, onLaunch }: AuctionPreviewSidebarProps) {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const currency = '₦'; // auctions are always Naira-denominated, regardless of the viewer's own wallet currency
-    const perGkwth = gkwthAmount > 0 ? startingBid / gkwthAmount : 0;
-    const platformFee = startingBid * (commissionPercent / 100);
-    const youReceive = startingBid - platformFee;
+    const perGkwth = startingBid || 0;
+    const totalStartingBid = gkwthAmount * perGkwth;
+    const platformFee = totalStartingBid * (commissionPercent / 100);
+    const youReceive = totalStartingBid - platformFee;
     const durationLabel = formatDuration(durationHours);
 
     const rows: [string, string][] = [
         ['GKWTH Amount', `${gkwthAmount || 0} GKWTH`],
-        ['Starting Bid', `${currency}${(startingBid || 0).toLocaleString()}`],
-        ['Per GKWTH', `≈ ${currency}${perGkwth.toLocaleString(undefined, { maximumFractionDigits: 0 })}`],
+        ['Per GKWTH', `${currency}${perGkwth.toLocaleString(undefined, { maximumFractionDigits: 0 })}`],
+        ['Total Starting Bid', `${currency}${totalStartingBid.toLocaleString(undefined, { maximumFractionDigits: 0 })}`],
         ['Duration', durationLabel],
         ['Platform Fee', `${commissionPercent}% on sale`],
     ];
@@ -53,7 +55,7 @@ export function AuctionPreviewSidebar({ gkwthAmount, startingBid, durationHours,
                 <div className="relative z-10 text-4xl font-black text-white">{gkwthAmount || 0} GKWTH</div>
                 <div className="relative z-10 mb-4 text-xs font-bold uppercase tracking-wide text-indigo-300">GKWTH for sale</div>
                 <div className="relative z-10 flex flex-wrap gap-1.5">
-                    <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white/80">Starting: {currency}{(startingBid || 0).toLocaleString()}</span>
+                    <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white/80">Starting: {currency}{totalStartingBid.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
                     <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-white/80">{durationLabel} Auction</span>
                 </div>
             </div>
