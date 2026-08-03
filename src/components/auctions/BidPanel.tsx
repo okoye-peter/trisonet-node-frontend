@@ -112,7 +112,7 @@ export function BidPanel({ auction }: { auction: AuctionListing }) {
                 {amount ? `Place Bid — ${currency}${amount.toLocaleString()}` : 'Place Bid'}
             </button>
 
-            {auction.buyItNowPrice && (
+            {/* {auction.buyItNowPrice && (
                 <div className="relative z-10 mt-3">
                     <div className="mb-3 h-px bg-white/10" />
                     <button
@@ -126,7 +126,7 @@ export function BidPanel({ auction }: { auction: AuctionListing }) {
                     </button>
                     <div className="mt-2 text-center text-[11px] text-white/35">Skip bidding · Pay to claim, instantly yours</div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
