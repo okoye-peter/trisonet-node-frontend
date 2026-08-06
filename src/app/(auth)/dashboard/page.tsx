@@ -456,22 +456,26 @@ export default function DashboardPage() {
                                 </Button>
                             )}
 
-                            {stat.label === 'Asset Depot' && (
-                                <div className="mt-5 space-y-3">
-                                    <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-zinc-400">
-                                        <span>Target Progress</span>
-                                        <span>{Math.round(((MAX_ASSET_DEPOT - (dashboardStats?.assetDepot ?? 0)) / MAX_ASSET_DEPOT) * 100)}% Completed</span>
+                            {stat.label === 'Asset Depot' && (() => {
+                                const assetDepotTarget = dashboardStats?.assetDepotTarget ?? MAX_ASSET_DEPOT;
+                                const percentCompleted = Math.round(((assetDepotTarget - (dashboardStats?.assetDepot ?? 0)) / assetDepotTarget) * 100);
+                                return (
+                                    <div className="mt-5 space-y-3">
+                                        <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                                            <span>Target Progress</span>
+                                            <span>{percentCompleted}% Completed</span>
+                                        </div>
+                                        <div className="h-2.5 w-full rounded-full bg-zinc-100 border border-zinc-200 p-0.5 overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${percentCompleted}%` }}
+                                                transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+                                                className="h-full rounded-full bg-linear-to-r from-purple-400 via-purple-500 to-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="h-2.5 w-full rounded-full bg-zinc-100 border border-zinc-200 p-0.5 overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${Math.round(((MAX_ASSET_DEPOT - (dashboardStats?.assetDepot ?? 0)) / MAX_ASSET_DEPOT) * 100)}%` }}
-                                            transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-                                            className="h-full rounded-full bg-linear-to-r from-purple-400 via-purple-500 to-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
-                                        />
-                                    </div>
-                                </div>
-                            )}
+                                );
+                            })()}
                         </CardContent>
                     </Card>
                 ))}
