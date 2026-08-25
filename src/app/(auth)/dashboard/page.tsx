@@ -15,6 +15,7 @@ import {
     Award,
     History,
     ArrowRight,
+    Baby,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,7 +33,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import axios from 'axios';
-import type { Partner, Wallet as WalletType, DashboardStats } from '@/types';
+import type { Partner, Wallet as WalletType, DashboardStats, WardStats } from '@/types';
 import { ROLES } from '@/types';
 import { MAX_ASSET_DEPOT } from '@/lib/constants';
 import { videoFlags } from '@/lib/videoFlags';
@@ -246,6 +247,16 @@ export default function DashboardPage() {
         migrationModalShownThisLoad = true;
         setIsMigrationModalOpen(true);
     }, [pendingMigrationResponse]);
+
+    const { data: wardStatsResponse } = useQuery<{ data: WardStats }>({
+        queryKey: ['wardStats'],
+        queryFn: async () => {
+            const res = await api.get('/users/wards-stats');
+            return res.data;
+        },
+        enabled: !!user,
+    });
+    const hasUnlimitedWardSlot = wardStatsResponse?.data?.wardSlotRemaining === 'unlimited';
 
     const dashboardStats = dashboardStatsResponse?.data;
     const { data: pricesResponse } = useGetGkwthPricesQuery();
@@ -566,13 +577,32 @@ export default function DashboardPage() {
                 {/* Distribution Code Card - Mainly for Level 1 but available to all */}
                 {(user?.level === 1 || user?.level === 2) && (
                     <motion.div variants={itemVariants} className="lg:col-span-2">
-                        <DistributionCodeCard 
-                            username={user?.username || ''} 
+                        <DistributionCodeCard
+                            username={user?.username || ''}
                             onShowQR={() => setQrCodeConfig({
                                 isOpen: true,
                                 url: window.location.origin + '/register?ref=' + user?.username,
                                 title: 'Personal Code'
-                            })} 
+                            })}
+                        />
+                    </motion.div>
+                )}
+
+                {/* Infant Distribution Code Card - Unlimited, non-revoked guardian ward slot holders only */}
+                {hasUnlimitedWardSlot && (
+                    <motion.div variants={itemVariants} className="lg:col-span-2">
+                        <DistributionCodeCard
+                            username={user?.username || ''}
+                            icon={Baby}
+                            eyebrow="Infant Distribution"
+                            title="Unlimited Wards"
+                            description="Share this code to register infants under your unlimited guardian slot."
+                            referralUrl={`https://app.trisonet.com/infants/register?ref=${user?.username}`}
+                            onShowQR={() => setQrCodeConfig({
+                                isOpen: true,
+                                url: `https://app.trisonet.com/infants/register?ref=${user?.username}`,
+                                title: 'Infant Distribution Code'
+                            })}
                         />
                     </motion.div>
                 )}

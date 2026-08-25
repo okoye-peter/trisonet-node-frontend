@@ -2,16 +2,30 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { QrCode, Copy, Share2, ExternalLink } from 'lucide-react';
+import { QrCode, Copy, Share2, ExternalLink, LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DistributionCodeCardProps {
     username: string;
     onShowQR: () => void;
+    icon?: LucideIcon;
+    eyebrow?: string;
+    title?: string;
+    description?: string;
+    referralUrl?: string;
 }
 
-export default function DistributionCodeCard({ username, onShowQR }: DistributionCodeCardProps) {
-    const referralUrl = typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${username}` : '';
+export default function DistributionCodeCard({
+    username,
+    onShowQR,
+    icon: Icon = Share2,
+    eyebrow = 'Distribution Code',
+    title = 'Share & Earn',
+    description = 'Share this code to build your partner network and progress to Level 1.',
+    referralUrl: referralUrlOverride,
+}: DistributionCodeCardProps) {
+    const referralUrl = referralUrlOverride
+        ?? (typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${username}` : '');
 
     const handleCopy = () => {
         if (!referralUrl) return;
@@ -24,17 +38,17 @@ export default function DistributionCodeCard({ username, onShowQR }: Distributio
             {/* Background elements */}
             <div className="absolute top-0 right-0 w-32 h-32 -mt-10 -mr-10 transition-transform duration-700 rounded-full bg-indigo-500/20 blur-3xl group-hover:scale-150" />
             <div className="absolute bottom-0 left-0 w-24 h-24 -mb-8 -ml-8 rounded-full bg-purple-500/20 blur-2xl" />
-            
+
             <CardContent className="relative z-10 flex flex-col justify-between h-full p-6">
                 <div>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-10 h-10 text-white border rounded-xl bg-white/10 backdrop-blur-md border-white/10">
-                                <Share2 size={18} />
+                                <Icon size={18} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Distribution Code</p>
-                                <h3 className="text-sm font-bold text-white">Share & Earn</h3>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{eyebrow}</p>
+                                <h3 className="text-sm font-bold text-white">{title}</h3>
                             </div>
                         </div>
                         <Button
@@ -47,9 +61,9 @@ export default function DistributionCodeCard({ username, onShowQR }: Distributio
                             <QrCode size={16} />
                         </Button>
                     </div>
-                    
+
                     <p className="mb-4 text-xs font-medium text-zinc-400 line-clamp-2">
-                        Share this code to build your partner network and progress to Level 1.
+                        {description}
                     </p>
                 </div>
 
