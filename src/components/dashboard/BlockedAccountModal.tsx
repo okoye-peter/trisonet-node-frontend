@@ -74,7 +74,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
     return (
         <AnimatePresence>
             {/* Backdrop absorbs all clicks — nothing behind the modal is reachable */}
-            <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-200 bg-zinc-950/80 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -83,16 +83,16 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                     className="relative w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-[2.5rem]"
                 >
                     {/* Header */}
-                    <div className="relative h-28 bg-linear-to-br from-red-500 via-rose-500 to-red-600 flex items-center justify-center overflow-hidden">
+                    <div className="relative flex items-center justify-center overflow-hidden h-28 bg-linear-to-br from-red-500 via-rose-500 to-red-600">
                         <div className="absolute inset-0 opacity-20">
                             <div className="absolute top-[-20%] left-[-10%] w-56 h-56 bg-white rounded-full blur-3xl animate-pulse" />
                             <div className="absolute bottom-[-30%] right-[-10%] w-64 h-64 bg-white rounded-full blur-3xl animate-pulse delay-1000" />
                         </div>
                         <div className="relative flex flex-col items-center gap-1">
-                            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm">
                                 <ShieldOff className="w-6 h-6 text-white" />
                             </div>
-                            <span className="text-white/80 text-xs font-medium tracking-widest uppercase">
+                            <span className="text-xs font-medium tracking-widest uppercase text-white/80">
                                 {step === 'main' && 'Account Disabled'}
                                 {step === 'bank_details' && 'Payment Account'}
                                 {step === 'puk' && 'Enter PUK Code'}
@@ -112,9 +112,9 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                     transition={{ duration: 0.2 }}
                                     className="space-y-4"
                                 >
-                                    <div className="text-center space-y-1">
+                                    <div className="space-y-1 text-center">
                                         <h2 className="text-lg font-bold text-zinc-900">Your PIM has been disabled</h2>
-                                        <p className="text-sm text-zinc-500 leading-relaxed">
+                                        <p className="text-sm leading-relaxed text-zinc-500">
                                             Your account has been disabled. Generate a payment account to purchase a PUK code, or enter an existing PUK code to reactivate.
                                         </p>
                                     </div>
@@ -123,7 +123,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                         <Button
                                             onClick={handleGenerateAccount}
                                             disabled={isGenerating}
-                                            className="w-full h-11 bg-red-600 hover:bg-red-700 text-white rounded-xl gap-2"
+                                            className="w-full gap-2 text-white bg-red-600 h-11 hover:bg-red-700 rounded-xl"
                                         >
                                             <CreditCard className="w-4 h-4" />
                                             {isGenerating ? 'Generating…' : 'Generate Account for Payment'}
@@ -131,7 +131,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                         <Button
                                             variant="outline"
                                             onClick={() => setStep('puk')}
-                                            className="w-full h-11 rounded-xl gap-2"
+                                            className="w-full gap-2 h-11 rounded-xl"
                                         >
                                             <KeyRound className="w-4 h-4" />
                                             I have a PUK Code
@@ -140,7 +140,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
 
                                     <button
                                         onClick={onLogout}
-                                        className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 transition-colors pt-1"
+                                        className="w-full pt-1 text-xs text-center transition-colors text-zinc-400 hover:text-zinc-600"
                                     >
                                         Sign out
                                     </button>
@@ -156,14 +156,14 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                     transition={{ duration: 0.2 }}
                                     className="space-y-4"
                                 >
-                                    <div className="text-center space-y-1">
+                                    <div className="space-y-1 text-center">
                                         <h2 className="text-base font-bold text-zinc-900">Make Your Payment</h2>
-                                        <p className="text-xs text-zinc-500 leading-relaxed">
+                                        <p className="text-xs leading-relaxed text-zinc-500">
                                             Transfer to the account below. Your PUK code will be sent to your registered phone number after payment is confirmed.
                                         </p>
                                     </div>
 
-                                    <div className="bg-zinc-50 rounded-2xl divide-y divide-zinc-100 border border-zinc-100 overflow-hidden">
+                                    <div className="overflow-hidden border divide-y bg-zinc-50 rounded-2xl divide-zinc-100 border-zinc-100">
                                         {[
                                             { label: 'Bank', value: accountDetail.bank_name, key: 'bank' },
                                             { label: 'Account Name', value: accountDetail.account_name, key: 'name' },
@@ -173,12 +173,12 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                         ].map(({ label, value, key }) => (
                                             <div key={key} className="flex items-center justify-between px-4 py-3">
                                                 <span className="text-xs text-zinc-500 w-28 shrink-0">{label}</span>
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    <span className="text-sm font-semibold text-zinc-900 truncate">{value}</span>
+                                                <div className="flex items-center min-w-0 gap-2">
+                                                    <span className="text-sm font-semibold truncate text-zinc-900">{value}</span>
                                                     {(key === 'number' || key === 'amount') && (
                                                         <button
                                                             onClick={() => handleCopy(value, key)}
-                                                            className="shrink-0 text-zinc-400 hover:text-zinc-700 transition-colors"
+                                                            className="transition-colors shrink-0 text-zinc-400 hover:text-zinc-700"
                                                         >
                                                             {copied === key ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                                                         </button>
@@ -191,7 +191,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                     <div className="flex flex-col gap-2 pt-1">
                                         <Button
                                             onClick={() => setStep('puk')}
-                                            className="w-full h-11 bg-red-600 hover:bg-red-700 text-white rounded-xl gap-2"
+                                            className="w-full gap-2 text-white bg-red-600 h-11 hover:bg-red-700 rounded-xl"
                                         >
                                             <KeyRound className="w-4 h-4" />
                                             I've Paid — Enter PUK Code
@@ -204,7 +204,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                         </button>
                                         <button
                                             onClick={onLogout}
-                                            className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 transition-colors pt-1"
+                                            className="w-full pt-1 text-xs text-center transition-colors text-zinc-400 hover:text-zinc-600"
                                         >
                                             Sign out
                                         </button>
@@ -221,9 +221,9 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                     transition={{ duration: 0.2 }}
                                     className="space-y-4"
                                 >
-                                    <div className="text-center space-y-1">
+                                    <div className="space-y-1 text-center">
                                         <h2 className="text-base font-bold text-zinc-900">Enter Your PUK Code</h2>
-                                        <p className="text-xs text-zinc-500 leading-relaxed">
+                                        <p className="text-xs leading-relaxed text-zinc-500">
                                             Enter the PUK code sent to your phone number to reactivate your account.
                                         </p>
                                     </div>
@@ -234,7 +234,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                             value={puk}
                                             onChange={(e) => setPuk(e.target.value)}
                                             placeholder="Enter your PUK code"
-                                            className="h-11 rounded-xl text-center tracking-widest font-mono text-base"
+                                            className="font-mono text-base tracking-widest text-center h-11 rounded-xl"
                                             onKeyDown={(e) => e.key === 'Enter' && handleUnblock()}
                                         />
                                     </div>
@@ -243,7 +243,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                         <Button
                                             onClick={handleUnblock}
                                             disabled={isUnblocking || !puk.trim()}
-                                            className="w-full h-11 bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                                            className="w-full text-white bg-red-600 h-11 hover:bg-red-700 rounded-xl"
                                         >
                                             {isUnblocking ? 'Reactivating…' : 'Reactivate Account'}
                                         </Button>
@@ -255,7 +255,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
                                         </button>
                                         <button
                                             onClick={onLogout}
-                                            className="w-full text-center text-xs text-zinc-400 hover:text-zinc-600 transition-colors pt-1"
+                                            className="w-full pt-1 text-xs text-center transition-colors text-zinc-400 hover:text-zinc-600"
                                         >
                                             Sign out
                                         </button>
