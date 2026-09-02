@@ -145,6 +145,12 @@ export const userApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+        checkPukPaymentStatus: builder.mutation<AppResponse<{ status: 'ok' | 'pending' | 'already_processed'; message: string }>, void>({
+            query: () => ({
+                url: 'payment/puk/check-status',
+                method: 'GET',
+            }),
+        }),
     }),
 });
 
@@ -170,5 +176,6 @@ export const {
     useVerifyEmailOtpMutation,
     useGeneratePukVirtualAccountMutation,
     useUnblockWithPukMutation,
+    useCheckPukPaymentStatusMutation,
 } = userApi;
 

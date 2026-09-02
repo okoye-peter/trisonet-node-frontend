@@ -6,7 +6,7 @@ import { ShieldOff, CreditCard, KeyRound, ArrowLeft, Copy, Check } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { useGeneratePukVirtualAccountMutation, useUnblockWithPukMutation } from '@/store/api/userApi';
+import { useGeneratePukVirtualAccountMutation, useUnblockWithPukMutation, useCheckPukPaymentStatusMutation } from '@/store/api/userApi';
 import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
 
 interface AccountDetail {
@@ -35,6 +35,7 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
 
     const [generateVirtualAccount, { isLoading: isGenerating }] = useGeneratePukVirtualAccountMutation();
     const [unblockWithPuk, { isLoading: isUnblocking }] = useUnblockWithPukMutation();
+    const [checkPaymentStatus, { isLoading: isChecking }] = useCheckPukPaymentStatusMutation();
 
     const handleGenerateAccount = async () => {
         try {
@@ -60,6 +61,24 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
         } catch (err) {
             const error = err as { data?: { message?: string } };
             toast.error(error?.data?.message || 'Invalid PUK code');
+        }
+    };
+
+    const handleCheckStatus = async () => {
+        try {
+            const res = await checkPaymentStatus().unwrap();
+            const result = res.data;
+            if (!result) throw new Error('No status returned');
+
+            if (result.status === 'ok' || result.status === 'already_processed') {
+                toast.success(result.message);
+                setStep('puk');
+            } else {
+                toast(result.message);
+            }
+        } catch (err) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || 'Failed to check payment status');
         }
     };
 
@@ -190,11 +209,19 @@ export default function BlockedAccountModal({ isOpen, onSuccess, onLogout }: Blo
 
                                     <div className="flex flex-col gap-2 pt-1">
                                         <Button
+                                            onClick={handleCheckStatus}
+                                            disabled={isChecking}
+                                            variant="outline"
+                                            className="w-full gap-2 h-11 rounded-xl"
+                                        >
+                                            {isChecking ? 'Checking…' : "I've Paid — Check Status"}
+                                        </Button>
+                                        <Button
                                             onClick={() => setStep('puk')}
                                             className="w-full gap-2 text-white bg-red-600 h-11 hover:bg-red-700 rounded-xl"
                                         >
                                             <KeyRound className="w-4 h-4" />
-                                            I've Paid — Enter PUK Code
+                                            I Already Have a PUK Code
                                         </Button>
                                         <button
                                             onClick={() => setStep('main')}
