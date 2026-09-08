@@ -659,3 +659,107 @@ export interface MyBidHistoryResponse extends PaginatedResult<MyBidHistoryItem> 
         totalSpent: number;
     };
 }
+
+export interface ShopCategory {
+    id: string;
+    name: string;
+    displayName: string;
+}
+
+export interface ShopProductImage {
+    id: string;
+    image: string;
+    isDefault: boolean;
+}
+
+export interface ShopReviewSummary {
+    average: number;
+    count: number;
+}
+
+export interface ShopProduct {
+    id: string;
+    name: string;
+    description: string;
+    quantity: number;
+    price: number;
+    image: string;
+    images: ShopProductImage[];
+    categoryId: string;
+    category?: ShopCategory;
+    isReturnable: boolean;
+    reviewSummary: ShopReviewSummary;
+}
+
+export interface ShopProductReview {
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    reviewerName: string;
+}
+
+export interface ShopReviewableOrderItem {
+    orderItemId: string;
+    productId: string;
+    productName: string;
+    productImage: string;
+    orderRefNo: string;
+    deliveredAt: string;
+}
+
+export interface ShopOrderItem {
+    id: string;
+    productId: string;
+    quantity: number;
+    price: number;
+    product?: {
+        id: string;
+        name: string;
+        image: string;
+    };
+}
+
+export interface ShopShippingDetails {
+    fullName: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    paymentMethod?: string;
+}
+
+export type ShopOrderPaymentStatus = 'pending' | 'paid' | 'failed';
+
+export interface ShopOrderVirtualAccount {
+    bank_name: string;
+    account_name: string;
+    account_number: string;
+    amount: number;
+    expires_at: string | null;
+}
+
+export interface ShopOrder {
+    id: string;
+    refNo: string;
+    status: boolean;
+    shipping: ShopShippingDetails | null;
+    deliveryFee: number;
+    total?: number;
+    createdAt: string;
+    paymentStatus: ShopOrderPaymentStatus;
+    paymentReference?: string;
+    virtualAccount?: ShopOrderVirtualAccount;
+    items: ShopOrderItem[];
+}
+
+export interface CreateShopOrderPayload {
+    items: { productId: string; quantity: number }[];
+    shipping: {
+        fullName: string;
+        phone: string;
+        address: string;
+        city: string;
+        state: string;
+    };
+}

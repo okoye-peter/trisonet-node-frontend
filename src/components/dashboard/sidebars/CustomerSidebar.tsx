@@ -19,7 +19,8 @@ import {
     TrendingUp,
     MessageSquare,
     Film,
-    Newspaper
+    Newspaper,
+    ShoppingBag
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
@@ -60,6 +61,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
         return [
             { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
             // { icon: Bell, label: 'Notifications', href: '/notifications', badge: unreadCount },
+            { icon: ShoppingBag, label: 'Shop', href: '/shop' },
             { icon: User, label: 'Profile', href: '/profile' },
             { icon: MessageSquare, label: 'Inbox', href: '/talkzone' },
             { icon: Newspaper, label: 'Gists Zone', href: '/gists-zone' },

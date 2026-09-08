@@ -1,11 +1,13 @@
 import { configureStore, combineReducers, UnknownAction } from '@reduxjs/toolkit';
 import authReducer from './features/authSlice';
 import userReducer from './features/userSlice';
+import shopCartReducer from './features/shopCartSlice';
 import { apiSlice } from './api/apiSlice';
 
 const appReducer = combineReducers({
     auth: authReducer,
     user: userReducer,
+    shopCart: shopCartReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
 });
 

@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, UserCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -35,8 +35,10 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginPageContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const nextPath = searchParams.get('next');
     const dispatch = useAppDispatch();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +75,9 @@ export default function LoginPage() {
                 setShowWelcomeVideo(true);
             } else {
                 videoFlags.welcomeSeen = true;
-                if (user.role === ROLES.PATRON) {
+                if (nextPath) {
+                    router.push(nextPath);
+                } else if (user.role === ROLES.PATRON) {
                     router.push('/patron/dashboard');
                 } else {
                     router.push('/dashboard');
@@ -97,13 +101,15 @@ export default function LoginPage() {
                     videoFlags.welcomeSeen = true;
                     // Use loggedInUser from local state or fallback to store user
                     const currentUser = loggedInUser || user;
-                    
-                    if (currentUser?.role === ROLES.PATRON) {
+
+                    if (nextPath) {
+                        router.push(nextPath);
+                    } else if (currentUser?.role === ROLES.PATRON) {
                         router.push('/patron/dashboard');
                     } else {
                         router.push('/dashboard');
                     }
-                }} 
+                }}
             />
         );
     }
@@ -200,6 +206,14 @@ export default function LoginPage() {
                 <a href="https://app.trisonet.com/login" className='text-sm font-medium text-zinc-500 hover:text-zinc-800'>Login as an Infant or Coordinator</a>
             </div>
         </AuthLayout>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={null}>
+            <LoginPageContent />
+        </Suspense>
     );
 }
 

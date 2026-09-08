@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { store } from '@/store';
 import { queryClient } from '@/lib/queryClient';
 import { initAuth } from '@/store/features/authSlice';
+import { initShopCart } from '@/store/features/shopCartSlice';
 import { ReactNode } from 'react';
 
 // Inner component so we can use dispatch (must be inside <Provider>)
@@ -15,6 +16,7 @@ function AuthInitializer({ children }: { children: ReactNode }) {
     useEffect(() => {
         // Runs only on the client, after hydration — safe to read localStorage
         dispatch(initAuth());
+        dispatch(initShopCart());
     }, [dispatch]);
 
     return <>{children}</>;

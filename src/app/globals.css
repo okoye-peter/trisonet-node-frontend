@@ -153,3 +153,11 @@
 .animate-drift {
   animation: drift-slow 30s linear infinite;
 }
+
+/* Scoped brand color for the public shop pages only — does not affect the
+   global --primary used everywhere else in the app. */
+.shop-theme {
+  --primary: #6639ff;
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: #6639ff;
+}

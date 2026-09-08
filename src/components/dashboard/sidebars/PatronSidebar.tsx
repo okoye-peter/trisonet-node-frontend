@@ -10,7 +10,8 @@ import {
     Building2,
     TrendingUp,
     User,
-    History
+    History,
+    ShoppingBag
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
@@ -39,6 +40,7 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
     const sidebarItems: SidebarItem[] = useMemo(() => {
         const items = [
             { icon: LayoutGrid, label: 'Dashboard', href: '/patron/dashboard' },
+            { icon: ShoppingBag, label: 'Shop', href: '/shop' },
             { icon: User, label: 'Profile Settings', href: '/profile' },
             { icon: Users, label: 'Members', href: '/patron/members' },
             { icon: Building2, label: 'Organization', href: '/patron/organization' },
