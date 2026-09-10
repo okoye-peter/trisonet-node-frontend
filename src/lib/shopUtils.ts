@@ -1,5 +1,3 @@
-export const SHOP_DELIVERY_FEE = 1500;
-
 // Mirrors config('constant.order_returns.return_window_days') on the PHP side —
 // a delivered, returnable order can be requested for return within this many days.
 export const SHOP_RETURN_WINDOW_DAYS = 7;

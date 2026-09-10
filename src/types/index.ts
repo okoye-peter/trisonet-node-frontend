@@ -7,6 +7,7 @@ export const ROLES = {
     SPONSOR: 6,
     SCHOOL: 7,
     PATRON: 8,
+    STORE_GUEST: 9,
 } as const;
 
 export type Partner = {
@@ -20,7 +21,7 @@ export type Partner = {
 
 export type Wallet = {
     id?: number
-    type: 'direct' | 'indirect' | 'central_treasury' | 'patronage' | 'earning';
+    type: 'direct' | 'indirect' | 'central_treasury' | 'patronage' | 'earning' | 'shopping';
     amount: number;
     createdAt?: string;
     updatedAt?: string;
@@ -91,6 +92,8 @@ export interface User {
     level: number;
     hasVerifiedLevel2: boolean;
     patronGroupId: string | null;
+    storeInviteCode?: string | null;
+    invitedById?: string | null;
     pendingPatronType?: string | null;
     patronActivated?: boolean;
     isPendingLevel2Migration?: boolean;
@@ -744,7 +747,6 @@ export interface ShopOrder {
     refNo: string;
     status: boolean;
     shipping: ShopShippingDetails | null;
-    deliveryFee: number;
     total?: number;
     createdAt: string;
     paymentStatus: ShopOrderPaymentStatus;
@@ -762,4 +764,33 @@ export interface CreateShopOrderPayload {
         city: string;
         state: string;
     };
+}
+
+export interface StoreInviteCode {
+    code: string;
+}
+
+export interface StoreInviteCommissionLog {
+    id: string;
+    type: string;
+    status: 'success' | 'failed' | 'skipped';
+    amount: number | null;
+    createdAt: string;
+}
+
+export interface StoreInviteCommissionSummary {
+    total: number;
+    logs: StoreInviteCommissionLog[];
+}
+
+export type StoreGuestUpgradeStatus = 'pending' | 'completed' | 'expired' | 'cancelled';
+
+export interface StoreGuestUpgradeRequest {
+    id: string;
+    userId: string;
+    status: StoreGuestUpgradeStatus;
+    startedAt: string;
+    deadlineAt: string;
+    completedAt: string | null;
+    expiredAt: string | null;
 }

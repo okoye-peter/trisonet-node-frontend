@@ -16,6 +16,7 @@ import {
     History,
     ArrowRight,
     Baby,
+    Store,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,6 +48,7 @@ import Level1ProgressCard from '@/components/dashboard/Level1ProgressCard';
 import WeeklyMigrationCard from '@/components/dashboard/WeeklyMigrationCard';
 import ActiveAuctionBanner from '@/components/dashboard/ActiveAuctionBanner';
 import DistributionCodeCard from '@/components/dashboard/DistributionCodeCard';
+import { useGetStoreInviteCodeQuery, useGetStoreInviteCommissionSummaryQuery } from '@/store/api/storeGuestApi';
 import ActivationActionCard from '@/components/dashboard/ActivationActionCard';
 import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
 import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
@@ -185,6 +187,10 @@ export default function DashboardPage() {
     const router = useRouter();
     const { user } = useAppSelector((state) => state.auth);
     const currency = useCurrencySymbol();
+    const { data: storeInviteResponse } = useGetStoreInviteCodeQuery(undefined, { skip: !user?.status });
+    const storeInviteCode = storeInviteResponse?.data?.code;
+    const { data: storeInviteCommissionResponse } = useGetStoreInviteCommissionSummaryQuery(undefined, { skip: !user?.status });
+    const storeInviteEarnings = storeInviteCommissionResponse?.data?.total ?? 0;
     // showWelcome starts false — we check sessionStorage client-side to decide whether to show.
     // This prevents the video from appearing on EVERY page refresh.
     const [showWelcome, setShowWelcome] = useState(false);
@@ -604,6 +610,30 @@ export default function DashboardPage() {
                                 title: 'Infant Distribution Code'
                             })}
                         />
+                    </motion.div>
+                )}
+
+                {/* Store Invite Card - any fully activated user can invite guests to the shop */}
+                {user?.status && storeInviteCode && (
+                    <motion.div variants={itemVariants} className="lg:col-span-2">
+                        <DistributionCodeCard
+                            username={storeInviteCode}
+                            icon={Store}
+                            eyebrow="Store Invite"
+                            title="Invite to the Shop"
+                            description="Invite people to shop on Trisonet. You earn a commission on everything they buy."
+                            referralUrl={typeof window !== 'undefined' ? `${window.location.origin}/register/store-guest?code=${storeInviteCode}` : ''}
+                            onShowQR={() => setQrCodeConfig({
+                                isOpen: true,
+                                url: `${window.location.origin}/register/store-guest?code=${storeInviteCode}`,
+                                title: 'Store Invite Code'
+                            })}
+                        />
+                        {storeInviteEarnings > 0 && (
+                            <p className="mt-2 text-xs font-medium text-muted-foreground">
+                                {currency}{storeInviteEarnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} earned in store invite commissions so far
+                            </p>
+                        )}
                     </motion.div>
                 )}
             </div>

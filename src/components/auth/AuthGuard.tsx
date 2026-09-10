@@ -30,11 +30,21 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
             const isPatron = user.role === ROLES.PATRON;
             const isCustomer = user.role === ROLES.CUSTOMER;
+            const isStoreGuest = user.role === ROLES.STORE_GUEST;
             const isPaymentPage = pathname === '/patron/payment';
             const isDashboard = pathname === '/dashboard';
             const isAuthPage = pathname?.startsWith('/login') ||
                              pathname?.startsWith('/register') ||
                              pathname?.startsWith('/forgot-password');
+
+            // Store guests have no dashboard/wallet/etc. — the (shop) layout isn't
+            // wrapped in this guard, so this only catches a guest who lands on some
+            // other top-level route (e.g. /dashboard) directly.
+            const isShopPage = pathname?.startsWith('/shop');
+            if (isAuthenticated && isStoreGuest && !isShopPage && !isAuthPage) {
+                router.push('/shop');
+                return;
+            }
 
             // Blocked customers must stay on /dashboard — the BlockedAccountModal
             // takes over from there and prevents all other interaction.

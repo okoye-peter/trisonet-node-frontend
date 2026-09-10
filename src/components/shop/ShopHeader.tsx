@@ -14,11 +14,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ROLES } from '@/types';
 
 export function ShopHeader() {
     const cartCount = useAppSelector((state) =>
         state.shopCart.items.reduce((sum, item) => sum + item.quantity, 0)
     );
+    const isStoreGuest = useAppSelector((state) => state.auth.user?.role === ROLES.STORE_GUEST);
     const { data: categoriesResponse } = useGetShopCategoriesQuery();
     const categories = categoriesResponse?.data ?? [];
 
@@ -32,15 +34,19 @@ export function ShopHeader() {
         <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
                 <div className="flex items-center gap-3">
-                    <Link
-                        href="/dashboard"
-                        aria-label="Back to Dashboard"
-                        className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-                    >
-                        <ArrowLeft className="size-5" />
-                        <span className="hidden text-sm font-medium sm:inline">Dashboard</span>
-                    </Link>
-                    <span className="h-6 w-px bg-border" />
+                    {!isStoreGuest && (
+                        <>
+                            <Link
+                                href="/dashboard"
+                                aria-label="Back to Dashboard"
+                                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+                            >
+                                <ArrowLeft className="size-5" />
+                                <span className="hidden text-sm font-medium sm:inline">Dashboard</span>
+                            </Link>
+                            <span className="h-6 w-px bg-border" />
+                        </>
+                    )}
                     <Link href="/shop" className="flex items-center gap-2 text-lg font-bold">
                         <Image src="/logo.png" alt="Trisonet" width={32} height={32} />
                         <span className="hidden sm:inline">Trisonet Shop</span>
@@ -75,6 +81,12 @@ export function ShopHeader() {
                     <Link href="/shop/orders" className="text-muted-foreground hover:text-foreground">
                         Orders
                     </Link>
+
+                    {isStoreGuest && (
+                        <Link href="/shop/account" className="text-muted-foreground hover:text-foreground">
+                            Account
+                        </Link>
+                    )}
                 </nav>
 
                 <div className="flex items-center gap-1">

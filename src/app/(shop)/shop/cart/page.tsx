@@ -7,7 +7,6 @@ import { CartLineItem } from '@/components/shop/CartLineItem';
 import { OrderSummary } from '@/components/shop/OrderSummary';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { removeItem, updateQuantity } from '@/store/features/shopCartSlice';
-import { SHOP_DELIVERY_FEE } from '@/lib/shopUtils';
 import { useMounted } from '@/hooks/useMounted';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -66,7 +65,7 @@ export default function CartPage() {
                     </div>
 
                     <div>
-                        <OrderSummary subtotal={subtotal} deliveryFee={SHOP_DELIVERY_FEE} hasNonReturnableItems={hasNonReturnableItems}>
+                        <OrderSummary subtotal={subtotal} hasNonReturnableItems={hasNonReturnableItems}>
                             <Button size="lg" className="mt-4 w-full" onClick={handleCheckout}>
                                 Proceed to Checkout
                             </Button>

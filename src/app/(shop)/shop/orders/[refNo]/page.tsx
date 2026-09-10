@@ -82,10 +82,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
                             <span>{formatNaira(item.price * item.quantity)}</span>
                         </div>
                     ))}
-                    <div className="flex justify-between border-t border-border pt-2 text-muted-foreground">
-                        <span>Delivery fee</span>
-                        <span>{formatNaira(order.deliveryFee)}</span>
-                    </div>
                     {order.total !== undefined && (
                         <div className="flex justify-between border-t border-border pt-2 font-bold">
                             <span>Total</span>

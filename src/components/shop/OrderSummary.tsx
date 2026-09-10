@@ -4,14 +4,11 @@ import { formatNaira } from '@/lib/shopUtils';
 
 interface OrderSummaryProps {
     subtotal: number;
-    deliveryFee: number;
     hasNonReturnableItems?: boolean;
     children?: React.ReactNode;
 }
 
-export function OrderSummary({ subtotal, deliveryFee, hasNonReturnableItems, children }: OrderSummaryProps) {
-    const total = subtotal + deliveryFee;
-
+export function OrderSummary({ subtotal, hasNonReturnableItems, children }: OrderSummaryProps) {
     return (
         <div className="rounded-xl border border-border p-4">
             <h2 className="mb-3 font-semibold">Order Summary</h2>
@@ -20,14 +17,10 @@ export function OrderSummary({ subtotal, deliveryFee, hasNonReturnableItems, chi
                     <span>Subtotal</span>
                     <span>{formatNaira(subtotal)}</span>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                    <span>Delivery fee</span>
-                    <span>{formatNaira(deliveryFee)}</span>
-                </div>
                 <Separator className="my-2" />
                 <div className="flex justify-between text-base font-bold">
                     <span>Total</span>
-                    <span>{formatNaira(total)}</span>
+                    <span>{formatNaira(subtotal)}</span>
                 </div>
             </div>
             {hasNonReturnableItems && (

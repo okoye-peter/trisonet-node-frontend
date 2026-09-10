@@ -21,7 +21,6 @@ import {
 import { OrderSummary } from '@/components/shop/OrderSummary';
 import { useAppSelector } from '@/store/hooks';
 import { useCreateShopOrderMutation } from '@/store/api/shopApi';
-import { SHOP_DELIVERY_FEE } from '@/lib/shopUtils';
 import { useMounted } from '@/hooks/useMounted';
 
 const checkoutSchema = z.object({
@@ -176,7 +175,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                    <OrderSummary subtotal={subtotal} deliveryFee={SHOP_DELIVERY_FEE} hasNonReturnableItems={hasNonReturnableItems}>
+                    <OrderSummary subtotal={subtotal} hasNonReturnableItems={hasNonReturnableItems}>
                         <Button
                             size="lg"
                             className="mt-4 hidden w-full lg:flex"
