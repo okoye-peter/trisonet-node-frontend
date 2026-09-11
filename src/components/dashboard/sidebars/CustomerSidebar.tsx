@@ -53,7 +53,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
                 return false;
             }
             if (user?.level === 1) {
-                return !['Earnings', 'Upfront Sales', 'GKWTH Auction'].includes(sub.label);
+                return !['Earnings', 'GKWTH Auction'].includes(sub.label);
             }
             return true;
         });
