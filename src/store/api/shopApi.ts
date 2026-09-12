@@ -45,7 +45,17 @@ export const shopApi = apiSlice.injectEndpoints({
             query: (refNo) => `orders/${refNo}`,
             providesTags: (result, error, refNo) => [{ type: 'ShopOrder', id: refNo }],
         }),
-        getShopOrders: builder.query<AppResponse<PaginatedResult<ShopOrder>>, { page?: number; limit?: number } | void>({
+        getShopOrders: builder.query<
+            AppResponse<PaginatedResult<ShopOrder>>,
+            {
+                page?: number;
+                limit?: number;
+                search?: string;
+                status?: 'pending' | 'shipped' | 'delivered' | 'cancelled';
+                dateFrom?: string;
+                dateTo?: string;
+            } | void
+        >({
             query: (params) => ({
                 url: 'orders',
                 params: params || undefined,
@@ -54,6 +64,28 @@ export const shopApi = apiSlice.injectEndpoints({
         }),
         checkShopOrderStatus: builder.query<AppResponse<{ status: string }>, string>({
             query: (refNo) => `orders/${refNo}/status`,
+        }),
+        cancelShopOrder: builder.mutation<
+            AppResponse<ShopOrder>,
+            { refNo: string; bankName: string; bankUUID: string; accountNumber: string }
+        >({
+            query: ({ refNo, ...body }) => ({
+                url: `orders/${refNo}/cancel`,
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: (result, error, { refNo }) => ['ShopProduct', { type: 'ShopOrder', id: refNo }, 'ShopOrder'],
+        }),
+        createShopReturn: builder.mutation<
+            AppResponse<{ id: string; status: string; refundedAmount: number; reason: string; createdAt: string }>,
+            { refNo: string; reason: string; orderItemIds: string[]; bankName: string; bankUUID: string; accountNumber: string }
+        >({
+            query: ({ refNo, ...body }) => ({
+                url: `orders/${refNo}/return`,
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: (result, error, { refNo }) => [{ type: 'ShopOrder', id: refNo }, 'ShopOrder'],
         }),
         getProductReviews: builder.query<AppResponse<PaginatedResult<ShopProductReview> & { summary: ShopReviewSummary }>, { productId: string; page?: number; limit?: number }>({
             query: ({ productId, ...params }) => ({
@@ -81,7 +113,9 @@ export const {
     useGetShopProductsQuery,
     useGetShopProductQuery,
     useGetShopCategoriesQuery,
+    useCancelShopOrderMutation,
     useCreateShopOrderMutation,
+    useCreateShopReturnMutation,
     useGetShopOrderQuery,
     useGetShopOrdersQuery,
     useLazyCheckShopOrderStatusQuery,

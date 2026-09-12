@@ -721,6 +721,9 @@ export interface ShopOrderItem {
         name: string;
         image: string;
     };
+    isReturnable?: boolean;
+    hasActiveReturn?: boolean;
+    canReturn?: boolean;
 }
 
 export interface ShopShippingDetails {
@@ -742,6 +745,8 @@ export interface ShopOrderVirtualAccount {
     expires_at: string | null;
 }
 
+export type ShopOrderShippingStatus = 'cancelled' | 'pending' | 'shipped' | 'delivered' | null;
+
 export interface ShopOrder {
     id: string;
     refNo: string;
@@ -752,6 +757,9 @@ export interface ShopOrder {
     paymentStatus: ShopOrderPaymentStatus;
     paymentReference?: string;
     virtualAccount?: ShopOrderVirtualAccount;
+    shippingStatus: ShopOrderShippingStatus;
+    canCancel: boolean;
+    canReturn: boolean;
     items: ShopOrderItem[];
 }
 
