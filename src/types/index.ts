@@ -723,6 +723,7 @@ export interface ShopOrderItem {
     };
     isReturnable?: boolean;
     hasActiveReturn?: boolean;
+    returnStatus?: 'requested' | 'returned' | null;
     canReturn?: boolean;
 }
 
@@ -760,6 +761,8 @@ export interface ShopOrder {
     shippingStatus: ShopOrderShippingStatus;
     canCancel: boolean;
     canReturn: boolean;
+    daysLeftToReturn: number | null;
+    returnWindowExpired: boolean;
     items: ShopOrderItem[];
 }
 

@@ -20,6 +20,7 @@ export function ShopHeader() {
     const cartCount = useAppSelector((state) =>
         state.shopCart.items.reduce((sum, item) => sum + item.quantity, 0)
     );
+    const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
     const isStoreGuest = useAppSelector((state) => state.auth.user?.role === ROLES.STORE_GUEST);
     const { data: categoriesResponse } = useGetShopCategoriesQuery();
     const categories = categoriesResponse?.data ?? [];
@@ -34,7 +35,7 @@ export function ShopHeader() {
         <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
             <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
                 <div className="flex items-center gap-3">
-                    {!isStoreGuest && (
+                    {isAuthenticated && !isStoreGuest && (
                         <>
                             <Link
                                 href="/dashboard"
@@ -78,9 +79,11 @@ export function ShopHeader() {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Link href="/shop/orders" className="text-muted-foreground hover:text-foreground">
-                        Orders
-                    </Link>
+                    {isAuthenticated && (
+                        <Link href="/shop/orders" className="text-muted-foreground hover:text-foreground">
+                            Orders
+                        </Link>
+                    )}
 
                     {isStoreGuest && (
                         <Link href="/shop/account" className="text-muted-foreground hover:text-foreground">

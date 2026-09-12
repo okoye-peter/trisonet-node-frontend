@@ -12,7 +12,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CartPage() {
     const items = useAppSelector((state) => state.shopCart.items);
-    const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
     const dispatch = useAppDispatch();
     const router = useRouter();
     // The cart is hydrated from localStorage after mount, so the server always
@@ -23,11 +22,9 @@ export default function CartPage() {
     const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const hasNonReturnableItems = items.some((item) => !item.isReturnable);
 
+    // Checkout supports guest orders now, so no login is required to proceed —
+    // see (shop)/shop/checkout/page.tsx.
     const handleCheckout = () => {
-        if (!isAuthenticated) {
-            router.push('/login?next=/shop/checkout');
-            return;
-        }
         router.push('/shop/checkout');
     };
 

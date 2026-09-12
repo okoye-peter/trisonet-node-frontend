@@ -41,9 +41,12 @@ export const shopApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['ShopProduct', 'ShopOrder'],
         }),
-        getShopOrder: builder.query<AppResponse<ShopOrder>, string>({
-            query: (refNo) => `orders/${refNo}`,
-            providesTags: (result, error, refNo) => [{ type: 'ShopOrder', id: refNo }],
+        getShopOrder: builder.query<AppResponse<ShopOrder>, { refNo: string; email?: string }>({
+            query: ({ refNo, email }) => ({
+                url: `orders/${refNo}`,
+                params: email ? { email } : undefined,
+            }),
+            providesTags: (result, error, { refNo }) => [{ type: 'ShopOrder', id: refNo }],
         }),
         getShopOrders: builder.query<
             AppResponse<PaginatedResult<ShopOrder>>,
@@ -62,8 +65,11 @@ export const shopApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['ShopOrder'],
         }),
-        checkShopOrderStatus: builder.query<AppResponse<{ status: string }>, string>({
-            query: (refNo) => `orders/${refNo}/status`,
+        checkShopOrderStatus: builder.query<AppResponse<{ status: string }>, { refNo: string; email?: string }>({
+            query: ({ refNo, email }) => ({
+                url: `orders/${refNo}/status`,
+                params: email ? { email } : undefined,
+            }),
         }),
         cancelShopOrder: builder.mutation<
             AppResponse<ShopOrder>,

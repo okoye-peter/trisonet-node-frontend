@@ -1,7 +1,8 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useCancelShopOrderMutation, useCreateShopReturnMutation, useGetShopOrderQuery } from '@/store/api/shopApi';
 import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi';
+import { useAppSelector } from '@/store/hooks';
+import { useMounted } from '@/hooks/useMounted';
 import { formatNaira } from '@/lib/shopUtils';
 import type { ShopOrderPaymentStatus, ShopOrderShippingStatus } from '@/types';
 
@@ -130,7 +133,20 @@ function BankAccountFields({ value, onChange }: { value: BankDetailsValue; onCha
 
 export default function OrderDetailPage({ params }: { params: Promise<{ refNo: string }> }) {
     const { refNo } = use(params);
-    const { data: orderResponse, isLoading } = useGetShopOrderQuery(refNo);
+    const router = useRouter();
+    const mounted = useMounted();
+    const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+    // This page's cancel/return actions refund to the buyer's own wallet/bank
+    // account, which only makes sense for a logged-in account — guests placing an
+    // order without one are tracked via /shop/order-success instead.
+    useEffect(() => {
+        if (mounted && !isAuthenticated) {
+            router.replace(`/login?next=/shop/orders/${refNo}`);
+        }
+    }, [mounted, isAuthenticated, router, refNo]);
+
+    const { data: orderResponse, isLoading } = useGetShopOrderQuery({ refNo }, { skip: !mounted || !isAuthenticated });
     const order = orderResponse?.data;
 
     const [cancelOrder, { isLoading: isCancelling }] = useCancelShopOrderMutation();
@@ -204,7 +220,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
         }
     };
 
-    if (isLoading) {
+    if (!mounted || !isAuthenticated || isLoading) {
         return (
             <div className="flex flex-1 items-center justify-center py-24">
                 <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -267,7 +283,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
                         <div key={item.id} className="flex items-center justify-between">
                             <span className="text-muted-foreground">
                                 {item.product?.name ?? 'Product'} &times; {item.quantity}
-                                {item.hasActiveReturn && (
+                                {item.returnStatus === 'returned' && (
+                                    <span className="ml-2 text-xs font-medium text-emerald-600">(returned)</span>
+                                )}
+                                {item.returnStatus === 'requested' && (
                                     <span className="ml-2 text-xs text-amber-600">(return requested)</span>
                                 )}
                             </span>
@@ -339,9 +358,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
                         if (!open) resetReturnDialog();
                     }}
                 >
-                    <AlertDialogTrigger render={<Button size="lg" variant="outline" className="mb-3 w-full" />}>
+                    <AlertDialogTrigger render={<Button size="lg" variant="outline" className="w-full" />}>
                         Request Return
                     </AlertDialogTrigger>
+                    {order.daysLeftToReturn !== null && (
+                        <p className="mb-3 mt-1.5 text-center text-xs text-muted-foreground">
+                            {order.daysLeftToReturn === 1
+                                ? 'Last day to request a return'
+                                : `${order.daysLeftToReturn} days left to request a return`}
+                        </p>
+                    )}
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Request a return</AlertDialogTitle>
@@ -395,6 +421,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+            )}
+
+            {order.returnWindowExpired && !order.canReturn && (
+                <p className="mb-3 text-center text-xs text-muted-foreground">
+                    The return window for this order has closed — returns can no longer be requested.
+                </p>
             )}
 
             <Button size="lg" className="w-full" render={<Link href="/shop" />}>

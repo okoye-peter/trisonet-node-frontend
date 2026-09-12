@@ -600,6 +600,7 @@ export default function DashboardPage() {
                         <DistributionCodeCard
                             username={user?.username || ''}
                             icon={Baby}
+                            accent="rose"
                             eyebrow="Infant Distribution"
                             title="Unlimited Wards"
                             description="Share this code to register infants under your unlimited guardian slot."
@@ -619,6 +620,7 @@ export default function DashboardPage() {
                         <DistributionCodeCard
                             username={storeInviteCode}
                             icon={Store}
+                            accent="emerald"
                             eyebrow="Store Invite"
                             title="Invite to the Shop"
                             description="Invite people to shop on Trisonet. You earn a commission on everything they buy."

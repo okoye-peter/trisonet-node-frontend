@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Loader2, Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ReviewableItemsSection } from '@/components/shop/ReviewableItemsSection';
 import { useGetShopOrdersQuery } from '@/store/api/shopApi';
+import { useAppSelector } from '@/store/hooks';
+import { useMounted } from '@/hooks/useMounted';
 import { useDebounce } from '@/hooks/use-debounce';
 import { formatNaira } from '@/lib/shopUtils';
 import type { ShopOrderPaymentStatus, ShopOrderShippingStatus } from '@/types';
@@ -42,6 +45,10 @@ const SHIPPING_STATUS_VARIANT: Record<NonNullable<ShopOrderShippingStatus>, 'sec
 };
 
 export default function OrdersPage() {
+    const router = useRouter();
+    const mounted = useMounted();
+    const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState<ShippingStatusFilter>('all');
@@ -50,14 +57,25 @@ export default function OrdersPage() {
     const debouncedSearch = useDebounce(search, 350);
     const hasActiveFilters = Boolean(search || status !== 'all' || dateFrom || dateTo);
 
-    const { data: ordersResponse, isLoading } = useGetShopOrdersQuery({
-        page,
-        limit: 10,
-        search: debouncedSearch || undefined,
-        status: status === 'all' ? undefined : status,
-        dateFrom: dateFrom || undefined,
-        dateTo: dateTo || undefined,
-    });
+    // "My Orders" only exists for accounts — a guest who checked out without one
+    // tracks their order from the /shop/order-success confirmation page instead.
+    useEffect(() => {
+        if (mounted && !isAuthenticated) {
+            router.replace('/login?next=/shop/orders');
+        }
+    }, [mounted, isAuthenticated, router]);
+
+    const { data: ordersResponse, isLoading } = useGetShopOrdersQuery(
+        {
+            page,
+            limit: 10,
+            search: debouncedSearch || undefined,
+            status: status === 'all' ? undefined : status,
+            dateFrom: dateFrom || undefined,
+            dateTo: dateTo || undefined,
+        },
+        { skip: !mounted || !isAuthenticated }
+    );
     const orders = ordersResponse?.data?.data || [];
     const meta = ordersResponse?.data?.meta;
 
@@ -68,6 +86,10 @@ export default function OrdersPage() {
         setDateTo('');
         setPage(1);
     };
+
+    if (!mounted || !isAuthenticated) {
+        return null;
+    }
 
     return (
         <div className="mx-auto max-w-4xl px-4 py-8">
@@ -170,7 +192,9 @@ export default function OrdersPage() {
 
             {!isLoading && orders.length > 0 && (
                 <div className="overflow-x-auto rounded-xl border border-border">
-                    <table className="w-full text-left text-sm">
+                    {/* min-w forces real horizontal scroll on narrow screens instead of
+                        squeezing columns unreadably thin inside a `w-full` table. */}
+                    <table className="w-full min-w-160 text-left text-sm">
                         <thead className="border-b border-border bg-muted/40">
                             <tr>
                                 <th className="px-4 py-3 font-medium">Order</th>

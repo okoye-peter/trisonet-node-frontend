@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -25,6 +25,9 @@ import { useMounted } from '@/hooks/useMounted';
 
 const checkoutSchema = z.object({
     fullName: z.string().min(2, 'Full name is required'),
+    // Only collected (and required) for guest checkout — a logged-in buyer's
+    // account email is used instead. See onSubmit / the isAuthenticated branch below.
+    email: z.string().email('A valid email is required').optional().or(z.literal('')),
     phone: z.string().min(7, 'A valid phone number is required'),
     address: z.string().min(5, 'Delivery address is required'),
     city: z.string().min(2, 'City is required'),
@@ -48,16 +51,10 @@ export default function CheckoutPage() {
 
     const form = useForm<CheckoutFormValues>({
         resolver: zodResolver(checkoutSchema),
-        defaultValues: { fullName: '', phone: '', address: '', city: '', state: '' },
+        defaultValues: { fullName: '', email: '', phone: '', address: '', city: '', state: '' },
     });
 
-    useEffect(() => {
-        if (mounted && !isAuthenticated) {
-            router.push('/login?next=/shop/checkout');
-        }
-    }, [mounted, isAuthenticated, router]);
-
-    if (!mounted || !isAuthenticated) {
+    if (!mounted) {
         return null;
     }
 
@@ -70,19 +67,24 @@ export default function CheckoutPage() {
     }
 
     async function onSubmit(values: CheckoutFormValues) {
+        if (!isAuthenticated && !values.email) {
+            form.setError('email', { message: 'An email address is required to check out as a guest' });
+            return;
+        }
+
         try {
             const res = await createOrder({
                 items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
                 shipping: values,
             }).unwrap();
 
-            router.push(`/shop/order-success?ref=${res.data?.refNo}`);
+            const params = new URLSearchParams({ ref: res.data?.refNo ?? '' });
+            if (!isAuthenticated && values.email) {
+                params.set('email', values.email);
+            }
+            router.push(`/shop/order-success?${params.toString()}`);
         } catch (err: unknown) {
             const apiErr = err as { status?: number; data?: { message?: string } };
-            if (apiErr.status === 401) {
-                router.push('/login?next=/shop/checkout');
-                return;
-            }
             toast.error(apiErr.data?.message || 'Failed to place order. Please try again.');
         }
     }
@@ -95,6 +97,15 @@ export default function CheckoutPage() {
                 <div className="space-y-6 lg:col-span-2">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            {!isAuthenticated && (
+                                <p className="rounded-xl border border-border bg-muted/30 p-3 text-sm text-muted-foreground">
+                                    Checking out as a guest.{' '}
+                                    <Link href="/login?next=/shop/checkout" className="font-medium text-primary hover:underline">
+                                        Log in
+                                    </Link>{' '}
+                                    to track this order under your account instead.
+                                </p>
+                            )}
                             <div className="rounded-xl border border-border p-4">
                                 <h2 className="mb-4 font-semibold">Shipping Details</h2>
                                 <div className="grid gap-4 sm:grid-cols-2">
@@ -111,6 +122,21 @@ export default function CheckoutPage() {
                                             </FormItem>
                                         )}
                                     />
+                                    {!isAuthenticated && (
+                                        <FormField
+                                            control={form.control}
+                                            name="email"
+                                            render={({ field }) => (
+                                                <FormItem className="sm:col-span-2">
+                                                    <FormLabel>Email address</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="email" placeholder="Email address" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
                                     <FormField
                                         control={form.control}
                                         name="phone"

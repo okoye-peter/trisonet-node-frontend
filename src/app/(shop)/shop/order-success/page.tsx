@@ -22,8 +22,11 @@ function OrderSuccessContent() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const ref = searchParams.get('ref');
+    // Present only for a guest checkout (no account) — see checkout/page.tsx — and
+    // doubles as the credential for looking up this order without being logged in.
+    const guestEmail = searchParams.get('email') || undefined;
 
-    const { data: orderResponse, isLoading } = useGetShopOrderQuery(ref as string, { skip: !ref });
+    const { data: orderResponse, isLoading } = useGetShopOrderQuery({ refNo: ref as string, email: guestEmail }, { skip: !ref });
     const [checkStatus] = useLazyCheckShopOrderStatusQuery();
     const order = orderResponse?.data;
 
@@ -35,6 +38,9 @@ function OrderSuccessContent() {
         if (order.paymentStatus === 'paid') {
             dispatch(clearCart());
             setView('confirmed');
+            // A guest has no /shop/orders/[refNo] (that page requires an account) —
+            // they just see the confirmed state and stay here.
+            if (guestEmail) return;
             const t = setTimeout(() => router.push(`/shop/orders/${order.refNo}`), 1200);
             return () => clearTimeout(t);
         }
@@ -80,12 +86,14 @@ function OrderSuccessContent() {
             }
 
             try {
-                const res = await checkStatus(ref).unwrap();
+                const res = await checkStatus({ refNo: ref, email: guestEmail }).unwrap();
                 if (res.data?.status === 'paid') {
                     dispatch(clearCart());
                     setView('confirmed');
                     toast.success('Payment confirmed!');
-                    setTimeout(() => router.push(`/shop/orders/${ref}`), 1200);
+                    if (!guestEmail) {
+                        setTimeout(() => router.push(`/shop/orders/${ref}`), 1200);
+                    }
                     return;
                 }
                 if (res.data?.status === 'failed') {
@@ -121,7 +129,10 @@ function OrderSuccessContent() {
                     </div>
                     <h1 className="mb-2 text-2xl font-bold">Payment confirmed!</h1>
                     <p className="mb-6 text-muted-foreground">
-                        Your order <span className="font-semibold text-foreground">#{order?.refNo ?? ref}</span> is being processed. Taking you to your order…
+                        Your order <span className="font-semibold text-foreground">#{order?.refNo ?? ref}</span> is being processed.
+                        {guestEmail
+                            ? ' Save this reference number to track your order.'
+                            : ' Taking you to your order…'}
                     </p>
                 </>
             )}
@@ -193,9 +204,11 @@ function OrderSuccessContent() {
                         <Button variant="outline" size="lg" className="flex-1" onClick={startPolling}>
                             Check again
                         </Button>
-                        <Button size="lg" className="flex-1" render={<Link href="/shop/orders" />}>
-                            View my orders
-                        </Button>
+                        {!guestEmail && (
+                            <Button size="lg" className="flex-1" render={<Link href="/shop/orders" />}>
+                                View my orders
+                            </Button>
+                        )}
                     </div>
                 </>
             )}
