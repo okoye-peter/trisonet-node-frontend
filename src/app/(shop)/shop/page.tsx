@@ -50,11 +50,11 @@ function ShopHomeContent() {
     const totalProducts = productsResponse?.data?.meta.totalItems ?? 0;
 
     return (
-        <div className="mx-auto max-w-6xl px-4 py-8">
-            <section className="mb-10 flex flex-col items-start gap-4 rounded-2xl bg-primary/5 p-8">
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <div className="max-w-6xl px-4 py-8 mx-auto">
+            <section className="flex flex-col items-start gap-4 p-8 mb-10 rounded-2xl bg-primary/5">
+                {/* <span className="px-3 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
                     Every product approved before it&apos;s listed
-                </span>
+                </span> */}
                 <h1 className="text-3xl font-bold sm:text-4xl">Shop the Trisonet marketplace</h1>
                 <p className="max-w-lg text-muted-foreground">
                     Browse products from trusted sellers across the Trisonet community.
@@ -64,22 +64,22 @@ function ShopHomeContent() {
                 </Button>
             </section>
 
-            <section className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="hidden min-w-0 flex-1 md:block">
+            <section className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex-1 hidden min-w-0 md:block">
                     <CategoryPills
                         categories={categories}
                         activeCategoryId={activeCategoryId}
                         onSelect={setActiveCategoryId}
                     />
                 </div>
-                <div className="flex w-full items-center gap-2 sm:w-auto md:ml-auto">
+                <div className="flex items-center w-full gap-2 sm:w-auto md:ml-auto">
                     <CategoryFilterSheet
                         categories={categories}
                         activeCategoryId={activeCategoryId}
                         onApply={setActiveCategoryId}
                     />
-                    <div className="relative min-w-0 flex-1 sm:w-64 sm:flex-none">
-                        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative flex-1 min-w-0 sm:w-64 sm:flex-none">
+                        <Search className="absolute -translate-y-1/2 pointer-events-none left-3 top-1/2 size-4 text-muted-foreground" />
                         <Input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -91,7 +91,7 @@ function ShopHomeContent() {
                                 type="button"
                                 onClick={() => setSearch('')}
                                 aria-label="Clear search"
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute -translate-y-1/2 right-3 top-1/2 text-muted-foreground hover:text-foreground"
                             >
                                 <X className="size-4" />
                             </button>
@@ -101,14 +101,14 @@ function ShopHomeContent() {
             </section>
 
             <section id="products">
-                <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold">
                         {debouncedSearch ? `Results for "${debouncedSearch}"` : 'Featured Products'}
                     </h2>
                     <span className="text-sm text-muted-foreground">{totalProducts} products</span>
                 </div>
                 {!isLoading && products.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted-foreground">
+                    <div className="py-16 text-center border border-dashed rounded-xl border-border text-muted-foreground">
                         No products found{debouncedSearch ? ` for "${debouncedSearch}"` : ''}.
                     </div>
                 ) : (
