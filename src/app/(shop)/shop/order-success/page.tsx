@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/store/hooks';
 import { clearCart } from '@/store/features/shopCartSlice';
-import { useGetShopOrderQuery, useLazyCheckShopOrderStatusQuery } from '@/store/api/shopApi';
+import { shopApi, useGetShopOrderQuery, useLazyCheckShopOrderStatusQuery } from '@/store/api/shopApi';
 import { formatNaira } from '@/lib/shopUtils';
 
 type View = 'awaiting_transfer' | 'verifying' | 'confirmed' | 'timeout';
@@ -37,6 +37,11 @@ function OrderSuccessContent() {
         if (!order) return;
         if (order.paymentStatus === 'paid') {
             dispatch(clearCart());
+            // This page's own getShopOrder cache entry (keyed by refNo, since
+            // email: undefined serializes the same as omitting it) still holds the
+            // pre-payment "pending" snapshot — bust it so /shop/orders/[refNo]
+            // doesn't render that stale data after we navigate there below.
+            dispatch(shopApi.util.invalidateTags([{ type: 'ShopOrder', id: order.refNo }]));
             setView('confirmed');
             // A guest has no /shop/orders/[refNo] (that page requires an account) —
             // they just see the confirmed state and stay here.
@@ -89,6 +94,7 @@ function OrderSuccessContent() {
                 const res = await checkStatus({ refNo: ref, email: guestEmail }).unwrap();
                 if (res.data?.status === 'paid') {
                     dispatch(clearCart());
+                    dispatch(shopApi.util.invalidateTags([{ type: 'ShopOrder', id: ref }]));
                     setView('confirmed');
                     toast.success('Payment confirmed!');
                     if (!guestEmail) {
