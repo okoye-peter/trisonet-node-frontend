@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,6 +41,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const items = useAppSelector((state) => state.shopCart.items);
     const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+    const user = useAppSelector((state) => state.auth.user);
     const [createOrder, { isLoading }] = useCreateShopOrderMutation();
     // Both auth and cart are hydrated client-side after mount, so branching on them
     // before mount would render differently than the server did. Treat "not yet
@@ -53,6 +55,17 @@ export default function CheckoutPage() {
         resolver: zodResolver(checkoutSchema),
         defaultValues: { fullName: '', email: '', phone: '', address: '', city: '', state: '' },
     });
+
+    // A logged-in buyer's name/phone/email are already on file — the backend still
+    // requires them in the shipping payload, so submit the account's values instead
+    // of asking the user to retype them. Only guests fill these in themselves.
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            form.setValue('fullName', user.name);
+            form.setValue('phone', user.phone);
+            form.setValue('email', user.email);
+        }
+    }, [isAuthenticated, user, form]);
 
     if (!mounted) {
         return null;
@@ -107,49 +120,53 @@ export default function CheckoutPage() {
                                 </p>
                             )}
                             <div className="rounded-xl border border-border p-4">
-                                <h2 className="mb-4 font-semibold">Shipping Details</h2>
+                                <h2 className="mb-4 font-semibold">
+                                    {isAuthenticated ? 'Delivery Details' : 'Shipping Details'}
+                                </h2>
                                 <div className="grid gap-4 sm:grid-cols-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="fullName"
-                                        render={({ field }) => (
-                                            <FormItem className="sm:col-span-2">
-                                                <FormLabel>Full name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Full name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
                                     {!isAuthenticated && (
-                                        <FormField
-                                            control={form.control}
-                                            name="email"
-                                            render={({ field }) => (
-                                                <FormItem className="sm:col-span-2">
-                                                    <FormLabel>Email address</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="email" placeholder="Email address" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        <>
+                                            <FormField
+                                                control={form.control}
+                                                name="fullName"
+                                                render={({ field }) => (
+                                                    <FormItem className="sm:col-span-2">
+                                                        <FormLabel>Full name</FormLabel>
+                                                        <FormControl>
+                                                            <Input placeholder="Full name" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="email"
+                                                render={({ field }) => (
+                                                    <FormItem className="sm:col-span-2">
+                                                        <FormLabel>Email address</FormLabel>
+                                                        <FormControl>
+                                                            <Input type="email" placeholder="Email address" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="phone"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Phone number</FormLabel>
+                                                        <FormControl>
+                                                            <Input placeholder="Phone number" {...field} />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </>
                                     )}
-                                    <FormField
-                                        control={form.control}
-                                        name="phone"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Phone number</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Phone number" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
                                     <FormField
                                         control={form.control}
                                         name="address"

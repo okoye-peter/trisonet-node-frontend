@@ -73,7 +73,7 @@ export default function DistributionCodeCard({
     const handleCopy = () => {
         if (!referralUrl) return;
         navigator.clipboard.writeText(referralUrl);
-        toast.success('Distribution code copied to clipboard!');
+        toast.success('Link copied to clipboard!');
     };
 
     return (
