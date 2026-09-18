@@ -21,7 +21,7 @@ export type Partner = {
 
 export type Wallet = {
     id?: number
-    type: 'direct' | 'indirect' | 'central_treasury' | 'patronage' | 'earning' | 'shopping';
+    type: 'direct' | 'indirect' | 'central_treasury' | 'patronage' | 'earning' | 'shopping' | 'commission';
     amount: number;
     createdAt?: string;
     updatedAt?: string;
@@ -332,13 +332,13 @@ export interface WithdrawalRequest {
     gkwthAmount: number | null;
     gkwthValue: number | null;
     userEmail: string;
-    status: 'pending' | 'being_processed';
+    status: 'pending' | 'being_processed' | 'processed' | 'failed';
     reference: string | null;
     createdAt: string;
     updatedAt: string;
 }
 
-export type WithdrawalRequestStatus = 'pending' | 'being_processed';
+export type WithdrawalRequestStatus = 'pending' | 'being_processed' | 'processed' | 'failed';
 
 export type LoanStatus = 'pending' | 'granted' | 'rejected' | 'cancelled';
 

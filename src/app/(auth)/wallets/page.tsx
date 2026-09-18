@@ -74,13 +74,21 @@ const NairaIcon = ({ size = 24, className }: { size?: number, className?: string
 };
 
 const walletConfig: Record<string, { label: string; icon: React.ElementType; color: string; bg: string; border: string; gradient: string }> = {
-    direct: { 
-        label: 'Direct Wallet', 
-        icon: NairaIcon, 
-        color: 'text-emerald-600', 
-        bg: 'bg-emerald-50', 
+    direct: {
+        label: 'Direct Wallet',
+        icon: NairaIcon,
+        color: 'text-emerald-600',
+        bg: 'bg-emerald-50',
         border: 'border-emerald-100',
         gradient: 'from-emerald-600 to-teal-600'
+    },
+    commission: {
+        label: 'Ecommerce Commission',
+        icon: NairaIcon,
+        color: 'text-indigo-600',
+        bg: 'bg-indigo-50',
+        border: 'border-indigo-100',
+        gradient: 'from-indigo-600 to-purple-600'
     },
 };
 
@@ -108,8 +116,11 @@ export default function WalletsPage() {
     const wallets = walletsResponse?.data || [];
     const banks = useMemo(() => banksResponse?.data || [], [banksResponse?.data]);
     const directWallet = wallets.find(w => w.type === 'direct');
+    const commissionWallet = wallets.find(w => w.type === 'commission');
 
     const [activeTab, setActiveTab] = useState<TabType>('overview');
+    const [withdrawWalletType, setWithdrawWalletType] = useState<'direct' | 'commission'>('direct');
+    const withdrawWallet = withdrawWalletType === 'commission' ? commissionWallet : directWallet;
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
     const [initiateWalletFunding, { isLoading: isInitiatingFunding }] = useInitiateDirectWalletFundingMutation();
@@ -260,6 +271,7 @@ export default function WalletsPage() {
     useEffect(() => {
         if (activeTab !== 'withdraw') {
             isPrefilled.current = false;
+            setWithdrawWalletType('direct');
         }
     }, [activeTab]);
 
@@ -308,8 +320,8 @@ export default function WalletsPage() {
 
     const handleWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (!directWallet) {
+
+        if (!withdrawWallet) {
             toast.error('Wallet not found. Please refresh and try again.');
             return;
         }
@@ -318,7 +330,12 @@ export default function WalletsPage() {
             toast.error('Please enter a valid amount to withdraw.');
             return;
         }
-        
+
+        if (Number(withdrawData.amount) > withdrawWallet.amount) {
+            toast.error('Amount exceeds your available balance.');
+            return;
+        }
+
 
         if (profile?.role === 8 && !withdrawData.otp) {
             toast.error('Please enter your withdrawal OTP.');
@@ -338,21 +355,26 @@ export default function WalletsPage() {
         }
         
         try {
-            await initiateWithdrawal({
+            const res = await initiateWithdrawal({
                 amount: Number(withdrawData.amount),
                 bank_code: withdrawData.bank_code,
                 bank_name: withdrawData.bank_name,
                 account_name: resolvedAccountName,
                 account_number: withdrawData.account_number,
-                wallet: directWallet.id!.toString(),
-                ...(profile?.role === 8 
-                    ? { withdrawal_otp: withdrawData.otp } 
+                wallet: withdrawWallet.id!.toString(),
+                ...(profile?.role === 8
+                    ? { withdrawal_otp: withdrawData.otp }
                     : { withdrawal_pin: withdrawData.pin }
                 )
             }).unwrap();
-            
-            toast.success('Withdrawal request initiated successfully');
+
+            toast.success(
+                res.data?.status === 'processed'
+                    ? 'Withdrawal processed instantly!'
+                    : 'Withdrawal request initiated successfully'
+            );
             setActiveTab('overview');
+            refetchWallets();
         } catch (err) {
             const apiErr = err as { data?: { message?: string } };
             toast.error(apiErr.data?.message || 'Withdrawal failed');
@@ -457,7 +479,7 @@ export default function WalletsPage() {
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-12"
                         >
-                            <div className="flex justify-center">
+                            <div className="flex flex-wrap justify-center gap-6">
                                 {directWallet && (
                                     <div className="w-full max-w-sm">
                                         <Card className="group border-none bg-white p-1 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 ring-1 ring-zinc-100 overflow-hidden">
@@ -475,6 +497,37 @@ export default function WalletsPage() {
                                                     <span className="text-2xl font-bold text-zinc-400">{currency}</span>
                                                     <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{directWallet.amount.toLocaleString()}</h3>
                                                 </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                )}
+
+                                {commissionWallet && (
+                                    <div className="w-full max-w-sm">
+                                        <Card className="group border-none bg-white p-1 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all duration-500 ring-1 ring-zinc-100 overflow-hidden">
+                                            <CardContent className="p-8 bg-white rounded-[2.3rem]">
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div className={cn("rounded-2xl p-4 shadow-sm", walletConfig.commission.bg, walletConfig.commission.color)}>
+                                                        <NairaIcon size={24} />
+                                                    </div>
+                                                    <Badge variant="outline" className={cn("text-[8px] font-black uppercase tracking-widest border-2", walletConfig.commission.border, walletConfig.commission.color)}>
+                                                        Instant
+                                                    </Badge>
+                                                </div>
+                                                <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-3">{walletConfig.commission.label}</p>
+                                                <div className="flex items-baseline gap-1 mb-6">
+                                                    <span className="text-2xl font-bold text-zinc-400">{currency}</span>
+                                                    <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{commissionWallet.amount.toLocaleString()}</h3>
+                                                </div>
+                                                <Button
+                                                    onClick={() => {
+                                                        setWithdrawWalletType('commission');
+                                                        setActiveTab('withdraw');
+                                                    }}
+                                                    className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black"
+                                                >
+                                                    Withdraw Instantly
+                                                </Button>
                                             </CardContent>
                                         </Card>
                                     </div>
@@ -571,9 +624,33 @@ export default function WalletsPage() {
                                         </div>
                                         <div>
                                             <h2 className="text-2xl font-black text-zinc-900">Withdraw Funds</h2>
-                                            <p className="text-sm italic font-medium text-zinc-500">Secure transfer to your linked bank account.</p>
+                                            <p className="text-sm italic font-medium text-zinc-500">
+                                                {withdrawWalletType === 'commission'
+                                                    ? 'Instant payout from your ecommerce commission wallet — no approval wait.'
+                                                    : 'Secure transfer to your linked bank account.'}
+                                            </p>
                                         </div>
                                     </div>
+
+                                    {commissionWallet && (
+                                        <div className="flex gap-2 p-1.5 mb-8 bg-zinc-100 rounded-2xl w-fit">
+                                            {(['direct', 'commission'] as const).map((wType) => (
+                                                <button
+                                                    key={wType}
+                                                    type="button"
+                                                    onClick={() => setWithdrawWalletType(wType)}
+                                                    className={cn(
+                                                        "px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all",
+                                                        withdrawWalletType === wType
+                                                            ? "bg-white shadow-sm text-zinc-900"
+                                                            : "text-zinc-400 hover:text-zinc-600"
+                                                    )}
+                                                >
+                                                    {walletConfig[wType].label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     <form onSubmit={handleWithdraw} className="space-y-8">
                                         {profile?.bank && profile?.accountNumber ? (
@@ -679,7 +756,12 @@ export default function WalletsPage() {
 
                                         <div className="grid items-end gap-6 md:grid-cols-2">
                                             <div className="space-y-2">
-                                                <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400">Amount to Withdraw</Label>
+                                                <Label className="ml-1 text-xs font-black tracking-widest uppercase text-zinc-400 flex justify-between">
+                                                    <span>Amount to Withdraw</span>
+                                                    <span className="normal-case text-zinc-500">
+                                                        Available: {currency}{(withdrawWallet?.amount ?? 0).toLocaleString()}
+                                                    </span>
+                                                </Label>
                                                 <div className="relative">
                                                     <div className="absolute text-xl font-bold -translate-y-1/2 left-6 top-1/2 text-zinc-400">{currency}</div>
                                                     <Input
@@ -728,12 +810,21 @@ export default function WalletsPage() {
                                             </div>
                                         </div>
 
-                                        <Button 
+                                        <Button
                                             type="submit"
                                             disabled={isWithdrawing}
-                                            className="w-full h-20 text-xl font-black text-white transition-all shadow-2xl rounded-2xl bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100 disabled:opacity-50"
+                                            className={cn(
+                                                "w-full h-20 text-xl font-black text-white transition-all shadow-2xl rounded-2xl disabled:opacity-50",
+                                                withdrawWalletType === 'commission'
+                                                    ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
+                                                    : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100"
+                                            )}
                                         >
-                                            {isWithdrawing ? "Processing..." : "Withdraw Funds"}
+                                            {isWithdrawing
+                                                ? "Processing..."
+                                                : withdrawWalletType === 'commission'
+                                                    ? "Withdraw Instantly"
+                                                    : "Withdraw Funds"}
                                         </Button>
                                     </form>
                                 </CardContent>
