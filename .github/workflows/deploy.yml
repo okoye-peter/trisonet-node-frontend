@@ -31,7 +31,7 @@ jobs:
             npm install
             rm -f .next/lock
             timeout 600 npm run build
-            chown -R apiuser:apiuser .next
+            chown -R root:root .next
             cp -r .next/static .next/standalone/.next/static
             cp -r public .next/standalone/public
             pm2 restart trisonet-app
