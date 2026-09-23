@@ -13,15 +13,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Install sshpass
+        run: sudo apt-get update -y && sudo apt-get install -y sshpass
+
       - name: SSH and Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          port: ${{ secrets.DEPLOY_PORT }}
-          command_timeout: 15m
-          script: |
+        run: |
+          timeout 900 sshpass -p "${{ secrets.DEPLOY_PASSWORD }}" \
+            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 \
+                -p "${{ secrets.DEPLOY_PORT }}" "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" '
             set -e
             pkill -f "app.trisonet.com/node_modules/.bin/next build" || true
             git config --global --add safe.directory /var/www/app.trisonet.com
@@ -36,3 +35,4 @@ jobs:
             cp -r public .next/standalone/public
             pm2 restart trisonet-app
             pm2 save
+          '
