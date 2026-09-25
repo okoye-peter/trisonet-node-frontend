@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "deploy": "next build && chown -R root:root .next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
+    "deploy": "next build && chown -R apiuser:apiuser .next && cp -r .next/static .next/standalone/.next/static && cp -r public .next/standalone/public",
     "start": "next start",
     "lint": "eslint"
   },
