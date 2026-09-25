@@ -3,7 +3,7 @@
 import { use } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { ArrowLeft, MapPin, Phone, User } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Truck, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatNaira } from '@/lib/shopUtils';
@@ -13,7 +13,7 @@ import type { SellerOrderStatus } from '@/types';
 
 const STATUS_NOTE: Record<SellerOrderStatus, string> = {
     pending: 'The buyer has paid. Pack the items and send them, then mark the order as shipped.',
-    shipped: 'On its way to the buyer. Mark it delivered once they have received it.',
+    shipped: 'On its way to the buyer. Trisonet will call your courier to confirm delivery and then mark it delivered.',
     delivered: 'Delivered. The buyer can request a return within 7 days once their whole order has arrived.',
     cancelled: 'This order was cancelled and the buyer refunded. Do not ship it.',
 };
@@ -44,6 +44,7 @@ export default function SellerOrderDetailPage({ params }: { params: Promise<{ re
                             </div>
                             <p className="text-sm text-zinc-500 mt-1">
                                 Placed {format(new Date(order.createdAt), 'd MMM yyyy, h:mma')}
+                                {order.shippedAt && ` · Shipped ${format(new Date(order.shippedAt), 'd MMM yyyy')}`}
                                 {order.deliveredAt && ` · Delivered ${format(new Date(order.deliveredAt), 'd MMM yyyy')}`}
                             </p>
                         </div>
@@ -70,6 +71,20 @@ export default function SellerOrderDetailPage({ params }: { params: Promise<{ re
                             <p className="flex items-start gap-2 text-sm text-zinc-700"><MapPin className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" /> {order.deliveryAddress ?? 'No address given'}</p>
                         </CardContent>
                     </Card>
+
+                    {order.courier && (
+                        <Card className="rounded-[2rem] border-zinc-100">
+                            <CardContent className="p-6 space-y-3">
+                                <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Courier</h2>
+                                <p className="flex items-center gap-2 text-sm font-bold text-zinc-900"><Truck className="h-4 w-4 text-zinc-400" /> {order.courier.name}</p>
+                                {order.courier.phone && (
+                                    <a href={`tel:${order.courier.phone}`} className="flex items-center gap-2 text-sm text-zinc-700 hover:underline">
+                                        <Phone className="h-4 w-4 text-zinc-400" /> {order.courier.phone}
+                                    </a>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card className="rounded-[2rem] border-zinc-100">
                         <CardContent className="p-6">

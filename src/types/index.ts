@@ -98,8 +98,6 @@ export interface User {
     patronActivated?: boolean;
     isPendingLevel2Migration?: boolean;
     canAccessAuction?: boolean;
-    // Partner seller marketplace closed beta (backend utils/sellerAccess.ts).
-    canUseSellerStore?: boolean;
     patronPlan?: {
         id: string;
         name: string;
@@ -859,14 +857,17 @@ export interface SellerOrder {
     id: string;
     refNo: string;
     status: SellerOrderStatus;
-    // The one status the seller can move this order to next, or null when it's final.
-    nextStatus: 'shipped' | 'delivered' | null;
+    // 'shipped' while pending; null otherwise - only an admin marks an order delivered.
+    nextStatus: 'shipped' | null;
     items: { id: string; productId: string; name: string; image: string; quantity: number; price: number }[];
     itemCount: number;
     total: number;
     payout: { gross: number; commissionRate: number; commission: number; net: number; status: string } | null;
     buyer: { name: string; phone: string | null };
     deliveryAddress: string | null;
+    // Who is delivering it - required when the seller marks it shipped.
+    courier: { name: string; phone: string | null } | null;
+    shippedAt: string | null;
     deliveredAt: string | null;
     // Must be delivered within 14 days of payment; null once delivered or cancelled.
     deliverBy: string | null;

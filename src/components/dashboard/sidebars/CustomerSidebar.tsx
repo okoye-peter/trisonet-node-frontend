@@ -90,8 +90,8 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             if (sub.label === 'GKWTH Auction' && !user?.canAccessAuction) {
                 return false;
             }
-            // Closed beta, and only adult customer accounts can open a store (SellerStoreService.eligibility).
-            if (sub.label === 'My Store' && (!user?.canUseSellerStore || user?.isInfant)) {
+            // Only adult customer accounts can open a store (SellerStoreService.eligibility).
+            if (sub.label === 'My Store' && user?.isInfant) {
                 return false;
             }
             if (user?.level === 1) {
@@ -99,7 +99,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             }
             return true;
         });
-    }, [user?.level, user?.canAccessAuction, user?.isInfant, user?.canUseSellerStore, activeAuctionCount]);
+    }, [user?.level, user?.canAccessAuction, user?.isInfant, activeAuctionCount]);
 
     return (
         <BaseSidebar

@@ -50,8 +50,12 @@ export const sellerApi = apiSlice.injectEndpoints({
             query: (refNo) => `seller/orders/${encodeURIComponent(refNo)}`,
             providesTags: (_result, _error, refNo) => [{ type: 'SellerOrder', id: refNo }],
         }),
-        updateSellerOrderStatus: builder.mutation<AppResponse<SellerOrder>, { refNo: string; status: 'shipped' | 'delivered' }>({
-            query: ({ refNo, status }) => ({ url: `seller/orders/${encodeURIComponent(refNo)}/status`, method: 'PATCH', body: { status } }),
+        updateSellerOrderStatus: builder.mutation<AppResponse<SellerOrder>, { refNo: string; courierName: string; courierPhone: string }>({
+            query: ({ refNo, courierName, courierPhone }) => ({
+                url: `seller/orders/${encodeURIComponent(refNo)}/status`,
+                method: 'PATCH',
+                body: { status: 'shipped', courierName, courierPhone },
+            }),
             invalidatesTags: ['SellerOrder'],
         }),
         uploadSellerImage: builder.mutation<AppResponse<UploadedFile>, File>({

@@ -77,7 +77,7 @@ export default function MyStoreOrdersPage() {
             </Link>
             <div>
                 <h1 className="text-2xl font-black text-zinc-900 flex items-center gap-2"><ShoppingBag className="h-6 w-6" /> Orders</h1>
-                <p className="text-sm text-zinc-500 mt-1">Paid orders for your products. Each one must be delivered within 14 days of payment - ship it, then mark it delivered once the buyer has it.</p>
+                <p className="text-sm text-zinc-500 mt-1">Paid orders for your products. Each one must be delivered within 14 days of payment - ship it and mark it shipped with your courier&apos;s details - Trisonet confirms delivery with the courier.</p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

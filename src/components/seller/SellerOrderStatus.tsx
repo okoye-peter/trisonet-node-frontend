@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, PackageCheck, Truck } from 'lucide-react';
+import { Loader2, Pencil, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -47,44 +48,39 @@ export function SellerOrderStatusBadge({ status }: { status: SellerOrderStatus }
     return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${badge.className}`}>{badge.label}</span>;
 }
 
-const ACTION = {
-    shipped: {
-        label: 'Mark as shipped',
-        icon: Truck,
-        title: 'Mark this order as shipped?',
-        description: 'Only confirm once the items have left your hands. The buyer will be told their order is on its way.',
-        confirmLabel: 'Yes, it has shipped',
-        note: null,
-        // Matches the 'Shipped' badge - the button is coloured by the status it moves the order to.
-        buttonClass: 'bg-blue-600 hover:bg-blue-700 text-white',
-        mediaClass: 'bg-blue-50 text-blue-600',
-    },
-    delivered: {
-        label: 'Mark as delivered',
-        icon: PackageCheck,
-        title: 'Mark this order as delivered?',
-        description: 'Only confirm once the buyer has received the items.',
-        confirmLabel: 'Yes, it was delivered',
-        note: 'This starts the buyer\'s 7-day return window and cannot be undone.',
-        buttonClass: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-        mediaClass: 'bg-emerald-50 text-emerald-600',
-    },
-} as const;
+const PHONE_PATTERN = /^\+?[0-9][0-9\s-]{6,18}[0-9]$/;
 
-/** The single "move it forward" button for an order; renders nothing once the order is final. */
+/**
+ * Marks a pending order shipped, or corrects the courier on a shipped one. Sellers must
+ * name the courier so Trisonet can call them and confirm delivery - only an admin marks
+ * an order delivered. Renders nothing once the order is delivered or cancelled.
+ */
 export function SellerOrderAction({ order, size = 'default' }: { order: SellerOrder; size?: 'default' | 'sm' }) {
     const [open, setOpen] = useState(false);
+    const [courierName, setCourierName] = useState('');
+    const [courierPhone, setCourierPhone] = useState('');
     const [updateStatus, { isLoading }] = useUpdateSellerOrderStatusMutation();
-    if (!order.nextStatus) return null;
 
-    const next = order.nextStatus;
-    const action = ACTION[next];
-    const Icon = action.icon;
+    const isEdit = order.status === 'shipped';
+    if (order.status !== 'pending' && !isEdit) return null;
+
+    const nameError = courierName.trim().length < 2 ? 'Enter the courier\'s name' : null;
+    const phoneError = !PHONE_PATTERN.test(courierPhone.trim()) ? 'Enter a valid phone number' : null;
+
+    const handleOpenChange = (value: boolean) => {
+        if (isLoading) return;
+        if (value) {
+            setCourierName(order.courier?.name ?? '');
+            setCourierPhone(order.courier?.phone ?? '');
+        }
+        setOpen(value);
+    };
 
     const handleConfirm = async () => {
+        if (nameError || phoneError) return;
         try {
-            await updateStatus({ refNo: order.refNo, status: next }).unwrap();
-            toast.success(`Order marked as ${next}`);
+            await updateStatus({ refNo: order.refNo, courierName: courierName.trim(), courierPhone: courierPhone.trim() }).unwrap();
+            toast.success(isEdit ? 'Courier details updated' : 'Order marked as shipped');
             setOpen(false);
         } catch (error) {
             toast.error('Could not update order', { description: (error as { data?: { message?: string } })?.data?.message || 'Please try again' });
@@ -92,16 +88,27 @@ export function SellerOrderAction({ order, size = 'default' }: { order: SellerOr
     };
 
     return (
-        <AlertDialog open={open} onOpenChange={(value) => { if (!isLoading) setOpen(value); }}>
-            <AlertDialogTrigger render={<Button size={size} className={`rounded-2xl font-bold ${action.buttonClass}`} />}>
-                <Icon className="h-4 w-4 mr-1" />
-                {action.label}
-            </AlertDialogTrigger>
+        <AlertDialog open={open} onOpenChange={handleOpenChange}>
+            {isEdit ? (
+                <AlertDialogTrigger render={<Button size={size} variant="outline" className="rounded-2xl font-bold" />}>
+                    <Pencil className="h-4 w-4 mr-1" />
+                    Edit courier
+                </AlertDialogTrigger>
+            ) : (
+                <AlertDialogTrigger render={<Button size={size} className="rounded-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white" />}>
+                    <Truck className="h-4 w-4 mr-1" />
+                    Mark as shipped
+                </AlertDialogTrigger>
+            )}
             <AlertDialogContent className="sm:max-w-md">
                 <AlertDialogHeader>
-                    <AlertDialogMedia className={`rounded-xl ${action.mediaClass}`}><Icon /></AlertDialogMedia>
-                    <AlertDialogTitle className="font-bold">{action.title}</AlertDialogTitle>
-                    <AlertDialogDescription>{action.description}</AlertDialogDescription>
+                    <AlertDialogMedia className="rounded-xl bg-blue-50 text-blue-600"><Truck /></AlertDialogMedia>
+                    <AlertDialogTitle className="font-bold">{isEdit ? 'Update courier details' : 'Mark this order as shipped?'}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {isEdit
+                            ? 'Correct the details of the courier delivering this order.'
+                            : 'Only confirm once the items have left your hands. The buyer will be told their order is on its way.'}
+                    </AlertDialogDescription>
                 </AlertDialogHeader>
 
                 <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3 text-sm space-y-1">
@@ -125,16 +132,43 @@ export function SellerOrderAction({ order, size = 'default' }: { order: SellerOr
                     )}
                 </div>
 
-                {action.note && (
-                    <p className="rounded-xl bg-amber-50 text-amber-800 border border-amber-100 p-3 text-xs">{action.note}</p>
-                )}
+                <div className="space-y-3">
+                    <div className="space-y-1.5">
+                        <Label htmlFor={`courier-name-${order.id}`}>Courier / delivery person&apos;s name</Label>
+                        <Input
+                            id={`courier-name-${order.id}`}
+                            value={courierName}
+                            maxLength={100}
+                            onChange={(e) => setCourierName(e.target.value)}
+                            placeholder="e.g. Musa Ibrahim (GIG Logistics)"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor={`courier-phone-${order.id}`}>Courier&apos;s phone number</Label>
+                        <Input
+                            id={`courier-phone-${order.id}`}
+                            type="tel"
+                            inputMode="tel"
+                            value={courierPhone}
+                            maxLength={20}
+                            onChange={(e) => setCourierPhone(e.target.value)}
+                            placeholder="e.g. 08012345678"
+                            aria-invalid={courierPhone !== '' && !!phoneError}
+                        />
+                        {courierPhone !== '' && phoneError && <p className="text-xs text-red-600">{phoneError}</p>}
+                    </div>
+                </div>
+
+                <p className="rounded-xl bg-amber-50 text-amber-800 border border-amber-100 p-3 text-xs">
+                    Trisonet will call this courier to confirm delivery before marking the order delivered.
+                </p>
 
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading}>Not yet</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirm} disabled={isLoading} className={action.buttonClass}>
+                    <AlertDialogCancel disabled={isLoading}>{isEdit ? 'Cancel' : 'Not yet'}</AlertDialogCancel>
+                    <Button onClick={handleConfirm} disabled={isLoading || !!nameError || !!phoneError} className="bg-blue-600 hover:bg-blue-700 text-white">
                         {isLoading && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
-                        {action.confirmLabel}
-                    </AlertDialogAction>
+                        {isEdit ? 'Save courier details' : 'Yes, it has shipped'}
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
