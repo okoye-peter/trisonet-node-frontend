@@ -236,6 +236,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
         );
     }
 
+    // One order to the buyer, even when several sellers fulfil it behind the scenes.
     const returnableItems = order.items.filter((item) => item.canReturn);
 
     return (
@@ -258,6 +259,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
 
             <p className="mb-6 text-sm text-muted-foreground">
                 Placed on {new Date(order.createdAt).toLocaleString()}
+                {order.deliveredAt && <> &middot; Delivered on {new Date(order.deliveredAt).toLocaleDateString()}</>}
             </p>
 
             {order.paymentStatus === 'pending' && (
@@ -283,6 +285,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ refNo: s
                         <div key={item.id} className="flex items-center justify-between">
                             <span className="text-muted-foreground">
                                 {item.product?.name ?? 'Product'} &times; {item.quantity}
+                                {item.isCancelled && (
+                                    <span className="ml-2 text-xs text-destructive">(cancelled &amp; refunded)</span>
+                                )}
                                 {item.returnStatus === 'returned' && (
                                     <span className="ml-2 text-xs font-medium text-emerald-600">(returned)</span>
                                 )}

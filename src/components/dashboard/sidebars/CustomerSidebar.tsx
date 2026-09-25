@@ -20,7 +20,8 @@ import {
     MessageSquare,
     Film,
     Newspaper,
-    ShoppingBag
+    ShoppingBag,
+    Store
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
@@ -62,6 +63,7 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             { icon: LayoutGrid, label: 'Dashboard', href: '/dashboard' },
             // { icon: Bell, label: 'Notifications', href: '/notifications', badge: unreadCount },
             { icon: ShoppingBag, label: 'Shop', href: '/shop' },
+            { icon: Store, label: 'My Store', href: '/my-store' },
             { icon: User, label: 'Profile', href: '/profile' },
             { icon: MessageSquare, label: 'Inbox', href: '/talkzone' },
             { icon: Newspaper, label: 'Gists Zone', href: '/gists-zone' },
@@ -88,12 +90,16 @@ export function CustomerSidebar({ isOpen, onClose }: SidebarProps) {
             if (sub.label === 'GKWTH Auction' && !user?.canAccessAuction) {
                 return false;
             }
+            // Closed beta, and only adult customer accounts can open a store (SellerStoreService.eligibility).
+            if (sub.label === 'My Store' && (!user?.canUseSellerStore || user?.isInfant)) {
+                return false;
+            }
             if (user?.level === 1) {
                 return !['Earnings', 'Upfront Sales', 'GKWTH Auction'].includes(sub.label);
             }
             return true;
         });
-    }, [user?.level, user?.canAccessAuction, activeAuctionCount]);
+    }, [user?.level, user?.canAccessAuction, user?.isInfant, user?.canUseSellerStore, activeAuctionCount]);
 
     return (
         <BaseSidebar

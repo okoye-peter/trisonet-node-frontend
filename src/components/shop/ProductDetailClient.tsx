@@ -90,6 +90,11 @@ export function ProductDetailClient({ id }: { id: string }) {
                         )}
                     </div>
                     <h1 className="text-2xl font-bold sm:text-3xl">{product.name}</h1>
+                    {product.seller && (
+                        <span className="text-sm text-muted-foreground">
+                            Sold by <span className="font-medium text-foreground">{product.seller.name}</span>
+                        </span>
+                    )}
                     {product.reviewSummary.count > 0 && (
                         <a href="#reviews" className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
                             <StarRating value={product.reviewSummary.average} size={14} />

@@ -98,6 +98,8 @@ export interface User {
     patronActivated?: boolean;
     isPendingLevel2Migration?: boolean;
     canAccessAuction?: boolean;
+    // Partner seller marketplace closed beta (backend utils/sellerAccess.ts).
+    canUseSellerStore?: boolean;
     patronPlan?: {
         id: string;
         name: string;
@@ -692,6 +694,8 @@ export interface ShopProduct {
     category?: ShopCategory;
     isReturnable: boolean;
     reviewSummary: ShopReviewSummary;
+    // null = sold by Trisonet itself
+    seller?: { id: string; name: string; logo: string } | null;
 }
 
 export interface ShopProductReview {
@@ -725,6 +729,8 @@ export interface ShopOrderItem {
     hasActiveReturn?: boolean;
     returnStatus?: 'requested' | 'returned' | null;
     canReturn?: boolean;
+    // True only when an admin cancelled (and refunded) this item's part of the order.
+    isCancelled?: boolean;
 }
 
 export interface ShopShippingDetails {
@@ -759,6 +765,8 @@ export interface ShopOrder {
     paymentReference?: string;
     virtualAccount?: ShopOrderVirtualAccount;
     shippingStatus: ShopOrderShippingStatus;
+    // When the whole order (its last item) was delivered; the return window starts here.
+    deliveredAt?: string | null;
     canCancel: boolean;
     canReturn: boolean;
     daysLeftToReturn: number | null;
@@ -804,4 +812,98 @@ export interface StoreGuestUpgradeRequest {
     deadlineAt: string;
     completedAt: string | null;
     expiredAt: string | null;
+}
+
+export type SellerStoreStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
+
+export interface SellerStoreFields {
+    name: string;
+    description: string;
+    logo: string;
+    logoPublicId?: string | null;
+    phone: string;
+    address: string;
+    stateId?: string | null;
+}
+
+export interface SellerStore extends SellerStoreFields {
+    id: string;
+    state: { id: string; name: string } | null;
+    status: SellerStoreStatus;
+    reviewComment: string | null;
+    reviewedAt: string | null;
+    approvedAt: string | null;
+    // An approved store's edit awaiting review - the fields above stay live until it's approved.
+    pendingChanges: Partial<SellerStoreFields> | null;
+    pendingChangesStatus: 'pending' | 'rejected' | null;
+    canListProducts: boolean;
+    createdAt: string;
+}
+
+export interface MySellerStore {
+    eligible: boolean;
+    reason?: string;
+    store: SellerStore | null;
+}
+
+export interface UploadedFile {
+    url: string;
+    public_id: string;
+}
+
+export type SellerProductStatus = 'pending' | 'approved' | 'rejected';
+
+export type SellerOrderStatus = 'pending' | 'shipped' | 'delivered' | 'cancelled';
+
+export interface SellerOrder {
+    id: string;
+    refNo: string;
+    status: SellerOrderStatus;
+    // The one status the seller can move this order to next, or null when it's final.
+    nextStatus: 'shipped' | 'delivered' | null;
+    items: { id: string; productId: string; name: string; image: string; quantity: number; price: number }[];
+    itemCount: number;
+    total: number;
+    payout: { gross: number; commissionRate: number; commission: number; net: number; status: string } | null;
+    buyer: { name: string; phone: string | null };
+    deliveryAddress: string | null;
+    deliveredAt: string | null;
+    // Must be delivered within 14 days of payment; null once delivered or cancelled.
+    deliverBy: string | null;
+    daysLeftToDeliver: number | null;
+    isOverdue: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface SellerOrderList extends PaginatedResult<SellerOrder> {
+    statusCounts: Record<SellerOrderStatus, number>;
+}
+
+export interface SellerProductInput {
+    name: string;
+    description: string;
+    price: number;
+    quantity: number;
+    categoryId: string;
+    isReturnable: boolean;
+    // The first image is the product's main image.
+    images: { url: string; publicId?: string }[];
+}
+
+export interface SellerProduct {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    quantity: number;
+    isReturnable: boolean;
+    categoryId: string;
+    category: ShopCategory | null;
+    images: { id: string; url: string; publicId: string | null; isDefault: boolean }[];
+    status: SellerProductStatus;
+    reviewComment: string | null;
+    reviewedAt: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
