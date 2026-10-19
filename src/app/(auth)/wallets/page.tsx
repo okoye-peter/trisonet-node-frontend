@@ -14,7 +14,8 @@ import {
     Clock,
     CheckCircle,
     AlertCircle,
-    MessageCircle
+    MessageCircle,
+    History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,6 +45,7 @@ import { toast } from 'sonner';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
+import CommissionHistoryDialog from '@/components/wallets/CommissionHistoryDialog';
 
 interface PagaOptions {
     amount: number;
@@ -83,7 +85,7 @@ const walletConfig: Record<string, { label: string; icon: React.ElementType; col
         gradient: 'from-emerald-600 to-teal-600'
     },
     commission: {
-        label: 'Ecommerce Commission',
+        label: 'Commission',
         icon: NairaIcon,
         color: 'text-indigo-600',
         bg: 'bg-indigo-50',
@@ -122,6 +124,7 @@ export default function WalletsPage() {
     const [withdrawWalletType, setWithdrawWalletType] = useState<'direct' | 'commission'>('direct');
     const withdrawWallet = withdrawWalletType === 'commission' ? commissionWallet : directWallet;
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [isCommissionHistoryOpen, setIsCommissionHistoryOpen] = useState(false);
 
     const [initiateWalletFunding, { isLoading: isInitiatingFunding }] = useInitiateDirectWalletFundingMutation();
     const [checkStatus] = useLazyCheckFundingStatusQuery();
@@ -387,6 +390,7 @@ export default function WalletsPage() {
         <div className="min-h-screen bg-zinc-50/50">
             <div className="p-4 mx-auto space-y-8 md:p-8 max-w-7xl">
                 <TransferModal open={isTransferModalOpen} onOpenChange={setIsTransferModalOpen} />
+                <CommissionHistoryDialog open={isCommissionHistoryOpen} onOpenChange={setIsCommissionHistoryOpen} />
 
                 {/* Hero Balance Section */}
                 <motion.div 
@@ -519,15 +523,24 @@ export default function WalletsPage() {
                                                     <span className="text-2xl font-bold text-zinc-400">{currency}</span>
                                                     <h3 className="text-3xl font-black tracking-tighter text-zinc-900">{commissionWallet.amount.toLocaleString()}</h3>
                                                 </div>
-                                                <Button
-                                                    onClick={() => {
-                                                        setWithdrawWalletType('commission');
-                                                        setActiveTab('withdraw');
-                                                    }}
-                                                    className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black"
-                                                >
-                                                    Withdraw Instantly
-                                                </Button>
+                                                <div className="flex gap-3">
+                                                    <Button
+                                                        onClick={() => {
+                                                            setWithdrawWalletType('commission');
+                                                            setActiveTab('withdraw');
+                                                        }}
+                                                        className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black"
+                                                    >
+                                                        Withdraw Instantly
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setIsCommissionHistoryOpen(true)}
+                                                        className="h-12 px-4 font-black rounded-xl border-zinc-200"
+                                                    >
+                                                        <History size={16} className="mr-1.5" /> History
+                                                    </Button>
+                                                </div>
                                             </CardContent>
                                         </Card>
                                     </div>
@@ -626,7 +639,7 @@ export default function WalletsPage() {
                                             <h2 className="text-2xl font-black text-zinc-900">Withdraw Funds</h2>
                                             <p className="text-sm italic font-medium text-zinc-500">
                                                 {withdrawWalletType === 'commission'
-                                                    ? 'Instant payout from your ecommerce commission wallet — no approval wait.'
+                                                    ? 'Instant payout from your commission wallet — no approval wait.'
                                                     : 'Secure transfer to your linked bank account.'}
                                             </p>
                                         </div>

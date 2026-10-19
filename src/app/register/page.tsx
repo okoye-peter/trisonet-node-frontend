@@ -30,6 +30,8 @@ const registerSchema = z.object({
     phone: z.string().min(6, { message: 'Please enter a valid phone number.' }),
     country: z.string().min(1, { message: 'Please select a country.' }),
     region_id: z.string().min(1, { message: 'Please select a region.' }),
+    // Required only when the selected country has states - enforced in onSubmit.
+    state_id: z.string().optional(),
     referral_id: z.string().optional(),
     activation_code: z.string().optional(),
     password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
@@ -49,6 +51,8 @@ function RegisterForm() {
     
     const [regions, setRegions] = useState<{id: string; name: string}[]>([]);
     const [countries, setCountries] = useState<string[]>([]);
+    const [states, setStates] = useState<{ id: string; name: string }[]>([]);
+    const [statesLoading, setStatesLoading] = useState(false);
 
     const ref = searchParams.get('ref') || '';
 
@@ -61,6 +65,7 @@ function RegisterForm() {
             phone: '',
             country: '',
             region_id: '',
+            state_id: '',
             referral_id: ref,
             activation_code: '',
             password: '',
@@ -85,7 +90,29 @@ function RegisterForm() {
         fetchData();
     }, []);
 
+    // States are created per country by the admin; the new partner counts toward the
+    // weekly migration target of the state picked here.
+    const selectedCountry = form.watch('country');
+    useEffect(() => {
+        form.setValue('state_id', '');
+        setStates([]);
+        if (!selectedCountry) return;
+
+        let cancelled = false;
+        setStatesLoading(true);
+        api.get('/regions/states', { params: { country: selectedCountry } })
+            .then((res) => { if (!cancelled) setStates(res.data?.data || []); })
+            .catch(() => { if (!cancelled) toast.error('Failed to load states'); })
+            .finally(() => { if (!cancelled) setStatesLoading(false); });
+
+        return () => { cancelled = true; };
+    }, [selectedCountry, form]);
+
     async function onSubmit(values: RegisterFormValues) {
+        if (states.length > 0 && !values.state_id) {
+            form.setError('state_id', { message: 'Please select your state.' });
+            return;
+        }
         setIsLoading(true);
         try {
             await api.post('/auth/register', {
@@ -95,6 +122,7 @@ function RegisterForm() {
                 phone: values.phone,
                 country: values.country,
                 region_id: values.region_id,
+                state_id: values.state_id || undefined,
                 referral_id: values.referral_id,
                 activation_code: values.activation_code,
                 password: values.password,
@@ -240,6 +268,27 @@ function RegisterForm() {
                             )}
                         />
                     </div>
+                    {(states.length > 0 || statesLoading) && (
+                        <FormField
+                            control={form.control}
+                            name="state_id"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#040021] font-semibold">State</FormLabel>
+                                    <FormControl>
+                                        <SearchableSelect
+                                            placeholder={statesLoading ? 'Loading states...' : 'Select State'}
+                                            value={field.value ?? ''}
+                                            onValueChange={field.onChange}
+                                            triggerClassName="h-11 bg-zinc-50 border border-zinc-200 rounded-md focus:bg-white focus:border-[#6639ff] transition-all font-normal text-sm"
+                                            items={states.map((s) => ({ label: s.name, value: s.id.toString() }))}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
                     <FormField
                         control={form.control}
                         name="referral_id"

@@ -133,11 +133,31 @@ export const walletApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['Wallet'],
         }),
+        getCommissionWalletHistory: builder.query<AppResponse<PaginatedResult<CommissionHistoryEntry>>, { page?: number; limit?: number }>({
+            query: ({ page = 1, limit = 10 }) => ({
+                url: 'wallet/commission/history',
+                params: { page, limit },
+            }),
+            providesTags: ['Wallet'],
+        }),
     }),
 });
 
+export interface CommissionHistoryEntry {
+    id: string;
+    direction: 'credit' | 'debit';
+    source: string;
+    description: string;
+    details: string | null;
+    amount: number;
+    reference: string | null;
+    status: 'success' | 'pending' | 'being_processed' | 'processed' | 'failed';
+    createdAt: string;
+}
+
 export const {
     useGetWalletsQuery,
+    useGetCommissionWalletHistoryQuery,
     useGetTransfersQuery,
     useTransferMutation,
     useGetGkwthPricesQuery,

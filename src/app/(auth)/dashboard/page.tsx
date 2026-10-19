@@ -33,8 +33,8 @@ import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
-import axios from 'axios';
-import type { Partner, Wallet as WalletType, DashboardStats, WardStats } from '@/types';
+// import axios from 'axios';
+import type { Partner, Wallet as WalletType, DashboardStats, WardStats, StateMigrationProgress } from '@/types';
 import { ROLES } from '@/types';
 import { MAX_ASSET_DEPOT } from '@/lib/constants';
 import { videoFlags } from '@/lib/videoFlags';
@@ -44,15 +44,18 @@ import { useEffect, useMemo, useState } from 'react';
 import QRCodeModal from '@/components/dashboard/QRCodeModal';
 import WelcomeVideo from '@/components/dashboard/WelcomeVideo';
 import PIMCardModal from '@/components/dashboard/PIMCardModal';
-import Level1ProgressCard from '@/components/dashboard/Level1ProgressCard';
-import WeeklyMigrationCard from '@/components/dashboard/WeeklyMigrationCard';
+// Old 2^n queue / 10-sales migration UI - replaced by the weekly state migration.
+// import Level1ProgressCard from '@/components/dashboard/Level1ProgressCard';
+// import WeeklyMigrationCard from '@/components/dashboard/WeeklyMigrationCard';
+import StateMigrationCard from '@/components/dashboard/StateMigrationCard';
 import ActiveAuctionBanner from '@/components/dashboard/ActiveAuctionBanner';
 import DistributionCodeCard from '@/components/dashboard/DistributionCodeCard';
 import { useGetStoreInviteCodeQuery, useGetStoreInviteCommissionSummaryQuery } from '@/store/api/storeGuestApi';
 import ActivationActionCard from '@/components/dashboard/ActivationActionCard';
 import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
 import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
-import MigrationQueueModal from '@/components/dashboard/modals/MigrationQueueModal';
+// import MigrationQueueModal from '@/components/dashboard/modals/MigrationQueueModal';
+import StateMigrationModal from '@/components/dashboard/modals/StateMigrationModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
@@ -237,22 +240,34 @@ export default function DashboardPage() {
         }
     })
 
-    const isLevel1Customer = user?.level === 1 && user?.role === ROLES.CUSTOMER;
+    // const isLevel1Customer = user?.level === 1 && user?.role === ROLES.CUSTOMER; // only used by the old migration UI
     const isCustomer = (user?.level === 1 || user?.level === 2) && user?.role === ROLES.CUSTOMER;
-    const { data: pendingMigrationResponse } = useQuery<{ pendingCount: number; weeklyExpected: number }>({
-        queryKey: ['pendingMigrationCount'],
+    // Old 2^n migration queue counts - replaced by the per-state weekly target below.
+    // const { data: pendingMigrationResponse } = useQuery<{ pendingCount: number; weeklyExpected: number }>({
+    //     queryKey: ['pendingMigrationCount'],
+    //     queryFn: async () => {
+    //         const res = await axios.get('/api/migration-count');
+    //         return res.data;
+    //     },
+    //     enabled: isCustomer,
+    // })
+
+    const { data: stateMigration } = useQuery<StateMigrationProgress>({
+        queryKey: ['stateMigration', user?.id],
         queryFn: async () => {
-            const res = await axios.get('/api/migration-count');
-            return res.data;
+            const res = await api.get('/users/state-migration');
+            return res.data?.data;
         },
-        enabled: isCustomer,
+        enabled: isCustomer && !user?.isInfant,
     })
 
+    // Once per page load, partners with a state see their state's weekly target. Existing accounts
+    // without a state are not asked to pick one (only new registrations choose a state).
     useEffect(() => {
-        if (!pendingMigrationResponse || migrationModalShownThisLoad) return;
+        if (!stateMigration?.state || migrationModalShownThisLoad) return;
         migrationModalShownThisLoad = true;
         setIsMigrationModalOpen(true);
-    }, [pendingMigrationResponse]);
+    }, [stateMigration]);
 
     const { data: wardStatsResponse } = useQuery<{ data: WardStats }>({
         queryKey: ['wardStats'],
@@ -379,8 +394,8 @@ export default function DashboardPage() {
 
             {/* Main Stats Grid */}
             <motion.div variants={itemVariants} className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {/* Level 1 Only: Progress Card */}
-                {isLevel1Customer && (
+                {/* Old migration UI (10-sales progress + 2^n weekly queue) - replaced by StateMigrationCard */}
+                {/* {isLevel1Customer && (
                     <div className="sm:col-span-2 lg:col-span-2">
                         <Level1ProgressCard
                             totalSales={dashboardStats?.migrationSales ?? 0}
@@ -388,14 +403,19 @@ export default function DashboardPage() {
                         />
                     </div>
                 )}
-
-                {/* Level 1 Only: Weekly Migration Card */}
                 <div className="sm:col-span-2 lg:col-span-2">
                     <WeeklyMigrationCard
                         pendingCount={pendingMigrationResponse?.pendingCount}
                         weeklyExpected={pendingMigrationResponse?.weeklyExpected}
                     />
-                </div>
+                </div> */}
+
+                {/* Customers: this week's target for their state */}
+                {stateMigration?.state && (
+                    <div className="sm:col-span-2 lg:col-span-2">
+                        <StateMigrationCard progress={stateMigration} />
+                    </div>
+                )}
                 
 
                 {/* Level 1 Only: Activation Action */}
@@ -847,11 +867,16 @@ export default function DashboardPage() {
                 activationData={dashboardStats?.activation}
             />
 
-            <MigrationQueueModal
+            {/* <MigrationQueueModal
                 isOpen={isMigrationModalOpen}
                 onClose={() => setIsMigrationModalOpen(false)}
                 pendingCount={pendingMigrationResponse?.pendingCount ?? 0}
                 weeklyExpected={pendingMigrationResponse?.weeklyExpected ?? 0}
+            /> */}
+            <StateMigrationModal
+                isOpen={isMigrationModalOpen}
+                onClose={() => setIsMigrationModalOpen(false)}
+                progress={stateMigration}
             />
 
         </motion.div>

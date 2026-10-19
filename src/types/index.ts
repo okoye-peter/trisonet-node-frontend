@@ -65,6 +65,9 @@ export interface User {
     pictureUrl: string | null;
     cloudinaryPublicId: string | null;
     regionId: string;
+    // Country state used for the weekly state migration - set once, then read-only for the user.
+    stateId?: string | null;
+    state?: { id: string; name: string; country: string } | null;
     role: number;
     accountState: number;
     country: string;
@@ -907,4 +910,18 @@ export interface SellerProduct {
     reviewedAt: string | null;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface StateMigrationProgress {
+    weekStartsAt: string;
+    weekEndsAt: string;
+    // null for accounts without a state (only new registrations choose one)
+    state: { id: string; name: string; country: string } | null;
+    weeklyTarget?: number;
+    registeredCount?: number;
+    remaining?: number;
+    targetReached?: boolean;
+    leaderName?: string | null;
+    isLeader?: boolean;
+    leaderCommission?: number | null;
 }

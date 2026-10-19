@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { User, Mail, Shield, Award, Landmark, Phone, ShieldUser, LockKeyholeOpen, Loader2, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Shield, Award, Landmark, Phone, ShieldUser, LockKeyholeOpen, Loader2, CheckCircle2, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState, useCallback } from 'react';
@@ -135,6 +135,19 @@ function PersonalInfoTab({ user }: PersonalInfoTabProps) {
                         />
                     </div>
                 </div>
+                {/* State is chosen at registration only (read-only here); existing accounts don't pick one */}
+                {user?.state && (
+                    <div className="space-y-2.5 sm:col-span-2">
+                        <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">State</Label>
+                        <div className="relative group">
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300">
+                                <MapPin size={18} />
+                            </div>
+                            <Input className="h-14 pl-12 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900" value={`${user.state.name}, ${user.state.country}`} disabled />
+                        </div>
+                        <p className="text-[11px] font-semibold text-zinc-400">Your state can&apos;t be changed. Contact support if it is wrong.</p>
+                    </div>
+                )}
             </div>
             <Button className="h-14 px-8 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-zinc-200 transition-all active:scale-95" onClick={handleUpdate} disabled={isPending}>
                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Update Information'}

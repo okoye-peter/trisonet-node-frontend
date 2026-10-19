@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 import FinanceVideo from './FinanceVideo';
 import KYCModal from './KYCModal';
 import EmailVerificationModal from './EmailVerificationModal';
-import MigrationRequestModal from './MigrationRequestModal';
-import Level1StatusModal from './Level1StatusModal';
+// import MigrationRequestModal from './MigrationRequestModal';
+// import Level1StatusModal from './Level1StatusModal';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import type { DashboardStats } from '@/types';
@@ -30,9 +30,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [showFinanceVideo, setShowFinanceVideo] = useState(false);
     const [isKYCModalOpen, setIsKYCModalOpen] = useState(false);
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-    const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
-    const [isLevel1StatusModalOpen, setIsLevel1StatusModalOpen] = useState(false);
-    const [hasSeenLevel1Modal, setHasSeenLevel1Modal] = useState(false);
+    // const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false); // old migration popups
+    // const [isLevel1StatusModalOpen, setIsLevel1StatusModalOpen] = useState(false);
+    // const [hasSeenLevel1Modal, setHasSeenLevel1Modal] = useState(false);
     const [welcomeVideoDone, setWelcomeVideoDone] = useState(false);
     const pathname = usePathname();
     const { user } = useAppSelector((state) => state.auth);
@@ -162,39 +162,41 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
     }, [user, pathname, showFinanceVideo, welcomeVideoDone]);
 
-    useEffect(() => {
-        // Show MigrationRequestModal for level=1 users pending Level 2 migration,
-        // or Level1StatusModal for all other level=1 users. Once per login/reload.
-        if (user && user.level === 1 && user.role === ROLES.CUSTOMER && !hasSeenLevel1Modal) {
-            const triggerLevel1Modal = () => {
-                const timer = setTimeout(() => {
-                    if (user.isPendingLevel2Migration) {
-                        setIsMigrationModalOpen(true);
-                    } else {
-                        setIsLevel1StatusModalOpen(true);
-                    }
-                    setHasSeenLevel1Modal(true);
-                }, 1500);
-                return timer;
-            };
-
-            let timer: NodeJS.Timeout;
-
-            const checkAndTrigger = () => {
-                const isDashboard = pathname === '/dashboard';
-
-                if (showFinanceVideo) return;
-                // Level 1 users don't see the welcome video, so no need to wait for it
-                if (isDashboard && user?.level === 2 && !welcomeVideoDone) return;
-
-                timer = triggerLevel1Modal();
-            };
-
-            checkAndTrigger();
-
-            return () => clearTimeout(timer);
-        }
-    }, [user, pathname, showFinanceVideo, welcomeVideoDone, hasSeenLevel1Modal]);
+    // Old level-1 migration popups (pending-queue notice / 10-sales progress) - replaced by the weekly
+    // state migration popup on the dashboard page (StateMigrationModal).
+    // useEffect(() => {
+    //     // Show MigrationRequestModal for level=1 users pending Level 2 migration,
+    //     // or Level1StatusModal for all other level=1 users. Once per login/reload.
+    //     if (user && user.level === 1 && user.role === ROLES.CUSTOMER && !hasSeenLevel1Modal) {
+    //         const triggerLevel1Modal = () => {
+    //             const timer = setTimeout(() => {
+    //                 if (user.isPendingLevel2Migration) {
+    //                     setIsMigrationModalOpen(true);
+    //                 } else {
+    //                     setIsLevel1StatusModalOpen(true);
+    //                 }
+    //                 setHasSeenLevel1Modal(true);
+    //             }, 1500);
+    //             return timer;
+    //         };
+    // 
+    //         let timer: NodeJS.Timeout;
+    // 
+    //         const checkAndTrigger = () => {
+    //             const isDashboard = pathname === '/dashboard';
+    // 
+    //             if (showFinanceVideo) return;
+    //             // Level 1 users don't see the welcome video, so no need to wait for it
+    //             if (isDashboard && user?.level === 2 && !welcomeVideoDone) return;
+    // 
+    //             timer = triggerLevel1Modal();
+    //         };
+    // 
+    //         checkAndTrigger();
+    // 
+    //         return () => clearTimeout(timer);
+    //     }
+    // }, [user, pathname, showFinanceVideo, welcomeVideoDone, hasSeenLevel1Modal]);
 
     const handleFinanceVideoEnded = () => {
         setShowFinanceVideo(false);
@@ -291,7 +293,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 }}
             />
 
-            <MigrationRequestModal
+            {/* Old migration popups (pending-queue notice + 10-sales progress) - replaced by the
+                weekly state migration popup on the dashboard (StateMigrationModal). */}
+            {/* <MigrationRequestModal
                 key={user?.id ? `migration-${user.id}` : 'migration-modal'}
                 isOpen={isMigrationModalOpen}
                 onClose={() => setIsMigrationModalOpen(false)}
@@ -302,7 +306,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 isOpen={isLevel1StatusModalOpen}
                 onClose={() => setIsLevel1StatusModalOpen(false)}
                 totalSales={dashboardStats?.migrationSales ?? 0}
-            />
+            /> */}
 
             <BlockedAccountModal
                 isOpen={!!user?.blockedAt}
