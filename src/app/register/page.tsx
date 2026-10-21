@@ -28,6 +28,8 @@ const registerSchema = z.object({
     username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
     email: z.string().email({ message: 'Please enter a valid email address.' }),
     phone: z.string().min(6, { message: 'Please enter a valid phone number.' }),
+    next_of_kin_name: z.string().trim().min(2, { message: 'Please enter your next of kin\'s name.' }),
+    next_of_kin_phone: z.string().trim().regex(/^\+?\d{10,15}$/, { message: 'Please enter a valid phone number (10 to 15 digits).' }),
     country: z.string().min(1, { message: 'Please select a country.' }),
     region_id: z.string().min(1, { message: 'Please select a region.' }),
     // Required only when the selected country has states - enforced in onSubmit.
@@ -63,6 +65,8 @@ function RegisterForm() {
             username: '',
             email: '',
             phone: '',
+            next_of_kin_name: '',
+            next_of_kin_phone: '',
             country: '',
             region_id: '',
             state_id: '',
@@ -120,6 +124,8 @@ function RegisterForm() {
                 username: values.username,
                 email: values.email,
                 phone: values.phone,
+                next_of_kin_name: values.next_of_kin_name,
+                next_of_kin_phone: values.next_of_kin_phone,
                 country: values.country,
                 region_id: values.region_id,
                 state_id: values.state_id || undefined,
@@ -228,6 +234,50 @@ function RegisterForm() {
                             </FormItem>
                         )}
                     />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="next_of_kin_name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#040021] font-semibold">Next of Kin Name</FormLabel>
+                                    <FormControl>
+                                        <div className="relative group">
+                                            <User className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input
+                                                type="text"
+                                                placeholder="Full name"
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
+                                                {...field}
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="next_of_kin_phone"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-[#040021] font-semibold">Next of Kin Phone</FormLabel>
+                                    <FormControl>
+                                        <div className="relative group">
+                                            <Phone className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
+                                            <Input
+                                                type="tel"
+                                                placeholder="+2348000000000"
+                                                className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all"
+                                                {...field}
+                                            />
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}

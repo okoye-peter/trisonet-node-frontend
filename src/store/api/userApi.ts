@@ -15,6 +15,15 @@ export const userApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+        // Existing accounts without a state pick one once; after that only an admin can change it.
+        selectState: builder.mutation<AppResponse<{ id: string; name: string; country: string }>, { state_id: string }>({
+            query: (body) => ({
+                url: 'users/state',
+                method: 'PATCH',
+                body,
+            }),
+            invalidatesTags: ['User'],
+        }),
         updateBankDetails: builder.mutation<AppResponse<User>, UpdateBankRequest>({
             query: (body) => ({
                 url: 'users/update-bank',
@@ -157,6 +166,7 @@ export const userApi = apiSlice.injectEndpoints({
 export const {
     useGetUserQuery,
     useUpdateProfileMutation,
+    useSelectStateMutation,
     useUpdateBankDetailsMutation,
     useUpdatePasswordMutation,
     useSendOtpMutation,

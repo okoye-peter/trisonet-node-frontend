@@ -68,6 +68,8 @@ export interface User {
     // Country state used for the weekly state migration - set once, then read-only for the user.
     stateId?: string | null;
     state?: { id: string; name: string; country: string } | null;
+    nextOfKinName?: string | null;
+    nextOfKinPhone?: string | null;
     role: number;
     accountState: number;
     country: string;
@@ -369,6 +371,8 @@ export interface Loan {
 export interface UpdateProfileRequest {
     name?: string;
     phone?: string;
+    next_of_kin_name?: string;
+    next_of_kin_phone?: string;
 }
 
 export interface UpdateBankRequest {
@@ -915,8 +919,10 @@ export interface SellerProduct {
 export interface StateMigrationProgress {
     weekStartsAt: string;
     weekEndsAt: string;
-    // null for accounts without a state (only new registrations choose one)
+    // null for accounts without a state
     state: { id: string; name: string; country: string } | null;
+    // no state yet, and the user's country has states to pick from
+    canSelectState?: boolean;
     weeklyTarget?: number;
     registeredCount?: number;
     remaining?: number;

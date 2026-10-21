@@ -56,11 +56,12 @@ import SchoolFeesMarquee from '@/components/dashboard/SchoolFeesMarquee';
 import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
 // import MigrationQueueModal from '@/components/dashboard/modals/MigrationQueueModal';
 import StateMigrationModal from '@/components/dashboard/modals/StateMigrationModal';
+import SelectStateModal from '@/components/dashboard/modals/SelectStateModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
 import { useCurrencySymbol } from '@/hooks/useCurrencySymbol';
-import { Bell } from 'lucide-react';
+import { Bell, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGetGkwthPricesQuery, useGetWalletHistoryQuery } from '@/store/api/walletApi';
 
@@ -209,6 +210,7 @@ export default function DashboardPage() {
     const [isBuyPimModalOpen, setIsBuyPimModalOpen] = useState(false);
     const [isWalletHistoryOpen, setIsWalletHistoryOpen] = useState(false);
     const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
+    const [isSelectStateOpen, setIsSelectStateOpen] = useState(false);
     const [walletHistoryPage, setWalletHistoryPage] = useState(1);
 
     const { refetch: refetchUser } = useGetUserQuery();
@@ -261,12 +263,17 @@ export default function DashboardPage() {
         enabled: isCustomer && !user?.isInfant,
     })
 
-    // Once per page load, partners with a state see their state's weekly target. Existing accounts
-    // without a state are not asked to pick one (only new registrations choose a state).
+    // Once per page load, partners with a state see their state's weekly target; existing
+    // accounts without a state are asked to pick one instead (if their country has states).
     useEffect(() => {
-        if (!stateMigration?.state || migrationModalShownThisLoad) return;
-        migrationModalShownThisLoad = true;
-        setIsMigrationModalOpen(true);
+        if (!stateMigration || migrationModalShownThisLoad) return;
+        if (stateMigration.state) {
+            migrationModalShownThisLoad = true;
+            setIsMigrationModalOpen(true);
+        } else if (stateMigration.canSelectState) {
+            migrationModalShownThisLoad = true;
+            setIsSelectStateOpen(true);
+        }
     }, [stateMigration]);
 
     const { data: wardStatsResponse } = useQuery<{ data: WardStats }>({
@@ -414,6 +421,25 @@ export default function DashboardPage() {
                 {stateMigration?.state && (
                     <div className="sm:col-span-2 lg:col-span-2">
                         <StateMigrationCard progress={stateMigration} />
+                    </div>
+                )}
+
+                {/* Existing accounts without a state: prompt to pick one */}
+                {stateMigration && !stateMigration.state && stateMigration.canSelectState && (
+                    <div className="sm:col-span-2 lg:col-span-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsSelectStateOpen(true)}
+                            className="flex items-center w-full h-full gap-4 p-6 text-left transition-all border-2 border-dashed rounded-3xl border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50"
+                        >
+                            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-100 shrink-0">
+                                <MapPin size={22} className="text-emerald-600" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-sm font-black text-zinc-900">Select your state</p>
+                                <p className="text-xs font-semibold text-zinc-500">Set your state to see its weekly target.</p>
+                            </div>
+                        </button>
                     </div>
                 )}
                 
@@ -877,6 +903,11 @@ export default function DashboardPage() {
                 isOpen={isMigrationModalOpen}
                 onClose={() => setIsMigrationModalOpen(false)}
                 progress={stateMigration}
+            />
+            <SelectStateModal
+                isOpen={isSelectStateOpen}
+                onClose={() => setIsSelectStateOpen(false)}
+                country={user?.country}
             />
 
         </motion.div>

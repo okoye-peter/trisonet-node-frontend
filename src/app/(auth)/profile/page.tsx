@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { User, Mail, Shield, Award, Landmark, Phone, ShieldUser, LockKeyholeOpen, Loader2, CheckCircle2, MapPin } from 'lucide-react';
+import { User, Mail, Shield, Award, Landmark, Phone, ShieldUser, LockKeyholeOpen, Loader2, CheckCircle2, MapPin, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState, useCallback } from 'react';
@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppSelector } from '@/store/hooks';
-import type { BankAccountDetail, User as UserType } from '@/types';
+import type { BankAccountDetail, User as UserType, StateMigrationProgress } from '@/types';
+import { ROLES } from '@/types';
 import { toast } from "sonner"
 import {
     useUpdateProfileMutation,
@@ -23,6 +24,7 @@ import { useGetBanksQuery, useResolveAccountMutation } from '@/store/api/bankApi
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import SelectStateModal from '@/components/dashboard/modals/SelectStateModal';
 
 
 type TabType = 'personal' | 'bank' | 'security';
@@ -32,12 +34,24 @@ interface PersonalInfoTabProps {
 }
 
 function PersonalInfoTab({ user }: PersonalInfoTabProps) {
+    const [isSelectStateOpen, setIsSelectStateOpen] = useState(false);
+    // Same query as the dashboard - tells us whether an account without a state can pick one
+    const { data: stateMigration } = useQuery<StateMigrationProgress>({
+        queryKey: ['stateMigration', user?.id],
+        queryFn: async () => {
+            const res = await api.get('/users/state-migration');
+            return res.data?.data;
+        },
+        enabled: !!user && !user.state && user.role === ROLES.CUSTOMER && !user.isInfant,
+    });
     const [userDetail, setUserDetail] = useState({
         name: user?.name ?? '',
         email: user?.email ?? '',
         phone: user?.phone ?? '',
         username: user?.username ?? '',
         puk: user?.unblockingCode ?? '',
+        nextOfKinName: user?.nextOfKinName ?? '',
+        nextOfKinPhone: user?.nextOfKinPhone ?? '',
     });
 
     const [updateUser, { isLoading: isPending }] = useUpdateProfileMutation();
@@ -65,10 +79,25 @@ function PersonalInfoTab({ user }: PersonalInfoTabProps) {
             return;
         }
 
-        updateUser({ name: userDetail.name, phone: userDetail.phone }).unwrap().then(() => {
+        // Next of kin is optional for existing accounts, but name and phone go together
+        const nextOfKinName = userDetail.nextOfKinName.trim();
+        const nextOfKinPhone = userDetail.nextOfKinPhone.trim();
+        const hasNextOfKin = !!(nextOfKinName || nextOfKinPhone);
+        if (hasNextOfKin && (!nextOfKinName || !/^\+?\d{10,15}$/.test(nextOfKinPhone))) {
+            toast.error("Input validation failed", {
+                description: !nextOfKinName ? "Next of kin name is required" : "Next of kin phone must be 10 to 15 digits",
+            });
+            return;
+        }
+
+        updateUser({
+            name: userDetail.name,
+            phone: userDetail.phone,
+            ...(hasNextOfKin && { next_of_kin_name: nextOfKinName, next_of_kin_phone: nextOfKinPhone }),
+        }).unwrap().then(() => {
             toast.success("User profile updated successfully");
-        }).catch(() => {
-            toast.error("User profile update failed");
+        }).catch((err) => {
+            toast.error(err?.data?.message || "User profile update failed");
         });
     }
 
@@ -135,7 +164,55 @@ function PersonalInfoTab({ user }: PersonalInfoTabProps) {
                         />
                     </div>
                 </div>
-                {/* State is chosen at registration only (read-only here); existing accounts don't pick one */}
+                <div className="space-y-2.5">
+                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Next of Kin Name</Label>
+                    <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300 transition-colors group-focus-within:text-indigo-500">
+                            <Users size={18} />
+                        </div>
+                        <Input
+                            className="h-14 pl-12 rounded-[1.2rem] bg-zinc-50 border-zinc-100 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-zinc-900"
+                            placeholder="Full name"
+                            value={userDetail?.nextOfKinName}
+                            onChange={(e) => setUserDetail((prev) => ({ ...prev, nextOfKinName: e.target.value }))}
+                        />
+                    </div>
+                </div>
+                <div className="space-y-2.5">
+                    <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">Next of Kin Phone</Label>
+                    <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300 transition-colors group-focus-within:text-indigo-500">
+                            <Phone size={18} />
+                        </div>
+                        <Input
+                            className="h-14 pl-12 rounded-[1.2rem] bg-zinc-50 border-zinc-100 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-zinc-900"
+                            placeholder="+2348000000000"
+                            value={userDetail?.nextOfKinPhone}
+                            onChange={(e) => setUserDetail((prev) => ({ ...prev, nextOfKinPhone: e.target.value }))}
+                        />
+                    </div>
+                </div>
+                {/* State is read-only once set; existing accounts without one can pick it once */}
+                {!user?.state && stateMigration?.canSelectState && (
+                    <div className="space-y-2.5 sm:col-span-2">
+                        <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">State</Label>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsSelectStateOpen(true)}
+                            className="w-full h-14 justify-start gap-3 pl-4 rounded-[1.2rem] border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 font-bold text-emerald-700"
+                        >
+                            <MapPin size={18} />
+                            Select your state
+                        </Button>
+                        <p className="text-[11px] font-semibold text-zinc-400">You can only set this once.</p>
+                        <SelectStateModal
+                            isOpen={isSelectStateOpen}
+                            onClose={() => setIsSelectStateOpen(false)}
+                            country={user?.country}
+                        />
+                    </div>
+                )}
                 {user?.state && (
                     <div className="space-y-2.5 sm:col-span-2">
                         <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">State</Label>
