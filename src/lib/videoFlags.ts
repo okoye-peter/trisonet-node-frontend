@@ -5,9 +5,12 @@
 export const videoFlags = {
     welcomeSeen: false,
     financeSeen: false,
+    // State target / select-state modal on the dashboard - shown once per login.
+    stateModalSeen: false,
 };
 
 export function resetVideoFlags() {
     videoFlags.welcomeSeen = false;
     videoFlags.financeSeen = false;
+    videoFlags.stateModalSeen = false;
 }

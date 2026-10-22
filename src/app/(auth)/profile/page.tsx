@@ -192,7 +192,7 @@ function PersonalInfoTab({ user }: PersonalInfoTabProps) {
                         />
                     </div>
                 </div>
-                {/* State is read-only once set; existing accounts without one can pick it once */}
+                {/* Existing accounts without a state pick one here */}
                 {!user?.state && stateMigration?.canSelectState && (
                     <div className="space-y-2.5 sm:col-span-2">
                         <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">State</Label>
@@ -205,7 +205,7 @@ function PersonalInfoTab({ user }: PersonalInfoTabProps) {
                             <MapPin size={18} />
                             Select your state
                         </Button>
-                        <p className="text-[11px] font-semibold text-zinc-400">You can only set this once.</p>
+                        <p className="text-[11px] font-semibold text-zinc-400">You can change it once after setting it.</p>
                         <SelectStateModal
                             isOpen={isSelectStateOpen}
                             onClose={() => setIsSelectStateOpen(false)}
@@ -213,16 +213,41 @@ function PersonalInfoTab({ user }: PersonalInfoTabProps) {
                         />
                     </div>
                 )}
+                {/* Users can change their state once themselves; after that only an admin can */}
                 {user?.state && (
                     <div className="space-y-2.5 sm:col-span-2">
                         <Label className="text-xs font-black uppercase tracking-widest text-zinc-400">State</Label>
-                        <div className="relative group">
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300">
-                                <MapPin size={18} />
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <div className="relative flex-1 group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300">
+                                    <MapPin size={18} />
+                                </div>
+                                <Input className="h-14 pl-12 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900" value={`${user.state.name}, ${user.state.country}`} disabled />
                             </div>
-                            <Input className="h-14 pl-12 rounded-[1.2rem] bg-zinc-50 border-zinc-100 font-bold text-zinc-900" value={`${user.state.name}, ${user.state.country}`} disabled />
+                            {!user.stateChangedAt && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setIsSelectStateOpen(true)}
+                                    className="h-14 px-6 rounded-[1.2rem] border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 font-bold text-emerald-700"
+                                >
+                                    Change state
+                                </Button>
+                            )}
                         </div>
-                        <p className="text-[11px] font-semibold text-zinc-400">Your state can&apos;t be changed. Contact support if it is wrong.</p>
+                        <p className="text-[11px] font-semibold text-zinc-400">
+                            {user.stateChangedAt
+                                ? <>You&apos;ve already changed your state once. Contact support if it is wrong.</>
+                                : <>You can change your state once.</>}
+                        </p>
+                        {!user.stateChangedAt && (
+                            <SelectStateModal
+                                isOpen={isSelectStateOpen}
+                                onClose={() => setIsSelectStateOpen(false)}
+                                country={user.state.country ?? user.country}
+                                currentState={user.state}
+                            />
+                        )}
                     </div>
                 )}
             </div>

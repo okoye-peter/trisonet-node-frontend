@@ -65,8 +65,10 @@ export interface User {
     pictureUrl: string | null;
     cloudinaryPublicId: string | null;
     regionId: string;
-    // Country state used for the weekly state migration - set once, then read-only for the user.
+    // Country state used for the weekly state migration. The user can change it themselves once.
     stateId?: string | null;
+    // When the user used their one state change; set = only an admin can change it now
+    stateChangedAt?: string | null;
     state?: { id: string; name: string; country: string } | null;
     nextOfKinName?: string | null;
     nextOfKinPhone?: string | null;

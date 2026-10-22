@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Target, UserCheck, Users, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,14 +22,21 @@ export default function StateMigrationModal({ isOpen, onClose, progress }: State
     const remaining = progress?.remaining ?? 0;
     const percent = target > 0 ? Math.min(Math.round((gotten / target) * 100), 100) : 0;
 
-    return (
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
+    // Portal to body: the dashboard wraps modals in a transformed motion.div, which would
+    // otherwise make `fixed` resolve against that wrapper instead of the viewport.
+    if (!mounted) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && progress && state && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
                 >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.92, y: 24 }}
@@ -116,6 +125,7 @@ export default function StateMigrationModal({ isOpen, onClose, progress }: State
                     </motion.div>
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

@@ -163,7 +163,6 @@ const partnerColumns: ColumnDef<Partner>[] = [
     },
 ];
 
-let migrationModalShownThisLoad = false;
 
 const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -263,15 +262,13 @@ export default function DashboardPage() {
         enabled: isCustomer && !user?.isInfant,
     })
 
-    // Once per page load, partners with a state see their state's weekly target; existing
-    // accounts without a state are asked to pick one instead (if their country has states).
+    // Once per login (and per page load), existing accounts without a state are asked to pick one
+    // (if their country has states). Users who already have a state get no popup.
+    // The flag is reset on logout, so logging back in without a refresh shows it again.
     useEffect(() => {
-        if (!stateMigration || migrationModalShownThisLoad) return;
-        if (stateMigration.state) {
-            migrationModalShownThisLoad = true;
-            setIsMigrationModalOpen(true);
-        } else if (stateMigration.canSelectState) {
-            migrationModalShownThisLoad = true;
+        if (!stateMigration || videoFlags.stateModalSeen) return;
+        if (!stateMigration.state && stateMigration.canSelectState) {
+            videoFlags.stateModalSeen = true;
             setIsSelectStateOpen(true);
         }
     }, [stateMigration]);

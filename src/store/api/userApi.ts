@@ -15,7 +15,7 @@ export const userApi = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
-        // Existing accounts without a state pick one once; after that only an admin can change it.
+        // Sets the state for accounts without one, or uses the user's one self-service change.
         selectState: builder.mutation<AppResponse<{ id: string; name: string; country: string }>, { state_id: string }>({
             query: (body) => ({
                 url: 'users/state',

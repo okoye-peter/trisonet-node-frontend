@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Loader2 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,11 +15,15 @@ interface SelectStateModalProps {
     isOpen: boolean;
     onClose: () => void;
     country?: string | null;
+    // Set when the user already has a state and is using their one self-service change
+    currentState?: { id: string; name: string } | null;
 }
 
-// Existing accounts without a state pick one here, once. After saving it is read-only for the user.
-export default function SelectStateModal({ isOpen, onClose, country }: SelectStateModalProps) {
+// Accounts without a state pick one here; accounts with a state can change it here once.
+export default function SelectStateModal({ isOpen, onClose, country, currentState }: SelectStateModalProps) {
+    const isChange = !!currentState;
     const [stateId, setStateId] = useState('');
+    const [mounted, setMounted] = useState(false);
     const queryClient = useQueryClient();
     const [selectState, { isLoading: isSaving }] = useSelectStateMutation();
 
@@ -38,22 +43,29 @@ export default function SelectStateModal({ isOpen, onClose, country }: SelectSta
         }
         try {
             await selectState({ state_id: stateId }).unwrap();
-            toast.success('State saved');
+            toast.success(isChange ? 'State changed' : 'State saved');
             queryClient.invalidateQueries({ queryKey: ['stateMigration'] });
+            setStateId('');
             onClose();
         } catch (err: any) {
             toast.error(err?.data?.message || 'Failed to save state');
         }
     };
 
-    return (
+    useEffect(() => setMounted(true), []);
+
+    // Portal to body: the dashboard wraps modals in a transformed motion.div, which would
+    // otherwise make `fixed` resolve against that wrapper instead of the viewport.
+    if (!mounted) return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
                 >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.92, y: 24 }}
@@ -70,16 +82,24 @@ export default function SelectStateModal({ isOpen, onClose, country }: SelectSta
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70">{country}</p>
-                                    <h2 className="text-2xl font-black leading-tight text-white">Select Your State</h2>
+                                    <h2 className="text-xl font-black leading-tight text-white sm:text-2xl">{isChange ? 'Change Your State of Residence' : 'Select Your State of Residence'}</h2>
                                 </div>
                             </div>
                         </div>
 
                         <div className="p-6 space-y-4">
-                            <p className="text-sm leading-relaxed text-zinc-500">
-                                Pick the state you belong to so you can follow its weekly target.
-                                You can only set this once - contact support if you need it changed later.
-                            </p>
+                            {isChange ? (
+                                <p className="text-sm leading-relaxed text-zinc-500">
+                                    Your current state is <span className="font-bold text-zinc-900">{currentState.name}</span>.
+                                    You can only change your state <span className="font-bold text-zinc-900">once</span> - after
+                                    that, contact support if it needs to change again.
+                                </p>
+                            ) : (
+                                <p className="text-sm leading-relaxed text-zinc-500">
+                                    Pick the state you belong to so you can follow its weekly target.
+                                    If you pick the wrong one, you can change it once from your profile.
+                                </p>
+                            )}
 
                             <SearchableSelect
                                 placeholder={statesLoading ? 'Loading states...' : 'Select State'}
@@ -87,7 +107,9 @@ export default function SelectStateModal({ isOpen, onClose, country }: SelectSta
                                 onValueChange={setStateId}
                                 isLoading={statesLoading}
                                 triggerClassName="h-12 bg-zinc-50 border border-zinc-200 rounded-2xl font-bold text-sm"
-                                items={states.map((s) => ({ label: s.name, value: s.id.toString() }))}
+                                items={states
+                                    .filter((s) => s.id.toString() !== currentState?.id?.toString())
+                                    .map((s) => ({ label: s.name, value: s.id.toString() }))}
                             />
 
                             <div className="flex gap-3">
@@ -97,20 +119,21 @@ export default function SelectStateModal({ isOpen, onClose, country }: SelectSta
                                     disabled={isSaving}
                                     className="flex-1 h-12 text-xs font-black tracking-wider uppercase rounded-2xl"
                                 >
-                                    Later
+                                    {isChange ? 'Cancel' : 'Later'}
                                 </Button>
                                 <Button
                                     onClick={handleSave}
                                     disabled={isSaving || !stateId}
                                     className="flex-1 h-12 text-xs font-black tracking-wider text-white uppercase rounded-2xl bg-emerald-600 hover:bg-emerald-700"
                                 >
-                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save State'}
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : isChange ? 'Change State' : 'Save State'}
                                 </Button>
                             </div>
                         </div>
                     </motion.div>
                 </motion.div>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }
