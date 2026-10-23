@@ -7,10 +7,13 @@ export const videoFlags = {
     financeSeen: false,
     // State target / select-state modal on the dashboard - shown once per login.
     stateModalSeen: false,
+    // Next of kin popup on the dashboard - shown once per login to accounts without one.
+    nextOfKinSeen: false,
 };
 
 export function resetVideoFlags() {
     videoFlags.welcomeSeen = false;
     videoFlags.financeSeen = false;
     videoFlags.stateModalSeen = false;
+    videoFlags.nextOfKinSeen = false;
 }

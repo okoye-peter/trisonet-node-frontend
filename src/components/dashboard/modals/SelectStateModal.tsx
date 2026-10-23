@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Loader2 } from 'lucide-react';
@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import api from '@/lib/axios';
 import { useSelectStateMutation } from '@/store/api/userApi';
+
+const noopSubscribe = () => () => {};
 
 interface SelectStateModalProps {
     isOpen: boolean;
@@ -23,7 +25,6 @@ interface SelectStateModalProps {
 export default function SelectStateModal({ isOpen, onClose, country, currentState }: SelectStateModalProps) {
     const isChange = !!currentState;
     const [stateId, setStateId] = useState('');
-    const [mounted, setMounted] = useState(false);
     const queryClient = useQueryClient();
     const [selectState, { isLoading: isSaving }] = useSelectStateMutation();
 
@@ -52,10 +53,9 @@ export default function SelectStateModal({ isOpen, onClose, country, currentStat
         }
     };
 
-    useEffect(() => setMounted(true), []);
-
-    // Portal to body: the dashboard wraps modals in a transformed motion.div, which would
+    // Portal to body (client only - document doesn't exist during SSR): the dashboard wraps modals in a transformed motion.div, which would
     // otherwise make `fixed` resolve against that wrapper instead of the viewport.
+    const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
     if (!mounted) return null;
 
     return createPortal(

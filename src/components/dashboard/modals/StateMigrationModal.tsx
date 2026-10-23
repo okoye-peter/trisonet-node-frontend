@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Target, UserCheck, Users, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { StateMigrationProgress } from '@/types';
 import { formatWeekRange } from '@/components/dashboard/StateMigrationCard';
+
+const noopSubscribe = () => () => {};
 
 interface StateMigrationModalProps {
     isOpen: boolean;
@@ -22,11 +24,9 @@ export default function StateMigrationModal({ isOpen, onClose, progress }: State
     const remaining = progress?.remaining ?? 0;
     const percent = target > 0 ? Math.min(Math.round((gotten / target) * 100), 100) : 0;
 
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
-
-    // Portal to body: the dashboard wraps modals in a transformed motion.div, which would
+    // Portal to body (client only - document doesn't exist during SSR): the dashboard wraps modals in a transformed motion.div, which would
     // otherwise make `fixed` resolve against that wrapper instead of the viewport.
+    const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
     if (!mounted) return null;
 
     return createPortal(

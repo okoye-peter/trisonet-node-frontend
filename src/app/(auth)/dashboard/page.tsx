@@ -57,6 +57,7 @@ import BuyPimModal from '@/components/dashboard/modals/BuyPimModal';
 // import MigrationQueueModal from '@/components/dashboard/modals/MigrationQueueModal';
 import StateMigrationModal from '@/components/dashboard/modals/StateMigrationModal';
 import SelectStateModal from '@/components/dashboard/modals/SelectStateModal';
+import NextOfKinModal from '@/components/dashboard/modals/NextOfKinModal';
 import { useGetUserQuery } from '@/store/api/userApi';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
 import Link from 'next/link';
@@ -210,6 +211,7 @@ export default function DashboardPage() {
     const [isWalletHistoryOpen, setIsWalletHistoryOpen] = useState(false);
     const [isMigrationModalOpen, setIsMigrationModalOpen] = useState(false);
     const [isSelectStateOpen, setIsSelectStateOpen] = useState(false);
+    const [isNextOfKinOpen, setIsNextOfKinOpen] = useState(false);
     const [walletHistoryPage, setWalletHistoryPage] = useState(1);
 
     const { refetch: refetchUser } = useGetUserQuery();
@@ -265,13 +267,24 @@ export default function DashboardPage() {
     // Once per login (and per page load), existing accounts without a state are asked to pick one
     // (if their country has states). Users who already have a state get no popup.
     // The flag is reset on logout, so logging back in without a refresh shows it again.
+    // Waits for the next of kin popup to close so the two don't stack.
     useEffect(() => {
-        if (!stateMigration || videoFlags.stateModalSeen) return;
+        if (!stateMigration || videoFlags.stateModalSeen || isNextOfKinOpen) return;
         if (!stateMigration.state && stateMigration.canSelectState) {
             videoFlags.stateModalSeen = true;
             setIsSelectStateOpen(true);
         }
-    }, [stateMigration]);
+    }, [stateMigration, isNextOfKinOpen]);
+
+    // Once per login (and per page load), adult partners without a next of kin are asked to add
+    // one. Those who have one can change it from their profile. Reset on logout like the flags above.
+    const needsNextOfKin = !!user && user.role === ROLES.CUSTOMER && !user.isInfant
+        && !(user.nextOfKinName && user.nextOfKinPhone);
+    useEffect(() => {
+        if (!needsNextOfKin || videoFlags.nextOfKinSeen) return;
+        videoFlags.nextOfKinSeen = true;
+        setIsNextOfKinOpen(true);
+    }, [needsNextOfKin]);
 
     const { data: wardStatsResponse } = useQuery<{ data: WardStats }>({
         queryKey: ['wardStats'],
@@ -900,6 +913,10 @@ export default function DashboardPage() {
                 isOpen={isMigrationModalOpen}
                 onClose={() => setIsMigrationModalOpen(false)}
                 progress={stateMigration}
+            />
+            <NextOfKinModal
+                isOpen={isNextOfKinOpen}
+                onClose={() => setIsNextOfKinOpen(false)}
             />
             <SelectStateModal
                 isOpen={isSelectStateOpen}
