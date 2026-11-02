@@ -223,6 +223,9 @@ export default function DashboardPage() {
     // in-memory state, not sessionStorage — it survives remounts of this page from client-side
     // navigation, but naturally resets on a hard refresh (and is reset explicitly on logout),
     // so skipping/finishing it sticks until one of those happens, per product requirement.
+    // Re-checked when the level changes: a user migrated to level 2 mid-session (without a
+    // fresh login) must still get the video, because DashboardLayout holds the mandatory KYC
+    // popup on /dashboard until 'welcomeVideoEnded' fires.
     useEffect(() => {
         const timer = setTimeout(() => {
             if (!videoFlags.welcomeSeen && user?.level === 2) {
@@ -232,8 +235,7 @@ export default function DashboardPage() {
         }, 0);
 
         return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [user?.level]);
 
     const { data: dashboardStatsResponse, isLoading: dashboardStatsIsLoading, refetch: refetchStats } = useQuery<{ data: DashboardStats }>({
         queryKey: ['userDashboardStats', user?.id],
