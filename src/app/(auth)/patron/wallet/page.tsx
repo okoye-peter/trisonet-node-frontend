@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGetWalletsQuery } from '@/store/api/walletApi';
+import { useGetPatronAdminMemberQuery } from '@/store/api/patronApi';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useState } from 'react';
 import { WithdrawFundsModal } from '@/components/dashboard/patron/WithdrawFundsModal';
@@ -51,15 +52,20 @@ export default function PatronWalletPage() {
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
     const [isFundingModalOpen, setIsFundingModalOpen] = useState(false);
     const { data: walletsData, isLoading: isLoadingWallets } = useGetWalletsQuery();
+    const { data: adminMemberResponse, isLoading: isLoadingAdminMember } = useGetPatronAdminMemberQuery();
 
     const wallets = walletsData?.data || [];
 
-    const isTopLevel = user && !user.patronId;
+    // The admin member account has no patronId but is a member patron: it earns commission
+    // into its direct wallet and never funds a patronage wallet of its own.
+    const isAdminMember = !!adminMemberResponse?.data?.isAdminMember;
+    const isMemberPatron = !!user?.patronId || isAdminMember;
+    const isTopLevel = !!user && !isMemberPatron;
 
-    if (isLoadingWallets) return <LoadingScreen />;
+    if (isLoadingWallets || isLoadingAdminMember) return <LoadingScreen />;
 
-    // Patron Rule: with patronId -> direct, without patronId -> indirect
-    const withdrawableWallet = user?.patronId 
+    // Patron Rule: member patrons (incl. the admin member) -> direct, top-level patrons -> indirect (GKWTH)
+    const withdrawableWallet = isMemberPatron
         ? wallets.find(w => w.type === 'direct' && !w.isParentWallet)
         : wallets.find(w => w.type === 'indirect');
 
@@ -104,9 +110,11 @@ export default function PatronWalletPage() {
                                     <span className="text-[10px] font-black uppercase tracking-widest">Withdrawable</span>
                                 </div>
                                 <h3 className="text-2xl font-black text-zinc-900 tracking-tight">
-                                    {withdrawableWallet?.type === 'indirect' ? 'Indirect Wallet' : 'Direct Wallet'}
+                                    {withdrawableWallet?.type === 'indirect' ? 'GKWTH Wallet' : 'Direct Wallet'}
                                 </h3>
-                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">Earnings & Commissions</p>
+                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">
+                                    {isMemberPatron ? 'Member Commissions' : 'Daily Asset Rewards'}
+                                </p>
                             </div>
                             <div className="h-14 w-14 rounded-2xl bg-zinc-50 flex items-center justify-center text-zinc-400">
                                 <TrendingUp size={24} />
@@ -123,7 +131,9 @@ export default function PatronWalletPage() {
                                 <div className="flex gap-3">
                                     <Info size={16} className="text-indigo-600 shrink-0 mt-0.5" />
                                     <p className="text-xs font-medium text-zinc-500 leading-relaxed">
-                                        Your primary earnings wallet. All recruitment commissions and network incentives are paid here. You can withdraw these funds to your bank at any time.
+                                        {isMemberPatron
+                                            ? 'Commission for every customer you bring is paid here in cash. Add your bank in Profile Settings, then withdraw to your bank.'
+                                            : 'Your share of your customers’ daily asset rewards is paid here in GKWTH. Withdrawals are paid to your bank at the current GKWTH price.'}
                                     </p>
                                 </div>
                             </div>
@@ -138,7 +148,8 @@ export default function PatronWalletPage() {
                     </Card>
                 </motion.div>
 
-                {/* Patronage Wallet Card */}
+                {/* Patronage Wallet Card (the admin member never funds one, so it's hidden for it) */}
+                {!isAdminMember && (
                 <motion.div variants={itemVariants}>
                     <Card className="bg-zinc-900 rounded-[2.5rem] p-8 border-none shadow-2xl relative overflow-hidden h-full flex flex-col">
                         <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-indigo-600/10 rounded-full blur-3xl" />
@@ -193,6 +204,7 @@ export default function PatronWalletPage() {
                         </div>
                     </Card>
                 </motion.div>
+                )}
             </div>
 
 

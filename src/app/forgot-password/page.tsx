@@ -22,14 +22,14 @@ import AuthLayout from '@/components/auth/AuthLayout';
 import api from '@/lib/axios';
 
 const sendOtpSchema = z.object({
-    username: z.string().min(1, { message: 'Please enter a valid username.' }),
+    identifier: z.string().trim().min(1, { message: "Please enter your email address or username." }),
 });
 
 const resetPasswordSchema = z.object({
-    username: z.string().min(1, { message: 'Please enter a valid username.' }),
+    identifier: z.string().trim().min(1, { message: "Please enter your email address or username." }),
     otp: z.string().length(6, { message: 'OTP must be exactly 6 digits.' }),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-    confirmPassword: z.string().min(6),
+    password: z.string().min(8, { message: "Password must be at least 8 characters." }),
+    confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters." }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
@@ -41,8 +41,7 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 export default function ForgotPasswordPage() {
     const [step, setStep] = useState<'send-otp' | 'reset-password' | 'success'>('send-otp');
     const [isLoading, setIsLoading] = useState(false);
-    const [username, setUsername] = useState('');
-    const [mounted, setMounted] = useState(false);
+        const [mounted, setMounted] = useState(false);
 
     React.useEffect(() => {
         setMounted(true);
@@ -50,22 +49,21 @@ export default function ForgotPasswordPage() {
 
     const sendOtpForm = useForm<SendOtpFormValues>({
         resolver: zodResolver(sendOtpSchema),
-        defaultValues: { username: '' },
+        defaultValues: { identifier: "" },
     });
 
     const resetPasswordForm = useForm<ResetPasswordFormValues>({
         resolver: zodResolver(resetPasswordSchema),
-        defaultValues: { username: '', otp: '', password: '', confirmPassword: '' },
+        defaultValues: { identifier: "", otp: '', password: '', confirmPassword: '' },
     });
 
     async function onSendOtp(values: SendOtpFormValues) {
         setIsLoading(true);
         try {
-            await api.post('/password_reset/customers/send-otp', values);
-            setUsername(values.username);
-            resetPasswordForm.setValue('username', values.username);
-            setStep('reset-password');
-            toast.success('OTP sent successfully!');
+            const res = await api.post("/password_reset/customers/send-otp", values);
+            resetPasswordForm.setValue("identifier", values.identifier);
+            setStep("reset-password");
+            toast.success(res.data?.message || "Reset code sent.");
         } catch (error: unknown) {
             const err = error as { response?: { data?: { message?: string } } };
             toast.error(err.response?.data?.message || 'Failed to send OTP.');
@@ -120,23 +118,23 @@ export default function ForgotPasswordPage() {
         <AuthLayout
             title={step === 'send-otp' ? 'Forgot Password?' : 'Reset Password'}
             description={step === 'send-otp'
-                ? "No worries, we'll send you reset instructions to your email."
-                : `We've sent a secure OTP code`}
+                ? "Enter your email or username and we'll send a reset code to your phone (Nigerian numbers) and email."
+                : "Enter the 6-digit code we sent to your phone and/or email."}
         >
             {step === 'send-otp' ? (
                 <Form {...sendOtpForm} key="send-otp-form">
                     <form onSubmit={sendOtpForm.handleSubmit(onSendOtp)} className="space-y-6">
                         <FormField
                             control={sendOtpForm.control}
-                            name="username"
+                            name="identifier"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel className="text-[#040021] font-semibold">Partnership Name</FormLabel>
+                                    <FormLabel className="text-[#040021] font-semibold">Email or Username</FormLabel>
                                     <div className="relative group">
                                         <User className="absolute left-3 top-3 h-5 w-5 text-[#8f98a8] group-focus-within:text-[#6639ff] transition-colors" />
                                         <FormControl>
                                             <Input 
-                                                placeholder="Enter your partnership name" 
+                                                placeholder="you@example.com or your username" 
                                                 className="pl-10 h-11 bg-zinc-50 border-zinc-200 focus:bg-white focus:border-[#6639ff] focus:ring-[#6639ff]/20 transition-all" 
                                                 {...field} 
                                             />
@@ -263,7 +261,7 @@ export default function ForgotPasswordPage() {
                                 className="w-full h-11 text-[#8f98a8] hover:text-[#040021] font-semibold transition-colors"
                                 onClick={() => setStep('send-otp')}
                             >
-                                Change Username
+                                Use a different email or username
                             </Button>
                         </div>
                     </form>

@@ -2,18 +2,23 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { Menu, ChevronDown, User, LogOut, Settings } from 'lucide-react';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { useRouter } from 'next/navigation';
+import { Menu, ChevronDown, User, LogOut, Settings, Users, Loader2 } from 'lucide-react';
+import { useAppSelector } from '@/store/hooks';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useLogout } from '@/hooks/useLogout';
+import { useSwitchAccount } from '@/hooks/useSwitchAccount';
+import { useGetLinkedAccountsQuery } from '@/store/api/linkedAccountApi';
+import { LINKABLE_ROLES } from '@/types';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const { user } = useAppSelector((state) => state.auth);
-    const dispatch = useAppDispatch();
     const logout = useLogout();
+    const canLinkAccounts = !!user && LINKABLE_ROLES.includes(user.role) && !user.isInfant;
+    const { data: linkedResponse } = useGetLinkedAccountsQuery(undefined, { skip: !canLinkAccounts });
+    const otherAccounts = (linkedResponse?.data ?? []).filter((a) => !a.isCurrent);
+    const { switchTo, switchingTo } = useSwitchAccount();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -99,8 +104,44 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                     transition={{ duration: 0.2, ease: "easeOut" }}
-                                    className="absolute right-0 mt-4 w-56 overflow-hidden rounded-2xl border border-white/40 bg-white/90 p-2 backdrop-blur-xl shadow-2xl shadow-zinc-200/50"
+                                    className="absolute right-0 mt-4 w-64 overflow-hidden rounded-2xl border border-white/40 bg-white/90 p-2 backdrop-blur-xl shadow-2xl shadow-zinc-200/50"
                                 >
+                                    {otherAccounts.length > 0 && (
+                                        <>
+                                            <p className="px-3 pt-1 pb-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400">Switch account</p>
+                                            {otherAccounts.map((account) => (
+                                                <button
+                                                    key={account.id}
+                                                    onClick={() => switchTo(account.id)}
+                                                    disabled={!!switchingTo}
+                                                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100/80 hover:text-zinc-900 disabled:opacity-60"
+                                                >
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 to-purple-500 text-xs font-black text-white">
+                                                        {switchingTo === account.id
+                                                            ? <Loader2 size={14} className="animate-spin" />
+                                                            : account.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="truncate font-bold text-zinc-800">{account.name}</p>
+                                                        <p className="truncate text-[11px] text-zinc-400">{account.roleLabel}{account.username ? ` · @${account.username}` : ''}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                            <div className="my-1 h-px bg-zinc-100" />
+                                        </>
+                                    )}
+                                    {canLinkAccounts && (
+                                        <Link
+                                            href="/linked-accounts"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100/80 hover:text-zinc-900"
+                                        >
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-500">
+                                                <Users size={18} />
+                                            </div>
+                                            {otherAccounts.length > 0 ? 'Manage Linked Accounts' : 'Link Another Account'}
+                                        </Link>
+                                    )}
                                     <Link
                                         href="/profile"
                                         onClick={() => setIsDropdownOpen(false)}

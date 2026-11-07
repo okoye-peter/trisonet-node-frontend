@@ -10,6 +10,9 @@ export const ROLES = {
     STORE_GUEST: 9,
 } as const;
 
+// Roles that can use account switching (mirror of LINKABLE_ROLES in backend linked_account.service.ts)
+export const LINKABLE_ROLES: number[] = [ROLES.CUSTOMER, ROLES.INFLUENCER, ROLES.SPONSOR, ROLES.PATRON];
+
 export type Partner = {
     name?: string;
     email?: string;

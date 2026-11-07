@@ -11,11 +11,12 @@ import {
     TrendingUp,
     User,
     History,
-    ShoppingBag
+    ShoppingBag,
+    Link2
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { useGetNotificationsQuery } from '@/store/api/notificationApi';
-import { useGetPatronDashboardQuery, useGetPatronPlansQuery } from '@/store/api/patronApi';
+import { useGetPatronDashboardQuery, useGetPatronPlansQuery, useGetPatronAdminMemberQuery } from '@/store/api/patronApi';
 import { BaseSidebar } from './BaseSidebar';
 import { SidebarItem, SidebarProps } from './types';
 import { ROLES } from '@/types';
@@ -25,6 +26,8 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
     const { data: dashboardData } = useGetPatronDashboardQuery();
     const { data: notificationResponse } = useGetNotificationsQuery({ limit: 0 });
     const { data: plansResponse } = useGetPatronPlansQuery();
+    const { data: adminMemberResponse } = useGetPatronAdminMemberQuery();
+    const isAdminMember = !!adminMemberResponse?.data?.isAdminMember;
     const plans = plansResponse?.data || [];
     const unreadCount = notificationResponse?.data?.unreadCount || 0;
 
@@ -43,6 +46,7 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
             { icon: ShoppingBag, label: 'Shop', href: '/shop' },
             { icon: User, label: 'Profile Settings', href: '/profile' },
             { icon: Users, label: 'Members', href: '/patron/members' },
+            { icon: Link2, label: 'Patron Links', href: '/patron/links' },
             { icon: Building2, label: 'Organization', href: '/patron/organization' },
             { icon: UserPlus, label: 'Beneficiaries', href: '/patron/beneficiaries' },
             { icon: Wallet, label: 'Wallet', href: '/patron/wallet' },
@@ -58,12 +62,15 @@ export function PatronSidebar({ isOpen, onClose }: SidebarProps) {
         // Hide Organization link for patrons who aren't part of a group
         const isMember = !!user?.patronId;
         return items.filter(item => {
+            if (item.label === 'Patron Links') return isAdminMember;
+            // The admin member account works through its links, not its own members/earnings.
+            if (isAdminMember && (item.label === 'Members' || item.label === 'Earnings')) return false;
             if (item.label === 'Organization') return belongsToPatronGroup;
             if (item.label === 'Members') return !isMember;
             if (item.label === 'Earnings') return !isMember;
             return true;
         });
-    }, [belongsToPatronGroup, isRestrictedGroupPatron, user?.patronId]);
+    }, [belongsToPatronGroup, isRestrictedGroupPatron, user?.patronId, isAdminMember]);
 
 
     return (

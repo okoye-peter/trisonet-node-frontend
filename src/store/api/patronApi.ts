@@ -10,6 +10,50 @@ import type {
     PatronTransactionsResponse
 } from '@/types';
 
+export interface PatronAdminLinkRow {
+    id: string;
+    code: string;
+    active: boolean;
+    type: 'group' | 'individual';
+    name: string;
+    patron: { id: string; name: string; email: string } | null;
+    patronageBalance: number;
+    /** the admin's remaining share this round (half of the round's slots, rounded down) */
+    availableSlots: number;
+    round: PatronAdminLinkRound;
+    registered: number;
+    earned: number;
+}
+
+export interface PatronAdminLinkRound {
+    adminSlots: number;
+    /** registrations the patron's own members still need to make before the link reopens */
+    membersRemaining: number;
+    status: 'open' | 'waiting_for_members' | 'needs_funding';
+    walletSlots: number;
+    roundSlots: number | null;
+    adminQuota: number;
+    adminUsed: number;
+}
+
+export interface PatronAdminLinksResponse {
+    activationFee: number;
+    totals: { availableSlots: number; registered: number; earned: number };
+    links: PatronAdminLinkRow[];
+}
+
+export interface PatronAdminMemberInfo {
+    isAdminMember: boolean;
+    adminMember: {
+        name: string;
+        patronageBalance: number;
+        activationFee: number;
+        availableSlots: number;
+        membersRemaining: number;
+        roundStatus: PatronAdminLinkRound['status'];
+    } | null;
+}
+
 export const patronApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getPatronPlans: builder.query<AppResponse<PatronPlanDetail[]>, void>({
@@ -105,6 +149,14 @@ export const patronApi = apiSlice.injectEndpoints({
             }),
             providesTags: ['Wallet'],
         }),
+        getPatronAdminMember: builder.query<AppResponse<PatronAdminMemberInfo>, void>({
+            query: () => 'patrons/admin-member',
+            providesTags: ['Wallet'],
+        }),
+        getPatronAdminLinks: builder.query<AppResponse<PatronAdminLinksResponse>, void>({
+            query: () => 'patrons/admin-links',
+            providesTags: ['Wallet'],
+        }),
         convertPatronEarnings: builder.mutation<AppResponse<{ convertedAmount: number; conversionRate: number }>, { amount: number }>({
             query: (body) => ({
                 url: 'earnings/convert',
@@ -132,4 +184,6 @@ export const {
     useGetPatronTransactionsQuery,
     useGetPatronEarningsQuery,
     useConvertPatronEarningsMutation,
+    useGetPatronAdminMemberQuery,
+    useGetPatronAdminLinksQuery,
 } = patronApi;

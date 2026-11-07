@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import api from '@/lib/axios';
@@ -15,8 +15,14 @@ const HandoffContent = () => {
     const dispatch = useDispatch();
 
     const token = searchParams.get('token');
+    // Handoff tokens are single-use; React dev StrictMode runs effects twice, and the second
+    // call would fail and bounce the user to /login after the first one already logged them in.
+    const started = useRef(false);
 
     useEffect(() => {
+        if (started.current) return;
+        started.current = true;
+
         const performHandoff = async () => {
             if (!token) {
                 toast.error('Authentication token is missing. Please log in directly.');
@@ -37,10 +43,11 @@ const HandoffContent = () => {
 
                     // Small delay to ensure state is set before redirect
                     setTimeout(() => {
-                        if(user.role == ROLES.CUSTOMER)
-                            router.push('/dashboard');
-                        else if(user.role == ROLES.PATRON)
+                        // Customers, influencers (via account switching) and anyone else land on /dashboard
+                        if (user.role == ROLES.PATRON)
                             router.push('/patron/dashboard');
+                        else
+                            router.push('/dashboard');
                     }, 500);
                 } else {
                     throw new Error('Invalid response from server');

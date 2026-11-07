@@ -16,7 +16,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useGetPatronDashboardQuery } from '@/store/api/patronApi';
+import { useGetPatronDashboardQuery, useGetPatronAdminMemberQuery } from '@/store/api/patronApi';
+import { formatNaira } from '@/lib/shopUtils';
 import LoadingScreen from '@/components/LoadingScreen';
 import { useState } from 'react';
 import { DataTable } from "@/components/ui/data-table";
@@ -102,6 +103,8 @@ export default function PatronMembersPage() {
     const [page, setPage] = useState(1);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const { data: dashboardData, isLoading } = useGetPatronDashboardQuery({ page });
+    const { data: adminMemberResponse } = useGetPatronAdminMemberQuery();
+    const adminMember = adminMemberResponse?.data?.adminMember;
     
     const members = (dashboardData?.data?.members || []).filter(m => String(m.patronId) === String(user?.id));
     const meta = dashboardData?.data?.meta;
@@ -167,6 +170,32 @@ export default function PatronMembersPage() {
                     </div>
                 </Card> */}
             </div>
+
+            {adminMember && (
+                <Card className="bg-indigo-50/60 rounded-[2rem] border border-indigo-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-2xl bg-indigo-600 flex items-center justify-center font-black text-white text-xs">T</div>
+                        <div>
+                            <p className="font-black text-zinc-900 text-sm">
+                                {adminMember.name}
+                                <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-indigo-600 bg-white px-2 py-0.5 rounded-md">Managed by Trisonet</span>
+                            </p>
+                            <p className="text-xs text-zinc-500 mt-1">
+                                Registers customers on your behalf. Each one is paid from your patronage wallet ({formatNaira(adminMember.activationFee)}).
+                                Uses at most half of your slots per round.
+                            </p>
+                            {adminMember.roundStatus === 'waiting_for_members' && (
+                                <p className="text-xs font-bold text-amber-600 mt-1">
+                                    Opens again after your members register {adminMember.membersRemaining} more customer(s).
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest ${adminMember.availableSlots > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                        {adminMember.availableSlots.toLocaleString()} slot(s) available
+                    </span>
+                </Card>
+            )}
 
             <Card className="bg-white rounded-[3rem] border border-zinc-100 shadow-sm overflow-hidden">
                 <CardContent className="p-0">
