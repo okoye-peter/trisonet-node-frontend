@@ -28,7 +28,7 @@ import {
     type LinkRequestResult,
 } from '@/store/api/linkedAccountApi';
 import { useSwitchAccount } from '@/hooks/useSwitchAccount';
-import { LINKABLE_ROLES } from '@/types';
+import { LINKABLE_ROLES, LINK_INITIATOR_ROLES } from '@/types';
 
 const errorMessage = (error: unknown, fallback: string) =>
     (error as { data?: { message?: string } })?.data?.message || fallback;
@@ -54,7 +54,7 @@ function LinkAccountForm() {
 
     const handleRequest = async () => {
         if (!identifier.trim()) {
-            toast.error('Enter the username or email of the account you want to link.');
+            toast.error('Enter the username or email of the partner account you want to link.');
             return;
         }
         try {
@@ -63,17 +63,17 @@ function LinkAccountForm() {
             setPending(res.data ?? null);
             toast.success(res.message);
         } catch (error) {
-            toast.error(errorMessage(error, 'Could not verify that account'));
+            toast.error(errorMessage(error, 'Could not verify that partner account'));
         }
     };
 
     const handleVerify = async () => {
         try {
             await verifyLink({ otp }).unwrap();
-            toast.success(`${pending?.account.name ?? 'Account'} is now linked. You can switch to it from the top menu.`);
+            toast.success(`${pending?.account.name ?? 'Partner account'} is now linked as your partner account. You can switch to it from the top menu.`);
             reset();
         } catch (error) {
-            const message = errorMessage(error, 'Verification failed');
+            const message = errorMessage(error, 'Could not verify the code. Please try again.');
             toast.error(message);
             // The pending code is gone server-side after expiry or too many attempts.
             if (/start again/i.test(message)) reset();
@@ -85,8 +85,8 @@ function LinkAccountForm() {
             {!pending ? (
                 <motion.div key="credentials" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
                     <p className="text-sm text-zinc-500 font-medium leading-relaxed">
-                        Enter the login details of your other account (sponsor, influencer, adult customer or patron).
-                        We&apos;ll then send a verification code to that account&apos;s phone and email to confirm you own it.
+                        Enter the login details of the partner account you want to link. Any account type works (member, coordinator, sponsor, patron, school), except admin accounts.
+                        We&apos;ll then send a verification code to that partner account&apos;s phone and email to confirm you own it.
                         For a sponsor account, just enter the sponsor email and leave the password empty.
                     </p>
                     <div className="space-y-2.5">
@@ -154,7 +154,7 @@ function LinkAccountForm() {
                             onClick={handleVerify}
                             disabled={isVerifying || otp.length < 6}
                         >
-                            {isVerifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Link Account'}
+                            {isVerifying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Link Partner Account'}
                         </Button>
                         <Button
                             variant="ghost"
@@ -207,8 +207,10 @@ function AccountRow({ account, onUnlink }: { account: LinkedAccount; onUnlink: (
 
 export default function LinkedAccountsPage() {
     const { user } = useAppSelector((state) => state.auth);
-    const canLink = !!user && LINKABLE_ROLES.includes(user.role) && !user.isInfant;
-    const { data, isLoading } = useGetLinkedAccountsQuery(undefined, { skip: !canLink });
+    const canSwitch = !!user && LINKABLE_ROLES.includes(user.role) && !user.isInfant;
+    // Only the main (adult customer) account can add new links; other accounts can only switch.
+    const canLink = canSwitch && !!user && LINK_INITIATOR_ROLES.includes(user.role);
+    const { data, isLoading } = useGetLinkedAccountsQuery(undefined, { skip: !canSwitch });
     const [unlinkAccount, { isLoading: isUnlinking }] = useUnlinkAccountMutation();
     const [toUnlink, setToUnlink] = useState<LinkedAccount | null>(null);
     const accounts = data?.data ?? [];
@@ -217,15 +219,15 @@ export default function LinkedAccountsPage() {
         if (!toUnlink) return;
         try {
             await unlinkAccount(toUnlink.id).unwrap();
-            toast.success(toUnlink.isCurrent ? 'This account has been removed from the group.' : `${toUnlink.name} has been unlinked.`);
+            toast.success(toUnlink.isCurrent ? 'This account has been removed from your partner accounts.' : `${toUnlink.name} has been unlinked as a partner account.`);
         } catch (error) {
-            toast.error(errorMessage(error, 'Could not unlink account'));
+            toast.error(errorMessage(error, 'Could not unlink partner account'));
         } finally {
             setToUnlink(null);
         }
     };
 
-    if (user && !canLink) {
+    if (user && !canSwitch) {
         return (
             <div className="space-y-2">
                 <h1 className="text-4xl font-black tracking-tighter text-zinc-900">Linked Accounts</h1>
@@ -237,8 +239,8 @@ export default function LinkedAccountsPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-4xl font-black tracking-tighter text-zinc-900">Linked Accounts</h1>
-                <p className="text-zinc-500 font-medium">Link your other TrisoNet accounts and switch between them without logging out.</p>
+                <h1 className="text-4xl font-black tracking-tighter text-zinc-900">Partner Accounts</h1>
+                <p className="text-zinc-500 font-medium">Link your partner accounts and switch between them without logging out.</p>
             </div>
 
             <div className="max-w-3xl space-y-6">
@@ -246,12 +248,14 @@ export default function LinkedAccountsPage() {
                     <CardContent className="p-6 sm:p-10 space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><Users size={20} /></div>
-                            <h2 className="text-lg font-black text-zinc-900">Your accounts</h2>
+                            <h2 className="text-lg font-black text-zinc-900">Your partner accounts</h2>
                         </div>
                         {isLoading ? (
                             <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-zinc-400" /></div>
                         ) : accounts.length === 0 ? (
-                            <p className="text-sm text-zinc-500">No linked accounts yet. Link one below.</p>
+                            <p className="text-sm text-zinc-500">
+                                {canLink ? 'No partner accounts linked yet. Link one below.' : 'No partner accounts linked yet. Log in to your main partner account to link partner accounts.'}
+                            </p>
                         ) : (
                             <div className="space-y-3">
                                 {accounts.map((a) => <AccountRow key={a.id} account={a} onUnlink={setToUnlink} />)}
@@ -264,9 +268,16 @@ export default function LinkedAccountsPage() {
                     <CardContent className="p-6 sm:p-10 space-y-6">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><Link2 size={20} /></div>
-                            <h2 className="text-lg font-black text-zinc-900">Link another account</h2>
+                            <h2 className="text-lg font-black text-zinc-900">Link a partner account</h2>
                         </div>
-                        <LinkAccountForm />
+                        {canLink ? (
+                            <LinkAccountForm />
+                        ) : (
+                            <p className="text-sm text-zinc-500 font-medium leading-relaxed">
+                                Partner accounts can only be linked from your main partner account. Switch to it to link another
+                                partner account. You can still switch between the partner accounts already linked above.
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
             </div>

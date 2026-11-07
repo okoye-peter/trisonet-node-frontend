@@ -108,7 +108,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                                 >
                                     {otherAccounts.length > 0 && (
                                         <>
-                                            <p className="px-3 pt-1 pb-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400">Switch account</p>
+                                            <p className="px-3 pt-1 pb-1.5 text-[10px] font-black uppercase tracking-widest text-zinc-400">Switch partner account</p>
                                             {otherAccounts.map((account) => (
                                                 <button
                                                     key={account.id}
@@ -139,7 +139,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                                             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-500">
                                                 <Users size={18} />
                                             </div>
-                                            {otherAccounts.length > 0 ? 'Manage Linked Accounts' : 'Link Another Account'}
+                                            {otherAccounts.length > 0 ? 'Manage Partner Accounts' : 'Link a Partner Account'}
                                         </Link>
                                     )}
                                     <Link

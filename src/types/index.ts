@@ -11,7 +11,9 @@ export const ROLES = {
 } as const;
 
 // Roles that can use account switching (mirror of LINKABLE_ROLES in backend linked_account.service.ts)
-export const LINKABLE_ROLES: number[] = [ROLES.CUSTOMER, ROLES.INFLUENCER, ROLES.SPONSOR, ROLES.PATRON];
+export const LINKABLE_ROLES: number[] = [ROLES.CUSTOMER, ROLES.INFLUENCER, ROLES.SPONSOR, ROLES.PATRON, ROLES.SCHOOL];
+// Roles that can start a new link (mirror of LINK_INITIATOR_ROLES in the backend). Others can only switch.
+export const LINK_INITIATOR_ROLES: number[] = [ROLES.CUSTOMER];
 
 export type Partner = {
     name?: string;

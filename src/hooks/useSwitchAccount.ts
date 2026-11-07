@@ -33,7 +33,7 @@ export const useSwitchAccount = () => {
             window.location.assign(session.user.role === ROLES.PATRON ? '/patron/dashboard' : '/dashboard');
         } catch (error: unknown) {
             const err = error as { data?: { message?: string } };
-            toast.error(err?.data?.message || 'Could not switch account');
+            toast.error(err?.data?.message || 'Could not switch partner account');
         }
     }, [switchAccount]);
 
